@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { bridge, isNative } from '../../bridge'
 import { usePlaylists } from './store'
 import { buildM3u, parseM3u, resolveEntries } from './m3u'
+import type { Track } from '../../types'
 
 /**
  * Importing and exporting `.m3u` playlists.
