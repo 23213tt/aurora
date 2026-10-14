@@ -29,6 +29,7 @@ import { usePlayer } from './player/store'
 import { buildM3u, parseM3u, resolveEntries } from './playlists/m3u'
 import { loadProfilePlaylists, usePlaylists } from './playlists/store'
 import { useAccounts } from './accounts/store'
+import { useNetease } from './netease/store'
 import { DesktopLyricsBridge } from './overlay/DesktopLyricsBridge'
 import { SettingsView } from './settings/SettingsView'
 import { useWindowVisibility } from './visibility'
@@ -112,7 +113,14 @@ function initialRoute(): Route {
   if (MENU_TEST_MODE) return { view: 'songs' }
   if (!isNative && window.location.hash.replace(/^#/, '') === 'empty') return { view: 'songs' }
   const hash = window.location.hash.replace(/^#/, '')
-  return hash in VIEW_TITLES ? { view: hash as ViewId } : { view: 'albums' }
+  if (hash in VIEW_TITLES) return { view: hash as ViewId }
+  /*
+   * The online catalogue is the front door, not the local folders.
+   * A streaming-era player opens on what it can offer you; the files on this
+   * machine are the supplement you go looking for. Landing on the album wall
+   * made an empty local library look like an empty application.
+   */
+  return { view: 'netease' }
 }
 
 /**
@@ -126,8 +134,22 @@ function initialRoute(): Route {
  */
 let appRenders = 0
 
-export function App() {
-  if (!isNative) {
+/**
+ * The screens that show files on this disk.
+ *
+ * Used to decide where the library actions (rescan, add folder) belong: they are
+ * meaningful exactly here, and nowhere else. Cheap to check on every render, and
+ * it keeps the condition in one place instead of growing an exception per screen.
+ */
+const LIBRARY_VIEWS: ReadonlySet<ViewId> = new Set<ViewId>([
+  'albums',
+  'artists',
+  'songs',
+  'folders',
+  'playlists'
+])
+
+export function App() {  if (!isNative) {
     appRenders += 1
     ;(window as Window & { __auroraRenders?: number }).__auroraRenders = appRenders
   }
@@ -387,6 +409,13 @@ export function App() {
    */
   useEffect(() => {
     void loadProfilePlaylists(activeAccountId)
+    /*
+     * The online account is part of the profile too, so it is rebound on the
+     * same switch. `init` notices the profile changed, drops the previous
+     * account's playlists and collection, and asks the main process to point the
+     * session at this profile.
+     */
+    void useNetease.getState().init()
   }, [activeAccountId])
 
   /** Preview only: pop the actions menu so it can be reviewed in a screenshot. */
@@ -648,6 +677,12 @@ export function App() {
           onActivate={(id) => useAccounts.getState().activate(id)}
           onRename={(id, label) => useAccounts.getState().rename(id, label)}
           onRemove={(id) => useAccounts.getState().remove(id)}
+          onUnbindOnline={(id) => {
+            void bridge.netease.logoutProfile(id)
+            // The account shown on this screen is cached per render; drop the
+            // online state so a rebind is reflected without a reload.
+            if (id === activeAccountId) void useNetease.getState().init()
+          }}
         />
       )
     }
@@ -813,10 +848,12 @@ export function App() {
           counts={{
             albums: albums.length,
             artists: artists.length,
-            songs: tracks.length,
-            playlists: playlists.length
+            songs: tracks.length
           }}
           profileLabel={activeAccount?.label ?? null}
+          onOpenPlaylist={(id) => navigate({ view: 'playlists', playlistId: id })}
+          localPlaylists={playlists.map((playlist) => ({ id: playlist.id, name: playlist.name }))}
+          activePlaylistId={route.playlistId ?? null}
         />
 
         <main className="main">
@@ -860,7 +897,15 @@ export function App() {
             </div>
 
             <div className="main__tools">
-              {isNative ? (
+              {/*
+                The library's own actions only belong to the library.
+                "Rescan" and "add folder" are about files on this disk, so they
+                appear on the screens that show those files and nowhere else. On
+                the online screen they were leftovers above someone else's
+                catalogue; on the profiles screen they were a stray button about
+                folders next to a list of people.
+              */}
+              {isNative && LIBRARY_VIEWS.has(view) ? (
                 <button
                   className="btn"
                   onClick={() => void runScan()}
@@ -871,10 +916,12 @@ export function App() {
                   {scanning ? `${Math.round(progress * 100)}%` : '重新扫描'}
                 </button>
               ) : null}
-              <button className="btn" onClick={() => void addFolders()} disabled={busy}>
-                <Plus size={15} />
-                添加文件夹
-              </button>
+              {LIBRARY_VIEWS.has(view) ? (
+                <button className="btn" onClick={() => void addFolders()} disabled={busy}>
+                  <Plus size={15} />
+                  添加文件夹
+                </button>
+              ) : null}
             </div>
           </div>
 

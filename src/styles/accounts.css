@@ -15,6 +15,54 @@
   gap: var(--s2);
 }
 
+.accounts__heading {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-low);
+}
+
+.accounts__hint {
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  color: var(--text-low);
+  max-width: 60ch;
+}
+
+/* Which online account each profile is bound to. */
+.binding-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: var(--line-soft);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+
+.binding-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 42px;
+  padding: 0 var(--s3);
+  font-size: var(--fs-meta);
+}
+.binding-row + .binding-row {
+  border-top: var(--line-soft);
+}
+.binding-row__profile {
+  color: var(--text-hi);
+}
+.binding-row__account {
+  color: var(--accent-strong);
+}
+.binding-row__empty {
+  color: var(--text-low);
+  grid-column: 2 / -1;
+}
+
 /* --- profile rows -------------------------------------------------------- */
 
 .profile-rows {

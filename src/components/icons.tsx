@@ -57,6 +57,12 @@ export const ChevronRight = (p: IconProps) => (
   </Svg>
 )
 
+export const ChevronDown = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 9.5 12 15l6-5.5" />
+  </Svg>
+)
+
 export const Search = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="11" cy="11" r="6.5" />

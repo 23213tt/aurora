@@ -9,9 +9,45 @@ import type {
 } from '../env'
 import { player } from '../player/actions'
 import type { Track } from '../types'
+import { useAccounts } from '../accounts/store'
 import { hasNeteaseBackend, netease } from './api'
 import { isTransient, streamSummary } from './stream'
 import { toTrack } from './track'
+
+/**
+ * The profile whose account this store currently holds.
+ *
+ * Everything here - the account, the playlists, the open collection, the cached
+ * stream URLs - belongs to one Netease account, and therefore to one profile.
+ * When the active profile changes, all of it is dropped rather than reused; the
+ * alternative is showing one profile the previous profile's music.
+ */
+let boundProfile: string | null = null
+
+function activeProfileId(): string | null {
+  return useAccounts.getState().activeId
+}
+
+/** Drop every trace of the previous account. Cached URLs are unusable anyway. */
+function resetForProfile(set: (partial: Partial<NeteaseState>) => void): void {
+  streamCache.clear()
+  set({
+    account: null,
+    playlists: [],
+    playlistsLoading: false,
+    category: null,
+    openId: null,
+    openName: null,
+    openCover: null,
+    collection: [],
+    songs: [],
+    albums: [],
+    artists: [],
+    searched: false,
+    fail: null,
+    loadingTracks: false
+  })
+}
 
 /**
  * The pure half of the online source lives in `./track` so it can be imported
@@ -322,8 +358,21 @@ export const useNetease = create<NeteaseState>()((set, get) => {
      * retrying. So this is not a one-shot check: the view re-runs it when it is
      * opened and offers a retry when the backend reports itself blocked, which is
      * what keeps a temporary failure from looking permanent.
+     *
+     * It also re-binds the session to the active profile. Everything cached on
+     * this store belongs to whichever account answered last, so switching
+     * profiles has to drop all of it: the account, the playlists, the open
+     * collection and any stale failure. Keeping them would show one profile the
+     * previous profile's music.
      */
     async init() {
+      const profileId = activeProfileId()
+      if (profileId && profileId !== boundProfile) {
+        boundProfile = profileId
+        resetForProfile(set)
+      }
+      if (profileId) await netease.setProfile(profileId)
+
       const status = await netease.status()
       set({
         ready: status.ready,
@@ -334,6 +383,8 @@ export const useNetease = create<NeteaseState>()((set, get) => {
       // The main process owns the stored preference, so the renderer's default
       // is replaced by the real value as soon as the backend can answer.
       if (status.ready) set({ quality: await netease.getQuality() })
+      // A signed-in account owns playlists; pull them in so the rail is complete.
+      if (status.ready && status.loggedIn) void get().loadPlaylists()
     },
 
     async refreshAccount() {

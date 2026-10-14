@@ -4,7 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { classifyStreamFailure, describeFailure } from './reasons'
 import type { NeteaseFailureReason } from './reasons'
-import { clearCookie, readCookie, writeCookie } from './session'
+import { clearCookie, hasCookie, readCookie, writeCookie } from './session'
 import { isUsableId } from './types'
 import type {
   NeteaseAccount,
@@ -102,6 +102,35 @@ const apiRoot = (): string => path.dirname(require.resolve(API_PACKAGE))
 
 /** The anonymous cookie from the current run, used until a real login exists. */
 let anonymousCookie = ''
+
+/**
+ * Which profile's account the next call belongs to.
+ *
+ * Set by `netease:setProfile` before the renderer asks for anything, because the
+ * session lives in the main process while the notion of "who is using the app"
+ * lives in the renderer. A module-level value is safe here: the renderer sets it
+ * once on switch and then reads sequentially, so calls cannot interleave across
+ * two profiles.
+ */
+let activeProfileId = 'default'
+
+export function setActiveProfile(profileId: string): boolean {
+  const next = String(profileId ?? '').trim() || 'default'
+  if (next !== activeProfileId) {
+    /*
+     * Switching profiles must not leave the previous account's answers behind.
+     * The account cache is the dangerous one: it holds "who is signed in", and
+     * reusing it would attribute one profile's account to another.
+     */
+    activeProfileId = next
+    invalidateAccount()
+  }
+  return true
+}
+
+export function activeProfile(): string {
+  return activeProfileId
+}
 
 interface BootstrapState {
   ready: boolean
@@ -268,7 +297,7 @@ const readJson = (file: string): Record<string, unknown> => {
 
 /** The cookie to send, or '' when only the anonymous token applies. */
 function cookieForCall(): string {
-  return readCookie() || anonymousCookie
+  return readCookie(activeProfileId) || anonymousCookie
 }
 
 /**
@@ -414,7 +443,7 @@ export async function upstreamDiagnostics(): Promise<Record<string, unknown>> {
     keyVersion: state.keyVersion,
     hasAnonymousToken: state.hasAnonymousToken,
     tokenFileBytes: readText(TOKEN_PATH).length,
-    hasSession: readCookie().length > 0
+    hasSession: readCookie(activeProfileId).length > 0
   }
 }
 
@@ -568,7 +597,7 @@ export async function neteaseStreamUrl(
       return { ok: true, stream }
     }
 
-    const loggedIn = readCookie().length > 0
+    const loggedIn = readCookie(activeProfileId).length > 0
     const fee = typeof entry.fee === 'number' ? entry.fee : await feeOf(songId)
     const reason = classifyStreamFailure({
       code: asNumber(body.code),
@@ -627,7 +656,7 @@ export async function neteaseQrCheck(key: string): Promise<NeteaseQrResult> {
   if (code === 802) return { status: 'scanned', message: '已扫码，请在手机上确认' }
   if (code === 803) {
     const cookie = asString(body.cookie)
-    if (cookie) writeCookie(cookie)
+    if (cookie) writeCookie(activeProfileId, cookie)
     invalidateAccount()
     return { status: 'confirmed', account: (await safeAccount()) ?? undefined }
   }
@@ -648,7 +677,7 @@ export async function neteaseLoginCellphone(
   if (code !== 200) return { ok: false, message: loginMessage(code) }
 
   const cookie = asString(body.cookie)
-  if (cookie) writeCookie(cookie)
+  if (cookie) writeCookie(activeProfileId, cookie)
   invalidateAccount()
   return { ok: true, account: (await safeAccount()) ?? undefined }
 }
@@ -688,10 +717,53 @@ export async function neteaseLogout(): Promise<boolean> {
     // only means the server keeps a session nobody here can use.
     console.error('[aurora] netease logout did not reach upstream', readable(error))
   }
-  clearCookie()
+  clearCookie(activeProfileId)
   invalidateAccount()
   anonymousCookie = ''
   return true
+}
+
+/**
+ * Sign a *specific* profile out, without disturbing the active one.
+ *
+ * The profiles screen has to be able to unbind an account from a profile that is
+ * not the one currently in use, so this reads the session by id rather than
+ * through the module-level pointer.
+ */
+export function neteaseLogoutProfile(profileId: string): boolean {
+  clearCookie(profileId)
+  if (profileId === activeProfileId) {
+    invalidateAccount()
+    anonymousCookie = ''
+  }
+  return true
+}
+
+/** Whether a profile has a session at all; no upstream call. */
+export function profileHasSession(profileId: string): boolean {
+  return hasCookie(profileId)
+}
+
+/**
+ * The account a *specific* profile is signed in as, for the profiles screen.
+ *
+ * Reads that profile's session, so it works whether or not that profile is the
+ * active one. `invalidateAccount` runs on both edges of the switch, so the
+ * shared cache cannot answer with the wrong profile's identity.
+ */
+export async function neteaseAccountFor(profileId: string): Promise<NeteaseAccount | null> {
+  const previous = activeProfileId
+  try {
+    setActiveProfile(profileId)
+    if (!readCookie(activeProfileId)) return null
+    await bootstrapOnce()
+    return await safeAccount()
+  } catch (error) {
+    console.error('[aurora] could not read the account of another profile', readable(error))
+    return null
+  } finally {
+    setActiveProfile(previous)
+  }
 }
 
 /**

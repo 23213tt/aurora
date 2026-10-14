@@ -321,6 +321,20 @@ export interface NeteaseSearchResult {
 }
 
 export interface NeteaseApi {
+  /**
+   * Bind subsequent calls to a profile.
+   *
+   * An online account belongs to one profile: switching profiles switches whose
+   * Netease session is in use, the same way it switches which local library is
+   * open. Without this the app had a single machine-wide session, so every
+   * profile saw the same online playlists while the README promised that
+   * switching profiles changes your playlists.
+   */
+  setProfile(profileId: string): Promise<boolean>
+  /** Which account a profile is signed in as, or null. Used by the profiles screen. */
+  accountFor(profileId: string): Promise<NeteaseAccount | null>
+  logoutProfile(profileId: string): Promise<boolean>
+
   /** Upstream self-check: whether the client bootstrapped and whether a cookie exists. */
   status(): Promise<{ ready: boolean; loggedIn: boolean; detail?: string }>
 

@@ -193,6 +193,10 @@ const webFallback: AuroraApi = {
      * becoming the one screen that can only be reviewed inside Electron.
      */
     status: async () => ({ ready: false, loggedIn: false, detail: '浏览器预览模式没有网易云后端' }),
+    // A browser has no profiles and no sessions, so there is nothing to bind.
+    setProfile: async () => true,
+    accountFor: async () => null,
+    logoutProfile: async () => true,
     search: async () => ({ songs: [], albums: [], artists: [] }),
     streamUrl: async () => ({ ok: false, reason: 'service-unavailable' }),
     lyrics: async () => null,

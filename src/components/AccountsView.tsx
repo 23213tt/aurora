@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { providerOf } from '../accounts/providers'
 import type { Account } from '../accounts/store'
+import { isNative } from '../bridge'
+import type { NeteaseAccount } from '../env'
+import { netease } from '../netease/api'
 import { Check, Pencil, Plus, Trash } from './icons'
 
 interface AccountsViewProps {
@@ -10,6 +13,37 @@ interface AccountsViewProps {
   onActivate(id: string): void
   onRename(id: string, label: string): void
   onRemove(id: string): void
+  /** Unbinds the online account from a profile. */
+  onUnbindOnline(id: string): void
+}
+
+/**
+ * Which Netease account each profile is signed in as.
+ *
+ * Asked once per profile on open. This is the screen where the two halves of
+ * "an account" used to look unrelated - a local profile list that never
+ * mentioned the online session at all - so the binding is shown on the profile
+ * row itself rather than on a separate page.
+ */
+function useOnlineBindings(accounts: Account[]): Record<string, NeteaseAccount | null> {
+  const [bindings, setBindings] = useState<Record<string, NeteaseAccount | null>>({})
+
+  useEffect(() => {
+    if (!isNative || !netease.accountFor) return
+    let cancelled = false
+    void (async () => {
+      const next: Record<string, NeteaseAccount | null> = {}
+      for (const account of accounts) {
+        next[account.id] = await netease.accountFor(account.id)
+      }
+      if (!cancelled) setBindings(next)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [accounts])
+
+  return bindings
 }
 
 function formatDate(ms: number): string {
@@ -36,11 +70,13 @@ export function AccountsView({
   onCreate,
   onActivate,
   onRename,
-  onRemove
+  onRemove,
+  onUnbindOnline
 }: AccountsViewProps) {
   const [draft, setDraft] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
   const [editLabel, setEditLabel] = useState('')
+  const bindings = useOnlineBindings(accounts)
 
   const commitNew = () => {
     const label = draft.trim()
@@ -114,7 +150,6 @@ export function AccountsView({
                 >
                   <Pencil size={14} />
                 </button>
-
                 <button
                   className="icon-btn profile-row__remove"
                   onClick={() => onRemove(account.id)}
@@ -128,6 +163,47 @@ export function AccountsView({
             )
           })}
         </ul>
+
+        {/*
+          The online account, per profile.
+          This used to be invisible from here: the profiles screen listed local
+          profiles and said nothing about the machine-wide Netease session, which
+          is why the two looked like unrelated logins. Each profile now shows
+          which account it is signed in as, and can be unbound on its own.
+        */}
+        <section className="accounts__group">
+          <h2 className="accounts__heading">网易云账号</h2>
+          <p className="accounts__hint">
+            每个档案各自绑定一个网易云账号，切换档案就会切换在线歌单、每日推荐与云盘。
+            登录要在该档案为当前档案时进行。
+          </p>
+          <ul className="binding-rows">
+            {accounts.map((account) => {
+              const bound = bindings[account.id]
+              return (
+                <li className="binding-row" key={account.id}>
+                  <span className="binding-row__profile">{account.label}</span>
+                  {bound ? (
+                    <>
+                      <span className="binding-row__account">
+                        {bound.nickname}
+                        {bound.vip ? ' · 会员' : ''}
+                      </span>
+                      <button className="btn btn--small" onClick={() => onUnbindOnline(account.id)}>
+                        解除绑定
+                      </button>
+                    </>
+                  ) : (
+                    <span className="binding-row__empty">
+                      {account.id === activeId ? '未登录（点侧栏的登录，或这里的登录）' : '未绑定'}
+                      {account.id === activeId ? null : '——切到此档案后登录'}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
 
         <form
           className="accounts__new"

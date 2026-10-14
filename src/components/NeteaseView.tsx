@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
-import type { NeteaseQuality, NeteaseSong } from '../env'
+import type { NeteasePlaylistSummary, NeteaseQuality, NeteaseSong } from '../env'
 import { hasNeteaseBackend, remoteImage } from '../netease/api'
 import { paymentLabel, useNeteaseTracks } from '../netease/hooks'
 import { QUALITY_LABEL, QUALITY_ORDER, failureText, isTransient } from '../netease/stream'
 import { useNetease } from '../netease/store'
 import { usePlayer } from '../player/store'
 import { Artwork } from './Artwork'
+import { ArtCard } from './ArtCard'
 import { NeteaseLogin } from './NeteaseLogin'
-import { Note, Refresh, Search, User, Wave } from './icons'
+import { ChevronDown, Refresh, Search, User } from './icons'
 import { TrackList, type TrackMenuRequest } from './TrackList'
 
 /**
@@ -25,8 +26,6 @@ import { TrackList, type TrackMenuRequest } from './TrackList'
  */
 export function NeteaseView() {
   const account = useNetease((s) => s.account)
-  const category = useNetease((s) => s.category)
-  const openName = useNetease((s) => s.openName)
   const collection = useNetease((s) => s.collection)
   const playlists = useNetease((s) => s.playlists)
   const playlistsLoading = useNetease((s) => s.playlistsLoading)
@@ -68,15 +67,6 @@ export function NeteaseView() {
   const tracks = useNeteaseTracks(collection)
   const currentId = currentTrack?.source === 'netease' ? currentTrack.id : null
 
-  /** Signed out, the personal entries ask for a login instead of failing. */
-  const openCategory = (next: 'daily' | 'like' | 'cloud') => {
-    if (!account) {
-      useNetease.getState().setLoginOpen(true)
-      return
-    }
-    void useNetease.getState().openCategory(next)
-  }
-
   const submitSearch = (event: React.FormEvent) => {
     event.preventDefault()
     useNetease.getState().setQuery(draft)
@@ -85,6 +75,12 @@ export function NeteaseView() {
 
   return (
     <div className="ne">
+      {/*
+        One title per screen: the shell already prints "网易云音乐" above this
+        panel, so the page does not repeat it. What sits here is the one control
+        this screen owns - search - with the quality preference tucked inside its
+        row, next to the thing it affects.
+      */}
       <header className="ne__bar">
         <form className="ne__search" onSubmit={submitSearch} role="search">
           <Search size={15} />
@@ -98,9 +94,8 @@ export function NeteaseView() {
           <button className="btn btn--small" type="submit" disabled={searching || !draft.trim()}>
             {searching ? '搜索中…' : '搜索'}
           </button>
+          <QualityPicker quality={quality} />
         </form>
-
-        <QualityPicker quality={quality} />
       </header>
 
       {/*
@@ -127,68 +122,15 @@ export function NeteaseView() {
       ) : null}
 
       <div className="ne__body">
-        <aside className="ne__side">
-          <AccountCard />
-
-          <div className="ne__group">
-            <div className="ne__group-head">
-              <span>我的音乐</span>
-              {account ? (
-                <button
-                  className="btn btn--small"
-                  onClick={() => void useNetease.getState().loadPlaylists()}
-                  disabled={playlistsLoading}
-                  title="重新读取我的歌单"
-                >
-                  <Refresh size={13} />
-                  {playlistsLoading ? '读取中' : '刷新'}
-                </button>
-              ) : null}
-            </div>
-
-            <SideRow label="每日推荐" active={category === 'daily'} locked={!account} onClick={() => openCategory('daily')} />
-            <SideRow label="我喜欢的音乐" active={category === 'like'} locked={!account} onClick={() => openCategory('like')} />
-            <SideRow label="我的音乐云盘" active={category === 'cloud'} locked={!account} onClick={() => openCategory('cloud')} />
-          </div>
-
-          <div className="ne__group">
-            <div className="ne__group-head">
-              <span>我的歌单</span>
-            </div>
-            {!account ? (
-              <div className="ne__hint">登录后在这里显示你的歌单</div>
-            ) : playlists.length === 0 ? (
-              <div className="ne__hint">{playlistsLoading ? '读取中…' : '这个账号还没有歌单'}</div>
-            ) : (
-              <div className="ne__playlists">
-                {playlists.map((playlist) => (
-                  <button
-                    key={playlist.id}
-                    className={`ne__row${
-                      category === 'playlist' && openName === playlist.name ? ' is-active' : ''
-                    }`}
-                    onClick={() => void useNetease.getState().openPlaylist(playlist.id)}
-                    title={`${playlist.name} · ${playlist.creator}`}
-                  >
-                    <span className="ne__pl-art">
-                      <Artwork
-                        src={playlist.coverUrl ? remoteImage(playlist.coverUrl) : null}
-                        fallback={<Note size={13} />}
-                      />
-                    </span>
-                    <span className="ne__pl-name">{playlist.name}</span>
-                    <em className="tnum">{playlist.trackCount}</em>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <p className="ne__fine">
-            通过第三方逆向接口接入网易云，仅个人学习自用，不是官方客户端，也不提供绕过付费或会员的能力。QQ
-            音乐仍未接入。
-          </p>
-        </aside>
+        {/*
+          One column, like every other screen in the app.
+          This page used to be the only one with its own 268px sidebar, which made
+          it look like a second application bolted inside the first: a narrow
+          column of small rows next to a wide empty panel. The account and the
+          three generated collections are content, so they belong in the body with
+          everything else.
+        */}
+        <AccountCard />
 
         <section className="ne__main">
           {fail ? (
@@ -208,29 +150,22 @@ export function NeteaseView() {
             </div>
           ) : null}
 
-          <div className="ne__head">
-            {searched ? (
-              <>
-                <h2 className="ne__title">「{query}」的结果</h2>
-                <div className="seg">
-                  <button className={searchType === 'song' ? 'is-active' : ''} onClick={() => useNetease.getState().setSearchType('song')}>
-                    歌曲 {songs.length}
-                  </button>
-                  <button className={searchType === 'album' ? 'is-active' : ''} onClick={() => useNetease.getState().setSearchType('album')}>
-                    专辑 {albums.length}
-                  </button>
-                  <button className={searchType === 'artist' ? 'is-active' : ''} onClick={() => useNetease.getState().setSearchType('artist')}>
-                    歌手 {artists.length}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <h2 className="ne__title">{openName ?? '选择左边的一项，或者直接搜索'}</h2>
-            )}
-            {!searched && openName ? (
-              <span className="ne__meta tnum">{loadingTracks ? '读取中…' : `${collection.length} 首`}</span>
-            ) : null}
-          </div>
+          {searched ? (
+            <div className="ne__head">
+              <h2 className="ne__title">「{query}」的结果</h2>
+              <div className="seg">
+                <button className={searchType === 'song' ? 'is-active' : ''} onClick={() => useNetease.getState().setSearchType('song')}>
+                  歌曲 {songs.length}
+                </button>
+                <button className={searchType === 'album' ? 'is-active' : ''} onClick={() => useNetease.getState().setSearchType('album')}>
+                  专辑 {albums.length}
+                </button>
+                <button className={searchType === 'artist' ? 'is-active' : ''} onClick={() => useNetease.getState().setSearchType('artist')}>
+                  歌手 {artists.length}
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           {searched && searchType === 'album' ? (
             albums.length === 0 ? (
@@ -238,24 +173,14 @@ export function NeteaseView() {
             ) : (
               <div className="grid">
                 {albums.map((album) => (
-                  <div className="card" key={album.id}>
-                    <button
-                      className="card__art card__art-open"
-                      onClick={() => void useNetease.getState().openAlbum(album.id)}
-                      title={`打开 ${album.name}`}
-                    >
-                      <Artwork src={album.picUrl ? remoteImage(album.picUrl) : null} fallback={<Note size={22} />} />
-                    </button>
-                    <span className="card__name" title={album.name}>
-                      {album.name}
-                    </span>
-                    <span className="card__meta">
-                      <span className="card__artist">{album.artist}</span>
-                      <span className="card__size tnum">
-                        {album.year ?? '—'} · {album.songCount} 首
-                      </span>
-                    </span>
-                  </div>
+                  <ArtCard
+                    key={album.id}
+                    title={album.name}
+                    subtitle={album.artist}
+                    meta={`${album.year ?? '—'} · ${album.songCount} 首`}
+                    src={album.picUrl ? remoteImage(album.picUrl) : null}
+                    onOpen={() => void useNetease.getState().openAlbum(album.id)}
+                  />
                 ))}
               </div>
             )
@@ -267,21 +192,15 @@ export function NeteaseView() {
             ) : (
               <div className="grid">
                 {artists.map((artist) => (
-                  <div className="card" key={artist.id}>
-                    <button
-                      className="card__art card__art-open"
-                      onClick={() => void useNetease.getState().openArtist(artist.id)}
-                      title={`打开 ${artist.name}`}
-                    >
-                      <Artwork src={artist.picUrl ? remoteImage(artist.picUrl) : null} fallback={<User size={22} />} />
-                    </button>
-                    <span className="card__name" title={artist.name}>
-                      {artist.name}
-                    </span>
-                    <span className="card__meta">
-                      <span className="card__artist">{artist.albumCount} 张专辑</span>
-                    </span>
-                  </div>
+                  <ArtCard
+                    key={artist.id}
+                    title={artist.name}
+                    meta={`${artist.albumCount} 张专辑`}
+                    src={artist.picUrl ? remoteImage(artist.picUrl) : null}
+                    icon={<User size={22} />}
+                    // An artist is not playable as a whole, so no disc on the cover.
+                    onOpen={() => void useNetease.getState().openArtist(artist.id)}
+                  />
                 ))}
               </div>
             )
@@ -302,18 +221,20 @@ export function NeteaseView() {
               <div className="ne__hint">读取中…</div>
             ) : collection.length === 0 ? (
               /*
-               * Nothing opened yet. The shared `TrackList` would draw its own
-               * "no matching songs" empty row, which on a screen where nothing
-               * has been asked for yet reads as a failed load rather than as an
-               * empty state.
+               * Nothing opened yet. This used to be an empty state that told the
+               * reader to go and pick something - which is an instruction, not a
+               * screen, and it left two thirds of the window blank. What a music
+               * app should show when you walk into a room is the music: the
+               * generated playlists and your own, as artwork you can click.
                */
-              <div className="empty">
-                <div className="empty__art">
-                  <Wave size={30} />
-                </div>
-                <h2>还没有打开任何内容</h2>
-                <p className="ne__hint">左边选一个列表，或者在上面搜索。搜索和播放都不需要登录。</p>
-              </div>
+              <Welcome
+                playlists={playlists}
+                canUsePersonal={Boolean(account)}
+                onOpenPlaylist={(id) => void useNetease.getState().openPlaylist(id)}
+                onLogin={() => useNetease.getState().setLoginOpen(true)}
+                loadingPlaylists={playlistsLoading}
+                quality={quality}
+              />
             ) : (
               <TrackList
                 tracks={tracks}
@@ -325,6 +246,16 @@ export function NeteaseView() {
             )
           ) : null}
         </section>
+
+        {/*
+          The disclosure sits at the foot of the page instead of in a sidebar.
+          It matters, but it is not navigation - and it used to take a whole
+          column away from the music to say it.
+        */}
+        <p className="ne__footnote">
+          通过第三方逆向接口接入网易云，仅个人学习自用，不是官方客户端，也不提供绕过付费或会员的能力。QQ
+          音乐仍未接入。
+        </p>
       </div>
 
       {menu ? (
@@ -339,42 +270,118 @@ export function NeteaseView() {
   )
 }
 
-function SideRow({
-  label,
-  active,
-  locked,
-  onClick
-}: {
-  label: string
-  active: boolean
-  locked: boolean
-  onClick(): void
-}) {
+/**
+ * Quality, as a disclosure rather than a control strip.
+ *
+ * It used to be four buttons parked in the top-right corner of the screen, far
+ * from anything they affect and competing with the title for attention. It is a
+ * preference you set once, so it lives behind one small button that says the
+ * current choice - discoverable, quiet, and one click from being changed.
+ */
+function QualityPicker({ quality }: { quality: NeteaseQuality }) {
+  const [open, setOpen] = useState(false)
+
   return (
-    <button className={`ne__row${active ? ' is-active' : ''}`} onClick={onClick}>
-      <Note size={15} />
-      <span>{label}</span>
-      {locked ? <em>需登录</em> : null}
-    </button>
+    <div className="ne__quality" onBlur={(event) => {
+      // Close when focus leaves the whole widget, not when it moves between the
+      // button and its menu - otherwise the menu closes before the click lands.
+      if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false)
+    }}>
+      <button
+        className="ne__quality-btn"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        title={`音质：${QUALITY_LABEL[quality]}。上游给不了这一档时会回退，并在播放失败提示里说明。`}
+      >
+        {QUALITY_LABEL[quality].split(' ')[0]}
+        <ChevronDown size={13} />
+      </button>
+
+      {open ? (
+        <ul className="ne__quality-menu" role="listbox" aria-label="音质">
+          {QUALITY_ORDER.map((tier) => (
+            <li key={tier}>
+              <button
+                role="option"
+                aria-selected={quality === tier}
+                className={quality === tier ? 'is-active' : ''}
+                onClick={() => {
+                  void useNetease.getState().setQuality(tier)
+                  setOpen(false)
+                }}
+              >
+                <span className="ne__quality-name">{QUALITY_LABEL[tier].split(' ')[0]}</span>
+                <span className="ne__quality-note">{QUALITY_LABEL[tier]}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   )
 }
 
-function QualityPicker({ quality }: { quality: NeteaseQuality }) {
+/**
+ * Nothing chosen yet.
+ *
+ * The destinations live in the rail now, so this is not a navigation surface -
+ * it is the answer to "what is here": one line of state, and your playlists as
+ * artwork if there are any. The previous version repeated the rail's entries as
+ * three large tiles and gave the page a second title, which is what made the
+ * screen feel both crowded and empty at the same time.
+ */
+function Welcome({
+  playlists,
+  canUsePersonal,
+  loadingPlaylists,
+  quality,
+  onOpenPlaylist,
+  onLogin
+}: {
+  playlists: NeteasePlaylistSummary[]
+  canUsePersonal: boolean
+  loadingPlaylists: boolean
+  quality: NeteaseQuality
+  onOpenPlaylist(id: number): void
+  onLogin(): void
+}) {
   return (
-    <div className="ne__quality" title="音质随请求转发给上游；上游给不了这一档时会回退，并在这里说明">
-      <span className="ne__quality-label">音质</span>
-      <div className="seg">
-        {QUALITY_ORDER.map((tier) => (
-          <button
-            key={tier}
-            className={quality === tier ? 'is-active' : ''}
-            onClick={() => void useNetease.getState().setQuality(tier)}
-            title={QUALITY_LABEL[tier]}
-          >
-            {QUALITY_LABEL[tier].split(' ')[0]}
+    <div className="ne__welcome">
+      <p className="ne__welcome-note">
+        {canUsePersonal
+          ? `已连接网易云，当前「${QUALITY_LABEL[quality]}」音质。左边选一个歌单、每日推荐或云盘，也可以直接搜索。`
+          : '搜索和播放不需要登录。登录后左边的在线音乐里会多出你的每日推荐、红心与云盘。'}{' '}
+        {!canUsePersonal ? (
+          <button className="ne__link" onClick={onLogin}>
+            登录网易云
           </button>
-        ))}
-      </div>
+        ) : null}
+      </p>
+
+      {canUsePersonal ? (
+        playlists.length === 0 ? (
+          <p className="ne__hint">{loadingPlaylists ? '正在读取你的歌单…' : '这个账号还没有歌单'}</p>
+        ) : (
+          /*
+           * The same `ArtCard` the local album wall uses - same cover size, same
+           * meta row, same hover. A playlist from Netease and an album on disk
+           * are different data and should look like the same kind of thing.
+           */
+          <div className="grid">
+            {playlists.map((playlist) => (
+              <ArtCard
+                key={playlist.id}
+                title={playlist.name}
+                subtitle={playlist.creator || undefined}
+                meta={`${playlist.trackCount} 首`}
+                src={playlist.coverUrl ? remoteImage(playlist.coverUrl) : null}
+                onOpen={() => onOpenPlaylist(playlist.id)}
+              />
+            ))}
+          </div>
+        )
+      ) : null}
     </div>
   )
 }

@@ -115,6 +115,28 @@ export function warmUpNetease(): Promise<void> {
 export function registerNeteaseIpc(): void {
   const statusFailure: NeteaseStatusResult = { ready: false, loggedIn: false }
 
+  /*
+   * Which profile the following calls belong to.
+   *
+   * The session lives here and the notion of "who is using the app" lives in the
+   * renderer, so the renderer has to say. Registered first because every other
+   * handler below depends on it having been called at least once.
+   */
+  ipcMain.handle('netease:setProfile', (_event, value: unknown) => {
+    const id = typeof value === 'string' ? value : ''
+    return client.setActiveProfile(id)
+  })
+
+  /** The profiles screen asks about profiles that are not active. */
+  ipcMain.handle('netease:accountFor', (_event, value: unknown) =>
+    guard('accountFor', null, () => client.neteaseAccountFor(typeof value === 'string' ? value : ''))
+  )
+
+  ipcMain.handle('netease:logoutProfile', (_event, value: unknown) => {
+    if (typeof value !== 'string') return false
+    return client.neteaseLogoutProfile(value)
+  })
+
   ipcMain.handle('netease:status', () => guard('status', statusFailure, () => client.neteaseStatus()))
 
   ipcMain.handle('netease:search', (_event, payload: unknown) => {

@@ -198,6 +198,12 @@ const api = {
    * through the `aurora-remote:` scheme for the same reason.
    */
   netease: {
+    setProfile: (profileId: string) =>
+      ipcRenderer.invoke('netease:setProfile', profileId) as Promise<boolean>,
+    accountFor: (profileId: string) =>
+      ipcRenderer.invoke('netease:accountFor', profileId),
+    logoutProfile: (profileId: string) =>
+      ipcRenderer.invoke('netease:logoutProfile', profileId) as Promise<boolean>,
     status: () => ipcRenderer.invoke('netease:status'),
     search: (keywords: string, type: string, limit?: number) =>
       ipcRenderer.invoke('netease:search', { keywords, type, limit }),

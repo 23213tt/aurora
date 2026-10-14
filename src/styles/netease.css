@@ -49,15 +49,67 @@
   outline: none;
 }
 
+/*
+ * Quality is a disclosure: one small button that states the current choice, and
+ * a menu that explains each tier. It used to be four inline buttons parked in
+ * the screen corner, which read as a control strip floating away from anything
+ * it affects.
+ */
 .ne__quality {
+  position: relative;
+  flex: none;
+}
+.ne__quality-btn {
   display: flex;
   align-items: center;
-  gap: var(--s2);
-  margin-left: auto;
+  gap: 4px;
+  height: 24px;
+  padding: 0 var(--s2);
+  border-radius: var(--r-control);
+  background: var(--ink-700);
+  color: var(--text-mid);
+  font-size: var(--fs-micro);
+  white-space: nowrap;
 }
-.ne__quality-label {
+.ne__quality-btn:hover {
+  color: var(--text-hi);
+  background: var(--ink-600);
+}
+.ne__quality-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 210px;
+  padding: var(--s1);
+  border-radius: var(--r-panel);
+  background: var(--ink-800);
+  border: 1px solid var(--ink-600);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+}
+.ne__quality-menu button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--s2);
+  border-radius: var(--r-control);
+  text-align: left;
+}
+.ne__quality-menu button:hover {
+  background: var(--ink-700);
+}
+.ne__quality-menu button.is-active .ne__quality-name {
+  color: var(--accent-strong);
+}
+.ne__quality-name {
+  font-size: var(--fs-meta);
+  color: var(--text-hi);
+}
+.ne__quality-note {
   font-size: var(--fs-micro);
   color: var(--text-low);
+  line-height: 1.4;
 }
 
 /* Shown when the online source is not usable at all; say it once, not per action. */
@@ -88,27 +140,18 @@
   min-width: 0;
 }
 
-/* --- two panes ------------------------------------------------------------ */
+/* --- one column ----------------------------------------------------------- */
 
+/*
+ * This screen used to be the only one in the app with its own sidebar, which is
+ * most of why it read as a second application inside the first. It now has the
+ * same rhythm as every other page: a search row, then content in the body.
+ */
 .ne__body {
-  display: grid;
-  grid-template-columns: 268px minmax(0, 1fr);
-  gap: var(--s5);
-  align-items: start;
-  min-height: 0;
-}
-
-@media (max-width: 1080px) {
-  .ne__body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.ne__side {
   display: flex;
   flex-direction: column;
   gap: var(--s4);
-  min-width: 0;
+  min-height: 0;
 }
 
 .ne__main {
@@ -116,6 +159,16 @@
   flex-direction: column;
   gap: var(--s3);
   min-width: 0;
+}
+
+.ne__footnote {
+  margin-top: var(--s5);
+  padding-top: var(--s3);
+  border-top: var(--line-soft);
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  color: var(--text-low);
+  max-width: 72ch;
 }
 
 /* --- account -------------------------------------------------------------- */
@@ -279,6 +332,110 @@
   font-size: var(--fs-micro);
   line-height: 1.5;
   color: var(--text-low);
+}
+
+/* --- what the screen shows before anything is opened ---------------------- */
+
+/*
+ * Discovery, not an empty state.
+ *
+ * This area used to be a large blank panel that instructed the reader to go and
+ * choose something - which reads as a failed load and wastes two thirds of the
+ * window. It now opens with content: the three generated collections as a shelf,
+ * and (once signed in) your playlists as the same artwork cards the local album
+ * wall uses.
+ */
+.ne__welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.ne__welcome-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.ne__welcome-title {
+  font-size: var(--fs-title);
+  color: var(--text-hi);
+  margin-right: auto;
+}
+
+.ne__welcome-sub {
+  margin-top: var(--s3);
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+
+.ne__welcome-note {
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+  max-width: 68ch;
+}
+
+/* The three generated collections: equal entries in one row, wrapping down. */
+.ne__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--s3);
+}
+
+.ne__tile {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3);
+  border-radius: var(--r-panel);
+  background: var(--ink-850);
+  border: var(--line-soft);
+  text-align: left;
+  min-width: 0;
+}
+.ne__tile:hover {
+  background: var(--ink-800);
+  border-color: var(--ink-600);
+}
+.ne__tile.is-locked {
+  opacity: 0.62;
+}
+
+.ne__tile-art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-control);
+  background: var(--ink-700);
+  color: var(--accent-strong);
+}
+.ne__tile-art > svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.ne__tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ne__tile-name {
+  font-size: var(--fs-body);
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ne__tile-note {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* --- failure banner ------------------------------------------------------- */
