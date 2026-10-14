@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AccountsView } from './views/AccountsView'
 import { AlbumDetail } from './views/AlbumDetail'
 import { AlbumGrid } from './views/AlbumGrid'
@@ -20,9 +20,9 @@ import { demoLibrary } from './features/library/demo'
 import { useLyrics, usePalette } from './features/library/hooks'
 import { useRoots } from './features/library/roots'
 import { loadInitialIndex, runScan } from './features/library/scan'
-import { albumKey, groupAlbums, groupArtists, scoreTrack, useLibrary } from './features/library/store'
+import { groupAlbums, useLibrary } from './features/library/store'
 import { artworkFor } from './features/library/source'
-import { buildFolderTree, tracksUnder } from './features/library/tree'
+import { tracksUnder } from './features/library/tree'
 import { player } from './features/player/actions'
 import { driver } from './features/player/driver'
 import { usePlayer } from './features/player/store'
@@ -36,6 +36,7 @@ import { LyricsStage } from './stage/LyricsStage'
 import type { OverlayStatus } from './env'
 import type { Track } from './types'
 import { LIBRARY_VIEWS, VIEW_TITLES, initialRoute, type Route } from './app/routing'
+import { useLibraryData } from './app/useLibraryData'
 import { MENU_TEST_MODE, PERF_MODE, SCROLL_TEST_MODE, SCROLL_TEST_START, STRESS_TRACKS } from './app/preview'
 import { usePlaylistFiles } from './features/playlists/io'
 import { EmptyLibrary } from './views/EmptyLibrary'
@@ -408,76 +409,20 @@ export function App() {  if (!isNative) {
     return () => window.removeEventListener('keydown', onKey)
   }, [stageOpen, eqOpen, queueOpen, volume])
 
-  const albums = useMemo(() => groupAlbums(tracks), [tracks])
-  const artists = useMemo(() => groupArtists(tracks), [tracks])
-  const folderTree = useMemo(() => buildFolderTree(tracks), [tracks])
-  const trackById = useMemo(() => new Map(tracks.map((item) => [item.id, item])), [tracks])
-
-  const activePlaylist = route.playlistId
-    ? (playlists.find((playlist) => playlist.id === route.playlistId) ?? null)
-    : null
-
-  /**
-   * A playlist stores ids, so a file that was deleted, moved or never scanned
-   * simply does not resolve. That gap is the whole reason the missing count
-   * exists: it is the difference between "empty playlist" and "broken playlist".
-   */
-  const playlistTracks = useMemo(() => {
-    if (!activePlaylist) return { tracks: [] as Track[], missing: 0 }
-    const resolved = activePlaylist.trackIds
-      .map((id) => trackById.get(id))
-      .filter((item): item is Track => Boolean(item))
-    return { tracks: resolved, missing: activePlaylist.trackIds.length - resolved.length }
-  }, [activePlaylist, trackById])
-
-  const representative = useMemo(() => {
-    const byId = new Map(tracks.map((t) => [t.id, t]))
-    const map = new Map<string, (typeof tracks)[number]>()
-    for (const album of albums) {
-      const first = byId.get(album.trackIds[0])
-      if (first) map.set(album.id, first)
-    }
-    return map
-  }, [albums, tracks])
-
-  const band = useMemo(() => {
-    if (!route.artistId) return null
-    return {
-      artist: artists.find((a) => a.id === route.artistId) ?? null,
-      albums: albums.filter((album) => album.albumArtist === route.artistId),
-      tracks: tracks.filter((item) => item.albumArtist === route.artistId)
-    }
-  }, [route.artistId, artists, albums, tracks])
-
-  const visibleTracks = useMemo(() => {
-    if (!query.trim()) return tracks
-    return tracks
-      .map((item) => ({ item, score: scoreTrack(item, query) }))
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map((entry) => entry.item)
-  }, [tracks, query])
-
-  const currentAlbumId = track ? albumKey(track) : null
-
-  /**
-   * The album being viewed, with its tracks in the album's own order.
-   *
-   * `trackIds` is already sorted by disc and track number when the library is
-   * grouped, so this preserves running order rather than re-sorting.
-   */
-  const albumDetail = useMemo(() => {
-    if (!route.albumId) return null
-    const album = albums.find((a) => a.id === route.albumId)
-    if (!album) return null
-    const byId = new Map(tracks.map((item) => [item.id, item]))
-    const ordered = album.trackIds
-      .map((id) => byId.get(id))
-      .filter((item): item is Track => Boolean(item))
-    return { album, tracks: ordered }
-  }, [route.albumId, albums, tracks])
-  const currentArtistId = track?.albumArtist ?? null
-  const currentFolder = track ? track.path.replace(/[\\/][^\\/]*$/, '') : null
+  const {
+    albums,
+    artists,
+    folderTree,
+    activePlaylist,
+    playlistTracks,
+    representative,
+    band,
+    visibleTracks,
+    currentAlbumId,
+    albumDetail,
+    currentArtistId,
+    currentFolder
+  } = useLibraryData(route, tracks, playlists, query, track)
 
   const playAlbum = useCallback(
     (albumId: string) => {
