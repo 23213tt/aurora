@@ -505,6 +505,34 @@ export function App() {  if (!isNative) {
         ? `${visibleTracks.length} 首`
         : null
 
+  /*
+   * One search field, two meanings.
+   *
+   * On the online screen the field searches Netease: the draft lives in that
+   * store (so the page can show what is being searched for) and Enter sends the
+   * request. Everywhere else it filters the library as you type, which needs no
+   * submit. The placeholder states which of the two is in effect, because the
+   * previous arrangement had two identical-looking fields and no indication that
+   * one of them did nothing on this screen.
+   */
+  const searchingOnline = view === 'netease'
+  const neteaseDraft = useNetease((s) => s.query)
+  const searchValue = searchingOnline ? neteaseDraft : query
+  const searchPlaceholder = searchingOnline ? '搜索网易云的音乐' : '筛选本机曲库'
+
+  const onSearchInput = useCallback(
+    (next: string) => {
+      if (searchingOnline) useNetease.getState().setQuery(next)
+      else setQuery(next)
+    },
+    [searchingOnline]
+  )
+
+  const submitSearch = useCallback(() => {
+    if (!searchingOnline) return
+    void useNetease.getState().runSearch()
+  }, [searchingOnline])
+
   const body = () => {
     if (view === 'sources') return <Sources roots={roots} onAdd={addFolders} onRemove={remove} busy={busy} />
     if (view === 'settings') return <SettingsView />
@@ -676,8 +704,11 @@ export function App() {  if (!isNative) {
           />
         ) : null}
         <TitleBar
-          query={query}
-          onQuery={setQuery}
+          query={searchValue}
+          onQuery={onSearchInput}
+          onSubmit={submitSearch}
+          placeholder={searchPlaceholder}
+          shortcut={view === 'netease' ? undefined : 'Ctrl K'}
           onBack={goBack}
           onForward={goForward}
           canBack={cursor > 0}

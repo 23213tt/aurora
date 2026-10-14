@@ -8,7 +8,7 @@ import { usePlayer } from '../player/store'
 import { Artwork } from '../../ui/Artwork'
 import { ArtCard } from '../../ui/ArtCard'
 import { NeteaseLogin } from './NeteaseLogin'
-import { ChevronDown, Refresh, Search, User } from '../../ui/icons'
+import { ChevronDown, Refresh, User } from '../../ui/icons'
 import { TrackList, type TrackMenuRequest } from '../../ui/TrackList'
 
 /**
@@ -29,7 +29,6 @@ export function NeteaseView() {
   const collection = useNetease((s) => s.collection)
   const playlists = useNetease((s) => s.playlists)
   const playlistsLoading = useNetease((s) => s.playlistsLoading)
-  const searching = useNetease((s) => s.searching)
   const searched = useNetease((s) => s.searched)
   const query = useNetease((s) => s.query)
   const songs = useNetease((s) => s.songs)
@@ -44,7 +43,6 @@ export function NeteaseView() {
   const backendBlocked = useNetease((s) => s.backendBlocked)
   const statusDetail = useNetease((s) => s.statusDetail)
 
-  const [draft, setDraft] = useState('')
   const [menu, setMenu] = useState<TrackMenuRequest | null>(null)
 
   const currentTrack = usePlayer((s) => (s.index >= 0 ? (s.queue[s.index] ?? null) : null))
@@ -67,35 +65,17 @@ export function NeteaseView() {
   const tracks = useNeteaseTracks(collection)
   const currentId = currentTrack?.source === 'netease' ? currentTrack.id : null
 
-  const submitSearch = (event: React.FormEvent) => {
-    event.preventDefault()
-    useNetease.getState().setQuery(draft)
-    void useNetease.getState().runSearch()
-  }
-
   return (
     <div className="ne">
       {/*
-        One title per screen: the shell already prints "网易云音乐" above this
-        panel, so the page does not repeat it. What sits here is the one control
-        this screen owns - search - with the quality preference tucked inside its
-        row, next to the thing it affects.
+        No search field here: the shell's one field becomes the online search on
+        this screen (see App). Two identical-looking fields, one of which did
+        nothing on this page, was the confusion worth removing.
+        What is left is the preference this screen owns - quality - stated as the
+        current value rather than as a strip of four buttons.
       */}
       <header className="ne__bar">
-        <form className="ne__search" onSubmit={submitSearch} role="search">
-          <Search size={15} />
-          <input
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="搜索歌曲、专辑或歌手"
-            aria-label="搜索网易云音乐"
-            maxLength={80}
-          />
-          <button className="btn btn--small" type="submit" disabled={searching || !draft.trim()}>
-            {searching ? '搜索中…' : '搜索'}
-          </button>
-          <QualityPicker quality={quality} />
-        </form>
+        <QualityPicker quality={quality} />
       </header>
 
       {/*

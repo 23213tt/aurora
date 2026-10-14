@@ -13,40 +13,14 @@
 
 /* --- toolbar -------------------------------------------------------------- */
 
+/*
+ * The screen's own toolbar now holds only its quality preference: searching moved
+ * into the shell's one search field, which becomes the online search on this page.
+ */
 .ne__bar {
   display: flex;
   align-items: center;
   gap: var(--s3);
-  flex-wrap: wrap;
-}
-
-.ne__search {
-  display: flex;
-  align-items: center;
-  gap: var(--s2);
-  flex: 1;
-  min-width: 260px;
-  max-width: 520px;
-  height: 32px;
-  padding: 0 var(--s1) 0 var(--s3);
-  border-radius: var(--r-control);
-  background: var(--ink-800);
-  border: 1px solid transparent;
-  color: var(--text-mid);
-  transition: border-color 140ms var(--ease-out), background 140ms var(--ease-out);
-}
-.ne__search:focus-within {
-  background: var(--ink-700);
-  border-color: rgb(var(--accent-rgb) / 0.55);
-}
-.ne__search svg {
-  flex: none;
-}
-.ne__search input {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  outline: none;
 }
 
 /*
