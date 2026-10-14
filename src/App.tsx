@@ -22,7 +22,6 @@ import { useRoots } from './features/library/roots'
 import { loadInitialIndex, runScan } from './features/library/scan'
 import { groupAlbums, useLibrary } from './features/library/store'
 import { artworkFor } from './features/library/source'
-import { tracksUnder } from './features/library/tree'
 import { player } from './features/player/actions'
 import { driver } from './features/player/driver'
 import { usePlayer } from './features/player/store'
@@ -36,6 +35,8 @@ import { LyricsStage } from './stage/LyricsStage'
 import type { OverlayStatus } from './env'
 import type { Track } from './types'
 import { LIBRARY_VIEWS, VIEW_TITLES, initialRoute, type Route } from './app/routing'
+import { useKeyboardShortcuts } from './app/useKeyboardShortcuts'
+import { useTrackActions } from './app/useTrackActions'
 import { useLibraryData } from './app/useLibraryData'
 import { MENU_TEST_MODE, PERF_MODE, SCROLL_TEST_MODE, SCROLL_TEST_START, STRESS_TRACKS } from './app/preview'
 import { usePlaylistFiles } from './features/playlists/io'
@@ -351,68 +352,22 @@ export function App() {  if (!isNative) {
     setTrackMenu({ track: tracks[2], x: 400, y: 290 })
   }, [tracks])
 
-  // Transport shortcuts, ignored while typing.
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null
-      const typing =
-        target?.tagName === 'INPUT' ||
-        target?.tagName === 'TEXTAREA' ||
-        target?.isContentEditable === true
-      if (typing) return
+  useKeyboardShortcuts({
+    stageOpen,
+    eqOpen,
+    queueOpen,
+    volume,
+    setStageOpen,
+    setEqOpen,
+    setQueueOpen
+  })
 
-      const mod = event.ctrlKey || event.metaKey
-
-      if (mod && event.key.toLowerCase() === 'k') {
-        event.preventDefault()
-        document.getElementById('global-search')?.focus()
-        return
-      }
-      if (event.key === 'Escape') {
-        if (stageOpen) setStageOpen(false)
-        else if (eqOpen) setEqOpen(false)
-        else if (queueOpen) setQueueOpen(false)
-        return
-      }
-      if (event.key.toLowerCase() === 'l') {
-        event.preventDefault()
-        setStageOpen((open) => !open)
-        return
-      }
-      if (event.key.toLowerCase() === 'e') {
-        event.preventDefault()
-        setEqOpen((open) => !open)
-        return
-      }
-      if (event.code === 'Space') {
-        event.preventDefault()
-        player.toggle()
-        return
-      }
-      if (event.key === 'ArrowRight' && mod) {
-        event.preventDefault()
-        player.next()
-        return
-      }
-      if (event.key === 'ArrowLeft' && mod) {
-        event.preventDefault()
-        player.prev()
-        return
-      }
-      if (event.key === 'ArrowRight') player.nudge(5)
-      else if (event.key === 'ArrowLeft') player.nudge(-5)
-      else if (event.key === 'ArrowUp') player.setVolume(volume + 0.05)
-      else if (event.key === 'ArrowDown') player.setVolume(volume - 0.05)
-    }
-
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [stageOpen, eqOpen, queueOpen, volume])
 
   const {
     albums,
     artists,
     folderTree,
+    trackById,
     activePlaylist,
     playlistTracks,
     representative,
@@ -424,42 +379,12 @@ export function App() {  if (!isNative) {
     currentFolder
   } = useLibraryData(route, tracks, playlists, query, track)
 
-  const playAlbum = useCallback(
-    (albumId: string) => {
-      const album = albums.find((a) => a.id === albumId)
-      if (!album) return
-      const byId = new Map(tracks.map((t) => [t.id, t]))
-      const queue = album.trackIds
-        .map((id) => byId.get(id))
-        .filter((t): t is (typeof tracks)[number] => Boolean(t))
-      player.playQueue(queue, 0)
-    },
-    [albums, tracks]
-  )
-
-  const playArtist = useCallback(
-    (artistId: string) => {
-      const owned = tracks.filter((item) => item.albumArtist === artistId)
-      if (owned.length > 0) player.playQueue(owned, 0)
-    },
-    [tracks]
-  )
-
-  const playFolder = useCallback(
-    (folderPath: string) => {
-      const owned = tracksUnder(tracks, folderPath)
-      if (owned.length > 0) player.playQueue(owned, 0)
-    },
-    [tracks]
-  )
-
-  const createPlaylist = useCallback(
-    (name: string) => {
-      const created = usePlaylists.getState().create(name)
-      navigate({ view: 'playlists', playlistId: created.id })
-    },
-    [navigate]
-  )
+  const { playAlbum, playArtist, playFolder, createPlaylist } = useTrackActions({
+    tracks,
+    albums,
+    trackById,
+    navigate
+  })
 
   const { importPlaylist, exportPlaylist } = usePlaylistFiles({
     tracks,
