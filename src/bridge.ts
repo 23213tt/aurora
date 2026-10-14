@@ -1,4 +1,4 @@
-import type { AuroraApi } from './env'
+import type { AppSettings, AuroraApi, UpdatePrefs } from './env'
 import { demoLibrary } from './library/demo'
 
 /**
@@ -22,6 +22,33 @@ const emptyIndex = () => ({
   tracks: []
 })
 
+/**
+ * Session-only settings for the preview.
+ *
+ * Held outside the fallback object so a setter can return the new state the way
+ * the native implementation does, without the caller having to re-read.
+ */
+let previewSettings: AppSettings = {
+  onlineLyrics: false,
+  updateInterval: 'manual',
+  updateLastCheck: 0,
+  autoInstallUpdates: false,
+  desktopLyrics: { size: 34, min: 18, max: 64 }
+}
+
+/**
+ * Update preferences for the preview.
+ *
+ * `autoInstallAvailable: false` is the honest answer in a browser: there is no
+ * installer to run, so the settings page renders that switch disabled.
+ */
+let previewPrefs: UpdatePrefs = {
+  interval: 'manual',
+  lastCheck: 0,
+  autoInstall: false,
+  autoInstallAvailable: false
+}
+
 const webFallback: AuroraApi = {
   info: async () => ({
     version: '0.1.0-web',
@@ -42,6 +69,16 @@ const webFallback: AuroraApi = {
     scan: async () => emptyIndex(),
     cancelScan: async () => true,
     onProgress: () => () => undefined
+  },
+  app: {
+    // A browser tab is never minimised to a tray, so Chromium's own answer is
+    // the accurate one here; the visibility hook reads `document.hidden` too.
+    getVisibility: async () => ({
+      visible: !document.hidden,
+      minimized: false,
+      hidden: document.hidden
+    }),
+    onVisibility: () => () => undefined
   },
   playlists: {
     /*
@@ -70,7 +107,40 @@ const webFallback: AuroraApi = {
     open: async () => false,
     getAutoCheck: async () => false,
     setAutoCheck: async () => false,
+    getPrefs: async () => previewPrefs,
+    setInterval: async (interval) => (previewPrefs = { ...previewPrefs, interval }),
+    setAutoInstall: async (enabled) => (previewPrefs = { ...previewPrefs, autoInstall: enabled }),
+    install: async () => false,
+    onStatus: () => () => undefined,
     onAvailable: () => () => undefined
+  },
+  settings: {
+    /*
+     * The preview keeps settings in memory for the session. That is enough for
+     * the settings page to be reviewed - switches move, sliders drag - without
+     * pretending anything was persisted.
+     */
+    getAll: async () => previewSettings,
+    setOnlineLyrics: async (enabled) => (previewSettings = { ...previewSettings, onlineLyrics: enabled }),
+    setDesktopLyricsSize: async (size) =>
+      (previewSettings = {
+        ...previewSettings,
+        desktopLyrics: { ...previewSettings.desktopLyrics, size }
+      }),
+    // A browser has no userData directory, so "nothing to measure" is the
+    // honest answer rather than a made-up zero.
+    getStorage: async () => ({
+      userData: '（浏览器预览模式，没有数据目录）',
+      cache: '（浏览器预览模式，没有缓存目录）',
+      cacheBytes: null,
+      userDataBytes: null
+    }),
+    clearCache: async () => ({
+      userData: '（浏览器预览模式，没有数据目录）',
+      cache: '（浏览器预览模式，没有缓存目录）',
+      cacheBytes: null,
+      userDataBytes: null
+    })
   },
   player: {
     reportState: async () => true,
@@ -90,11 +160,19 @@ const webFallback: AuroraApi = {
      * lyric design would be unreviewable outside Electron, which is the one
      * window that cannot be screenshotted here.
      */
-    toggle: async () => ({ open: true, locked: false }),
-    getStatus: async () => ({ open: true, locked: false }),
+    toggle: async () => ({ open: true, locked: false, size: previewSettings.desktopLyrics.size }),
+    getStatus: async () => ({ open: true, locked: false, size: previewSettings.desktopLyrics.size }),
     setLocked: async () => true,
-    close: async () => ({ open: true, locked: false }),
+    close: async () => ({ open: true, locked: false, size: previewSettings.desktopLyrics.size }),
     push: async () => true,
+    setSize: async (size) => {
+      previewSettings = {
+        ...previewSettings,
+        desktopLyrics: { ...previewSettings.desktopLyrics, size }
+      }
+      return size
+    },
+    onSize: () => () => undefined,
     onState: (handler) => {
       handler({
         text: '我把名字写在起雾的玻璃上',

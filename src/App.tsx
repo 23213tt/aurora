@@ -14,7 +14,6 @@ import { Rail } from './components/Rail'
 import { TitleBar } from './components/TitleBar'
 import { TrackList, type TrackMenuRequest } from './components/TrackList'
 import { TrackMenu } from './components/TrackMenu'
-import { UpdatePanel } from './components/UpdatePanel'
 import { ChevronLeft, Close, Folder, Plus, Refresh, Trash, Wave } from './components/icons'
 import { bridge, isNative } from './bridge'
 import { demoLibrary } from './library/demo'
@@ -31,6 +30,8 @@ import { buildM3u, parseM3u, resolveEntries } from './playlists/m3u'
 import { loadProfilePlaylists, usePlaylists } from './playlists/store'
 import { useAccounts } from './accounts/store'
 import { DesktopLyricsBridge } from './overlay/DesktopLyricsBridge'
+import { SettingsView } from './settings/SettingsView'
+import { useWindowVisibility } from './visibility'
 import { LyricsStage } from './stage/LyricsStage'
 import type { OverlayStatus } from './env'
 import type { Track, ViewId } from './types'
@@ -93,6 +94,17 @@ const SCROLL_TEST_MODE = !isNative && window.location.hash.replace(/^#/, '') ===
 /** Preview screen for the track actions menu, which otherwise needs a pointer. */
 const MENU_TEST_MODE = !isNative && window.location.hash.replace(/^#/, '') === 'menu'
 
+/**
+ * Preview stress harness: `window.__AURORA_STRESS = 5000` before the bundle runs.
+ *
+ * A personal library runs to thousands of rows, and the 27-row demo library cannot
+ * answer what that costs. The seeder itself lives in a separate chunk
+ * (`src/preview/stress.ts`, fetched on demand below) so the app bundle never
+ * contains measurement code - see that file for why that matters more than an
+ * `isNative` guard.
+ */
+const STRESS_TRACKS = !isNative ? Number((window as Window & { __AURORA_STRESS?: number }).__AURORA_STRESS ?? 0) : 0
+
 function initialRoute(): Route {
   if (isNative) return { view: 'albums' }
   if (PERF_MODE) return { view: 'settings' }
@@ -131,7 +143,11 @@ export function App() {
   const [eqOpen, setEqOpen] = useState(false)
   const [queueOpen, setQueueOpen] = useState(false)
   /** Mirrors the desktop lyric window's state, owned by the main process. */
-  const [overlayStatus, setOverlayStatus] = useState<OverlayStatus>({ open: false, locked: true })
+  const [overlayStatus, setOverlayStatus] = useState<OverlayStatus>({
+    open: false,
+    locked: true,
+    size: 34
+  })
   /** Transient result message for import/export, dismissed on navigation. */
   const [flash, setFlash] = useState<string | null>(null)
   /** The open per-track actions menu, if any. */
@@ -178,6 +194,7 @@ export function App() {
     setOnline: setLyricsOnline
   } = useLyrics(track)
   const backdrop = artworkFor(track)
+  const windowVisibility = useWindowVisibility()
 
   const navigate = useCallback(
     (next: Route) => {
@@ -212,6 +229,15 @@ export function App() {
   useEffect(() => {
     if (isNative) {
       void loadInitialIndex()
+      return
+    }
+    // A stress run replaces the demo library entirely; seeding both would measure
+    // the wrong list. The chunk is fetched only when the flag is set.
+    if (STRESS_TRACKS > 0) {
+      void import('./preview/stress').then(({ seedStressLibrary }) => {
+        seedStressLibrary(STRESS_TRACKS)
+        player.playQueue(useLibrary.getState().tracks, 0)
+      })
       return
     }
     setTracks(demoLibrary)
@@ -315,6 +341,21 @@ export function App() {
     if (!isNative) return
     setOverlayStatus(await bridge.overlay.toggle(!overlayStatus.open))
   }, [overlayStatus.open])
+
+  /**
+   * Say, in the taskbar and window switcher, that the music is still playing.
+   *
+   * This is the visible half of "background playback": the window stops being
+   * observable once it is hidden to the tray, so the one thing a user can still
+   * check has to say the truth about what is running.
+   */
+  useEffect(() => {
+    if (!windowVisibility.hidden) {
+      document.title = 'Aurora'
+      return
+    }
+    document.title = playing ? `▶ ${track?.title ?? 'Aurora'}` : 'Aurora · 已隐藏'
+  }, [windowVisibility.hidden, playing, track?.title])
 
   /** A fresh install, or a store that lost its active id, still needs a profile. */
   useEffect(() => {
@@ -593,7 +634,7 @@ export function App() {
 
   const body = () => {
     if (view === 'sources') return <Sources roots={roots} onAdd={addFolders} onRemove={remove} busy={busy} />
-    if (view === 'settings') return <About />
+    if (view === 'settings') return <SettingsView />
     // The online source stands on its own: its tracks never enter the library
     // store, so it must stay reachable with an empty local library - hence
     // before the `tracks.length === 0` check below.
@@ -940,7 +981,12 @@ export function App() {
       ) : null}
 
       {/* Renders nothing; projects lyric state into the desktop overlay window. */}
-      <DesktopLyricsBridge lyrics={lyrics} track={track} playing={playing} />
+      <DesktopLyricsBridge
+        lyrics={lyrics}
+        track={track}
+        playing={playing}
+        overlayOpen={overlayStatus.open}
+      />
 
       {/*
         The stage is a sibling of the shell, not a child of it: it is a
@@ -1087,37 +1133,3 @@ function Sources({ roots, busy, onAdd, onRemove }: SourcesProps) {
   )
 }
 
-function About() {
-  const [info, setInfo] = useState<Awaited<ReturnType<typeof bridge.info>> | null>(null)
-
-  useEffect(() => {
-    void bridge.info().then(setInfo)
-  }, [])
-
-  return (
-    <div className="stack">
-      <dl className="specs">
-        <dt>应用版本</dt>
-        <dd>{info?.version ?? '—'}</dd>
-        <dt>运行环境</dt>
-        <dd>{isNative ? 'Electron 桌面版' : '浏览器预览模式'}</dd>
-        <dt>Electron</dt>
-        <dd>{info?.electron ?? '—'}</dd>
-        <dt>Chromium</dt>
-        <dd>{info?.chrome ?? '—'}</dd>
-        <dt>Node</dt>
-        <dd>{info?.node ?? '—'}</dd>
-        <dt>数据目录</dt>
-        <dd className="specs__path">{info?.userData ?? '—'}</dd>
-        {!isNative ? (
-          <>
-            <dt>App 渲染次数</dt>
-            <dd className="tnum">{appRenders}</dd>
-          </>
-        ) : null}
-      </dl>
-
-      <UpdatePanel />
-    </div>
-  )
-}

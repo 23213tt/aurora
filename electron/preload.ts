@@ -1,9 +1,11 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type { LibraryIndex, ScanProgress } from './library-scan'
-import type { UpdateResult } from './updates'
+import type { AppSettings, StorageUsage } from './settings'
+import type { UpdateInterval, UpdatePrefs, UpdateResult } from './updates'
 import type { LyricsHit, LyricsQuery } from './lyrics'
 import type { OverlayState, OverlayStatus } from './lyrics-overlay'
 import type { MediaCommand } from './tray'
+import type { WindowVisibilityState } from './scan-progress'
 
 /**
  * The only surface the renderer gets. Everything crossing this bridge is an
@@ -21,6 +23,25 @@ const api = {
     platform: string
     userData: string
   }>,
+
+  /**
+   * Whether the player window is on screen, owned by the main process.
+   *
+   * Not derivable in the renderer: `document.hidden` can be stale in Electron
+   * (a window hidden to the tray may still report itself visible), and this app
+   * runs with `backgroundThrottling: false`, so nothing else will throttle the
+   * page for us.
+   */
+  app: {
+    getVisibility: () => ipcRenderer.invoke('app:visibility') as Promise<WindowVisibilityState>,
+    onVisibility: (handler: (state: WindowVisibilityState) => void) => {
+      const listener = (_event: IpcRendererEvent, state: WindowVisibilityState) => handler(state)
+      ipcRenderer.on('app:visibility', listener)
+      return () => {
+        ipcRenderer.removeListener('app:visibility', listener)
+      }
+    }
+  },
 
   library: {
     getRoots: () => ipcRenderer.invoke('library:getRoots') as Promise<string[]>,
@@ -58,6 +79,23 @@ const api = {
       ipcRenderer.invoke('playlists:export', { name, text }) as Promise<boolean>
   },
 
+  /**
+   * The settings page's read/write surface.
+   *
+   * Deliberately narrow: a settings page that could set arbitrary keys would be
+   * a way for page code to write anything into the main process's config. Every
+   * setter here maps to one typed field.
+   */
+  settings: {
+    getAll: () => ipcRenderer.invoke('settings:getAll') as Promise<AppSettings>,
+    setOnlineLyrics: (enabled: boolean) =>
+      ipcRenderer.invoke('settings:setOnlineLyrics', enabled) as Promise<AppSettings>,
+    setDesktopLyricsSize: (size: number) =>
+      ipcRenderer.invoke('settings:setDesktopLyricsSize', size) as Promise<AppSettings>,
+    getStorage: () => ipcRenderer.invoke('settings:storage') as Promise<StorageUsage>,
+    clearCache: () => ipcRenderer.invoke('settings:clearCache') as Promise<StorageUsage>
+  },
+
   updates: {
     check: () => ipcRenderer.invoke('updates:check') as Promise<UpdateResult>,
     /** Opens the release page in the system browser. */
@@ -65,6 +103,20 @@ const api = {
     getAutoCheck: () => ipcRenderer.invoke('updates:getAutoCheck') as Promise<boolean>,
     setAutoCheck: (enabled: boolean) =>
       ipcRenderer.invoke('updates:setAutoCheck', enabled) as Promise<boolean>,
+    getPrefs: () => ipcRenderer.invoke('updates:getPrefs') as Promise<UpdatePrefs>,
+    setInterval: (interval: UpdateInterval) =>
+      ipcRenderer.invoke('updates:setInterval', interval) as Promise<UpdatePrefs>,
+    setAutoInstall: (enabled: boolean) =>
+      ipcRenderer.invoke('updates:setAutoInstall', enabled) as Promise<UpdatePrefs>,
+    install: () => ipcRenderer.invoke('updates:install') as Promise<boolean>,
+    /** Fires for every transition: check result, download progress, readiness. */
+    onStatus: (handler: (result: UpdateResult) => void) => {
+      const listener = (_event: IpcRendererEvent, result: UpdateResult) => handler(result)
+      ipcRenderer.on('updates:status', listener)
+      return () => {
+        ipcRenderer.removeListener('updates:status', listener)
+      }
+    },
     /** Fires when the daily background check finds a newer release. */
     onAvailable: (handler: (result: UpdateResult) => void) => {
       const listener = (_event: IpcRendererEvent, result: UpdateResult) => handler(result)
@@ -102,13 +154,23 @@ const api = {
    * Shared by both windows: the player window opens and feeds the overlay, the
    * overlay window consumes the state and reports lock changes.
    */
-  overlay: {    toggle: (enabled?: boolean) =>
+  overlay: {
+    toggle: (enabled?: boolean) =>
       ipcRenderer.invoke('overlay:toggle', enabled) as Promise<OverlayStatus>,
     getStatus: () => ipcRenderer.invoke('overlay:status') as Promise<OverlayStatus>,
     setLocked: (locked: boolean) =>
       ipcRenderer.invoke('overlay:setLocked', locked) as Promise<boolean>,
     close: () => ipcRenderer.invoke('overlay:close') as Promise<OverlayStatus>,
     push: (state: OverlayState) => ipcRenderer.invoke('overlay:push', state) as Promise<boolean>,
+    /** The settings page resizes the strip; the overlay's own buttons do too. */
+    setSize: (size: number) => ipcRenderer.invoke('overlay:setSize', size) as Promise<number>,
+    onSize: (handler: (size: number) => void) => {
+      const listener = (_event: IpcRendererEvent, size: number) => handler(size)
+      ipcRenderer.on('overlay:size', listener)
+      return () => {
+        ipcRenderer.removeListener('overlay:size', listener)
+      }
+    },
     /** Fired in the overlay window whenever the lyric line changes. */
     onState: (handler: (state: OverlayState) => void) => {
       const listener = (_event: IpcRendererEvent, state: OverlayState) => handler(state)

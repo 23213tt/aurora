@@ -1,0 +1,146 @@
+/* 设置页专属样式。
+   复用 tokens.css 的变量与 app.css 既有组件（.btn/.seg/.switch/.row/.specs），
+   这里只放这一页自己的排版：分区、行、滑块、危险操作区。 */
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  max-width: 720px;
+  padding-bottom: var(--s6);
+}
+
+.settings__section {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings__heading {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-low);
+  margin-bottom: var(--s3);
+}
+
+.settings__group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 行之间用发丝线分隔：--line-soft 是完整的 border 简写，不是颜色。 */
+.settings__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  padding: var(--s3) 2px;
+  border-bottom: var(--line-soft);
+}
+
+.settings__row:first-child {
+  border-top: var(--line-soft);
+}
+
+.settings__row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s3);
+}
+
+.settings__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings__label {
+  font-size: var(--fs-body);
+  color: var(--text-hi);
+}
+
+.settings__hint {
+  margin-top: var(--s1);
+  font-size: var(--fs-meta);
+  line-height: 1.55;
+  color: var(--text-low);
+  max-width: 46ch;
+}
+
+.settings__control {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+/* 数值项：滑块 + 数字，滑块占满剩余宽度。 */
+.settings__slider {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  width: 100%;
+}
+
+.settings__slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.settings__number {
+  min-width: 4.5ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-mid);
+  font-size: var(--fs-body);
+}
+
+.settings__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 78px;
+  padding: var(--s3) var(--s4);
+  border: 1px dashed var(--ink-600);
+  border-radius: var(--r-panel);
+  color: var(--text-hi);
+  text-align: center;
+  overflow: hidden;
+}
+
+/* 危险操作：只在真正不可恢复时才用 feedback 色。 */
+.settings__danger {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+}
+
+.settings__danger .btn--danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+.settings__danger .btn--danger:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.settings__confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  padding: var(--s3);
+  border-radius: var(--r-panel);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  color: var(--text-mid);
+}
+
+.settings__error {
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-panel);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--text-hi);
+  font-size: var(--fs-meta);
+}

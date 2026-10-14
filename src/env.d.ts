@@ -44,6 +44,24 @@ export interface PlaylistsApi {
   export(name: string, text: string): Promise<boolean>
 }
 
+/**
+ * Whether the player window is on screen, as the main process sees it.
+ *
+ * Deliberately not focus- or occlusion-based: a window that is visible but
+ * blurred, or covered by another app, is still being composited and must keep
+ * rendering at full rate. Only "hidden to the tray" and "minimised" count.
+ */
+export interface WindowVisibilityState {
+  visible: boolean
+  minimized: boolean
+  hidden: boolean
+}
+
+export interface AppApi {
+  getVisibility(): Promise<WindowVisibilityState>
+  onVisibility(handler: (state: WindowVisibilityState) => void): () => void
+}
+
 export interface UpdateInfo {
   version: string
   name: string
@@ -56,19 +74,64 @@ export interface UpdateInfo {
  * Mirrors the main process union. `unconfigured` is a real state, not an error:
  * a fresh clone has placeholder publish settings and must say so rather than
  * claim it is up to date.
+ *
+ * The three `install*` states only ever appear when the user has explicitly
+ * turned on automatic installation; the default flow still stops at
+ * `available` and hands the download to their browser.
  */
 export type UpdateResult =
   | { state: 'current'; current: string; checkedAt: number }
   | { state: 'available'; current: string; checkedAt: number; info: UpdateInfo }
   | { state: 'unconfigured'; current: string; message: string }
   | { state: 'error'; current: string; checkedAt: number; message: string }
+  | { state: 'downloading'; current: string; info: UpdateInfo; percent: number; transferred: number; total: number }
+  | { state: 'ready'; current: string; info: UpdateInfo }
+  | { state: 'installing'; current: string; info: UpdateInfo }
+
+/** How often the background check runs. `manual` means "only when I ask". */
+export type UpdateInterval = 'manual' | 'daily' | 'weekly'
+
+export interface UpdatePrefs {
+  interval: UpdateInterval
+  /** Epoch ms of the last completed check, 0 when it has never run. */
+  lastCheck: number
+  /**
+   * Download and install without asking. Off by default: the installers are
+   * unsigned, so this replaces the SmartScreen step with nothing.
+   */
+  autoInstall: boolean
+  /**
+   * Whether this build can actually do it.
+   *
+   * False in a development checkout, and false when the optional
+   * `electron-updater` dependency is not part of the build. The settings page
+   * disables the switch and says so instead of offering a no-op.
+   */
+  autoInstallAvailable: boolean
+}
 
 export interface UpdatesApi {
   check(): Promise<UpdateResult>
   open(url: string): Promise<boolean>
   getAutoCheck(): Promise<boolean>
   setAutoCheck(enabled: boolean): Promise<boolean>
+  getPrefs(): Promise<UpdatePrefs>
+  setInterval(interval: UpdateInterval): Promise<UpdatePrefs>
+  setAutoInstall(enabled: boolean): Promise<UpdatePrefs>
+  /** Only meaningful in the `ready` state; quits and installs. */
+  install(): Promise<boolean>
+  /** Live status: checks, download progress, readiness. */
+  onStatus(handler: (result: UpdateResult) => void): () => void
   onAvailable(handler: (result: UpdateResult) => void): () => void
+}
+
+/** Read-only facts about what Aurora stores on this machine. */
+export interface StorageUsage {
+  userData: string
+  cache: string
+  /** Bytes on disk, or null when the directory could not be measured. */
+  cacheBytes: number | null
+  userDataBytes: number | null
 }
 
 export type MediaCommand = 'toggle' | 'next' | 'prev'
@@ -111,6 +174,7 @@ export interface OverlayState {
 export interface OverlayStatus {
   open: boolean
   locked: boolean
+  size: number
 }
 
 export interface OverlayApi {
@@ -121,6 +185,49 @@ export interface OverlayApi {
   push(state: OverlayState): Promise<boolean>
   onState(handler: (state: OverlayState) => void): () => void
   onStatus(handler: (status: OverlayStatus) => void): () => void
+  /** The overlay lives in its own window; the settings page drives it from here. */
+  setSize(size: number): Promise<number>
+  onSize(handler: (size: number) => void): () => void
+}
+
+export interface DesktopLyricsSettings {
+  size: number
+  min: number
+  max: number
+}
+
+/**
+ * Everything the settings page can read and write.
+ *
+ * These live in the main process rather than in renderer storage on purpose:
+ * the desktop lyric window reads the same values, and `localStorage` is
+ * per-window - the settings page could not see or change what the overlay had
+ * written, which is exactly the bug this shape avoids.
+ *
+ * There is no appearance/theme entry. Aurora has exactly one palette (a cool
+ * graphite ramp whose only colour comes from the artwork) and `tokens.css`
+ * already declares `color-scheme: dark`, so a theme switch would move nothing a
+ * user can see. A setting that does nothing is worse than an absent one.
+ */
+export interface AppSettings {
+  onlineLyrics: boolean
+  updateInterval: UpdateInterval
+  updateLastCheck: number
+  autoInstallUpdates: boolean
+  desktopLyrics: DesktopLyricsSettings
+}
+
+export interface SettingsApi {
+  getAll(): Promise<AppSettings>
+  setOnlineLyrics(enabled: boolean): Promise<AppSettings>
+  setDesktopLyricsSize(size: number): Promise<AppSettings>
+  /** Bytes on disk for the cache and data directories; null when unmeasurable. */
+  getStorage(): Promise<StorageUsage>
+  /**
+   * Delete the regenerable cache (cover/lyric/http caches). Never touches the
+   * library index, playlists, profiles or account credentials.
+   */
+  clearCache(): Promise<StorageUsage>
 }
 
 // --- 网易云（第三方逆向接口）---------------------------------------------
@@ -275,6 +382,8 @@ export interface AuroraApi {
   }>
   library: LibraryApi
   playlists: PlaylistsApi
+  app: AppApi
+  settings: SettingsApi
   updates: UpdatesApi
   player: PlayerApi
   lyrics: LyricsApi

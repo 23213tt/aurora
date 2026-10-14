@@ -1,7 +1,12 @@
 import { BrowserWindow, screen, type Rectangle } from 'electron'
 import path from 'node:path'
 import { APP_ORIGIN } from './app-protocol'
-import { loadSettings, saveSettings } from './settings'
+import {
+  LYRIC_SIZE_MAX,
+  LYRIC_SIZE_MIN,
+  loadSettings,
+  saveSettings
+} from './settings'
 
 /**
  * The desktop lyric window.
@@ -32,6 +37,8 @@ export interface OverlayState {
 export interface OverlayStatus {
   open: boolean
   locked: boolean
+  /** Font size of the strip, in px. Mirrors `src/env.d.ts`. */
+  size: number
 }
 
 const DEV_URL = 'http://127.0.0.1:5173'
@@ -96,19 +103,62 @@ function sendState(): void {
   overlay.webContents.send('overlay:state', latest)
 }
 
+/**
+ * Send the font size to the overlay window.
+ *
+ * Called on open and on every change; `lastSize` keeps the open path from
+ * re-sending on every status update, which happens on show/hide/move too.
+ */
+let lastSize = 0
+
+function sendSize(force = false): void {
+  if (!overlay || overlay.isDestroyed()) return
+  const size = lyricSize()
+  if (!force && size === lastSize) return
+  lastSize = size
+  overlay.webContents.send('overlay:size', size)
+}
+
 function persistBounds(): void {
   if (!overlay || overlay.isDestroyed()) return
   saveSettings({ lyricsOverlayBounds: overlay.getBounds() })
 }
 
 export function status(): OverlayStatus {
-  return { open: overlay !== null && !overlay.isDestroyed(), locked }
+  return {
+    open: overlay !== null && !overlay.isDestroyed(),
+    locked,
+    size: lyricSize()
+  }
+}
+
+/** The size the strip should render at, read from the shared settings. */
+function lyricSize(): number {
+  const size = loadSettings().desktopLyricsSize
+  return Math.min(LYRIC_SIZE_MAX, Math.max(LYRIC_SIZE_MIN, Math.round(size)))
+}
+
+/**
+ * Change the strip's font size.
+ *
+ * The value lives in the main process because two windows need it: the settings
+ * page writes it and the overlay renders it. Keeping it in the overlay's own
+ * `localStorage` - as it was - meant the settings page could not see or change
+ * it at all.
+ */
+export function setLyricSize(size: number): number {
+  const next = Math.min(LYRIC_SIZE_MAX, Math.max(LYRIC_SIZE_MIN, Math.round(size)))
+  saveSettings({ desktopLyricsSize: next })
+  if (overlay && !overlay.isDestroyed()) overlay.webContents.send('overlay:size', next)
+  notifyStatus()
+  return next
 }
 
 function open(): void {
   if (overlay && !overlay.isDestroyed()) {
     overlay.showInactive()
     sendState()
+    sendSize(true)
     notifyStatus()
     return
   }
@@ -153,6 +203,7 @@ function open(): void {
   overlay.once('ready-to-show', () => {
     overlay?.showInactive()
     sendState()
+    sendSize(true)
   })
 
   overlay.on('closed', () => {

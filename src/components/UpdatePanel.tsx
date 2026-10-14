@@ -71,7 +71,15 @@ export function UpdatePanel() {
                 打开下载页
               </button>
             </>
+          ) : result.state === 'downloading' ? (
+            <p>正在下载 {Math.round(result.percent)}%</p>
+          ) : result.state === 'ready' ? (
+            <p>新版本已下载，重启后安装</p>
+          ) : result.state === 'installing' ? (
+            <p>正在安装，应用即将退出</p>
           ) : (
+            // `unconfigured` and `error` are the only members left, and both
+            // carry a message meant for the user.
             <p>{result.message}</p>
           )}
         </div>

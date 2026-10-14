@@ -1,20 +1,68 @@
 import { app, net, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
-import { loadSettings, saveSettings } from './settings'
+import { appSettings, loadSettings, saveSettings, type UpdateInterval } from './settings'
 import { isNewer } from './version'
+
+// `UpdateInterval` is declared alongside the settings that store it; re-exported
+// so callers of this module do not need to know where it lives.
+export type { UpdateInterval }
 
 /**
  * Update checking against GitHub Releases.
  *
- * Deliberately check-and-notify rather than auto-install. The builds are
+ * The default is check-and-notify, and it stays the default: the builds are
  * unsigned, so there is no signature to verify before replacing the running
- * executable; downloading and applying an unverified binary automatically is
- * exactly the behaviour users are right to distrust. Instead Aurora reports the
- * new version and opens the release page in the real browser, which is also
- * where the SmartScreen warning belongs - in the user's own download flow, not
- * hidden inside the app.
+ * executable. Aurora reports the new version and opens the release page in the
+ * real browser, which is also where the SmartScreen warning belongs - in the
+ * user's own download flow, not hidden inside the app.
+ *
+ * Automatic download and install exists as an **opt-in** on top of that. When
+ * the user turns it on they have been told, in the settings page, exactly what
+ * they are giving up: the SmartScreen prompt, and any chance for Aurora to
+ * verify the binary it is about to run. The two paths share one source of truth
+ * for "is there a newer version" - the GitHub check above - so the news and the
+ * binary can never disagree.
  */
+
+/** Mirrors the `UpdatePrefs` block in `src/env.d.ts`. */
+export interface UpdatePrefs {
+  interval: UpdateInterval
+  lastCheck: number
+  autoInstall: boolean
+  /**
+   * Whether automatic installation can work *in this build*.
+   *
+   * False in a dev checkout and false when the optional `electron-updater`
+   * package is not installed. The settings page uses it to disable the switch
+   * rather than offering something that silently does nothing.
+   */
+  autoInstallAvailable: boolean
+}
+
+export async function updatePrefs(): Promise<UpdatePrefs> {
+  const settings = loadSettings()
+  return {
+    interval: settings.updateInterval,
+    lastCheck: settings.lastUpdateCheck,
+    autoInstall: settings.autoInstallUpdates,
+    autoInstallAvailable: await autoInstallAvailable()
+  }
+}
+
+/** Pushes every state transition to the renderer's settings page. */
+let broadcast: (result: UpdateResult) => void = () => undefined
+
+export function onUpdateStatus(handler: (result: UpdateResult) => void): void {
+  broadcast = handler
+}
+
+const INTERVAL_MS: Record<UpdateInterval, number> = {
+  manual: Number.POSITIVE_INFINITY,
+  daily: 24 * 60 * 60 * 1000,
+  weekly: 7 * 24 * 60 * 60 * 1000
+}
+
 
 export interface UpdateInfo {
   version: string
@@ -24,14 +72,29 @@ export interface UpdateInfo {
   publishedAt: string
 }
 
+/**
+ * Mirrors the `UpdateResult` union in `src/env.d.ts`.
+ *
+ * The three `install*` states only ever appear when the user has switched
+ * automatic installation on; without it the flow still stops at `available`.
+ */
 export type UpdateResult =
   | { state: 'current'; current: string; checkedAt: number }
   | { state: 'available'; current: string; checkedAt: number; info: UpdateInfo }
   | { state: 'unconfigured'; current: string; message: string }
   | { state: 'error'; current: string; checkedAt: number; message: string }
+  | {
+      state: 'downloading'
+      current: string
+      info: UpdateInfo
+      percent: number
+      transferred: number
+      total: number
+    }
+  | { state: 'ready'; current: string; info: UpdateInfo }
+  | { state: 'installing'; current: string; info: UpdateInfo }
 
 const REQUEST_TIMEOUT_MS = 9000
-const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000
 
 interface PublishConfig {
   provider?: string
@@ -165,14 +228,15 @@ export async function checkForUpdate(): Promise<UpdateResult> {
   }
 }
 
-/** True when a background check is due (at most once a day, never twice at once). */
+/** True when a background check is due (never twice at once). */
 let checkInFlight = false
 
 export function shouldAutoCheck(): boolean {
   if (checkInFlight) return false
   const settings = loadSettings()
-  if (settings.autoCheckUpdates === false) return false
-  return Date.now() - (settings.lastUpdateCheck ?? 0) > CHECK_INTERVAL_MS
+  const interval = INTERVAL_MS[settings.updateInterval]
+  if (!Number.isFinite(interval)) return false
+  return Date.now() - (settings.lastUpdateCheck ?? 0) > interval
 }
 
 export async function autoCheck(onResult: (result: UpdateResult) => void): Promise<void> {
@@ -180,9 +244,143 @@ export async function autoCheck(onResult: (result: UpdateResult) => void): Promi
   checkInFlight = true
   try {
     const result = await checkForUpdate()
-    if (result.state === 'available') onResult(result)
+    if (result.state !== 'available') return
+    onResult(result)
+    // The settings page shows progress, so it needs the same news the toast got.
+    broadcast(result)
+    if (shouldAutoInstall(result)) void downloadAndInstall(result)
   } finally {
     checkInFlight = false
+  }
+}
+
+/**
+ * Should this result be downloaded and installed without asking?
+ *
+ * Both conditions matter. `autoInstallUpdates` is the user's explicit consent,
+ * and `app.isPackaged` is the difference between a real installation and a dev
+ * checkout, where there is no installer to replace and the updater would only
+ * produce errors.
+ */
+export function shouldAutoInstall(result: UpdateResult): boolean {
+  return result.state === 'available' && appSettings().autoInstallUpdates && app.isPackaged
+}
+
+/**
+ * Download the pending release and hand it to the installer.
+ *
+ * `electron-updater` is loaded dynamically and by name, and it is an **optional**
+ * dependency: it is not installed in this checkout, and the feature reports
+ * itself as unavailable when it is missing (see `autoInstallAvailable`). That
+ * keeps a ~1 MB dependency plus its transitive tree out of the installer until
+ * someone actually decides to ship automatic installation. The check above
+ * stays the source of truth for *whether* there is an update; this only fetches
+ * the file.
+ */
+
+/** The slice of `electron-updater` this file uses, declared locally so the package is optional. */
+type ProgressInfo = { percent: number; transferred: number; total: number }
+
+interface AutoUpdaterLike {
+  autoDownload: boolean
+  autoInstallOnAppQuit: boolean
+  on(event: 'download-progress', listener: (progress: ProgressInfo) => void): void
+  checkForUpdates(): Promise<{ downloadPromise?: Promise<unknown> } | null>
+  quitAndInstall(): void
+}
+
+/**
+ * Load `electron-updater`, or null when it is not installed.
+ *
+ * `import()` is the only form that works for a package that may not exist: a
+ * static import would fail at build time and a `require` of a missing module
+ * throws before the try block can decide anything.
+ */
+async function loadUpdater(): Promise<AutoUpdaterLike | null> {
+  try {
+    // `electron-updater` is optional: it is deliberately not a dependency yet,
+    // so this import is neither resolvable by tsc nor present at runtime. That
+    // is the intended state - the feature reports itself unavailable
+    // (`autoInstallAvailable`) instead of shipping a megabyte of updater code
+    // nobody has opted into.
+    // @ts-expect-error optional dependency, installed only when the feature is enabled
+    const module = (await import('electron-updater')) as unknown as { autoUpdater: AutoUpdaterLike }
+    return module.autoUpdater ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Whether this build can download and install by itself. */
+export async function autoInstallAvailable(): Promise<boolean> {
+  if (!app.isPackaged) return false
+  return (await loadUpdater()) !== null
+}
+
+let installing = false
+
+export async function downloadAndInstall(result: UpdateResult): Promise<void> {
+  if (installing || result.state !== 'available') return
+  // Narrowed once, so the progress callback and the retry path below cannot
+  // lose track of which member of the union they are working with.
+  const pending = result
+  installing = true
+  try {
+    const updater = await loadUpdater()
+    if (!updater) return
+    updater.autoDownload = false
+    updater.autoInstallOnAppQuit = true
+
+    updater.on('download-progress', (progress) => {
+      broadcast({
+        state: 'downloading',
+        current: pending.current,
+        info: pending.info,
+        percent: progress.percent,
+        transferred: progress.transferred,
+        total: progress.total
+      })
+    })
+
+    const downloaded = await updater.checkForUpdates()
+    const file = downloaded?.downloadPromise
+    if (!file) {
+      broadcast({
+        state: 'available',
+        current: pending.current,
+        checkedAt: Date.now(),
+        info: pending.info
+      })
+      return
+    }
+    await file
+    broadcast({ state: 'ready', current: pending.current, info: pending.info })
+  } catch (error) {
+    // Failing to download must not look like failing to check: the user still
+    // has a release page they can open by hand.
+    console.error('[aurora] automatic update failed', error)
+    broadcast({
+      state: 'available',
+      current: pending.current,
+      checkedAt: Date.now(),
+      info: pending.info
+    })
+  } finally {
+    installing = false
+  }
+}
+
+/** Quit and run the downloaded installer. Only meaningful after `ready`. */
+export async function installPendingUpdate(): Promise<boolean> {
+  if (!app.isPackaged) return false
+  try {
+    const updater = await loadUpdater()
+    if (!updater) return false
+    updater.quitAndInstall()
+    return true
+  } catch (error) {
+    console.error('[aurora] could not start the installer', error)
+    return false
   }
 }
 

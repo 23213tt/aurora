@@ -22,21 +22,42 @@ const IDLE: OverlayState = { text: null, next: null, title: '', artist: '', play
 export function Overlay() {
   const [state, setState] = useState<OverlayState>(IDLE)
   const [locked, setLocked] = useState(true)
-  const [size, setSize] = useState(() => {
-    const saved = Number.parseInt(localStorage.getItem(SIZE_KEY) ?? '', 10)
-    if (!Number.isFinite(saved)) return DEFAULT_SIZE
-    return Math.min(MAX_SIZE, Math.max(MIN_SIZE, saved))
-  })
+  const [size, setSize] = useState(DEFAULT_SIZE)
 
   useEffect(() => bridge.overlay.onState(setState), [])
 
   useEffect(() => {
-    void bridge.overlay.getStatus().then((status) => setLocked(status.locked))
+    void bridge.overlay.getStatus().then((status) => {
+      setLocked(status.locked)
+      setSize(status.size)
+    })
   }, [])
 
+  /*
+   * The size lives in the main process, not here.
+   *
+   * It used to be this window's own `localStorage`, which made it invisible to
+   * the settings page - the two windows could disagree and neither could see the
+   * other. The main process is now the single source, this window and the
+   * settings page both write to it, and the change comes back as `overlay:size`.
+   */
   useEffect(() => {
-    localStorage.setItem(SIZE_KEY, String(size))
-  }, [size])
+    const stop = bridge.overlay.onSize(setSize)
+    // One-time migration: a value left behind by an older build is handed over
+    // and then removed, so there is only ever one answer from here on.
+    const legacy = Number.parseInt(localStorage.getItem(SIZE_KEY) ?? '', 10)
+    if (Number.isFinite(legacy)) {
+      localStorage.removeItem(SIZE_KEY)
+      void bridge.overlay.setSize(Math.min(MAX_SIZE, Math.max(MIN_SIZE, legacy)))
+    }
+    return stop
+  }, [])
+
+  const applySize = (next: number) => {
+    const clamped = Math.min(MAX_SIZE, Math.max(MIN_SIZE, next))
+    setSize(clamped)
+    void bridge.overlay.setSize(clamped)
+  }
 
   const setLock = async (next: boolean) => {
     const applied = await bridge.overlay.setLocked(next)
@@ -51,7 +72,7 @@ export function Overlay() {
       <div className="stage-lyric__controls">
         <button
           className="stage-lyric__button"
-          onClick={() => setSize((value) => Math.max(MIN_SIZE, value - 2))}
+          onClick={() => applySize(size - 2)}
           disabled={size <= MIN_SIZE}
           title="缩小字号"
           aria-label="缩小字号"
@@ -60,7 +81,7 @@ export function Overlay() {
         </button>
         <button
           className="stage-lyric__button"
-          onClick={() => setSize((value) => Math.min(MAX_SIZE, value + 2))}
+          onClick={() => applySize(size + 2)}
           disabled={size >= MAX_SIZE}
           title="放大字号"
           aria-label="放大字号"
