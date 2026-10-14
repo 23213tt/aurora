@@ -35,6 +35,18 @@ export const SCROLL_TEST_MODE = !isNative && window.location.hash.replace(/^#/, 
 export const MENU_TEST_MODE = !isNative && window.location.hash.replace(/^#/, '') === 'menu'
 
 /**
+ * Preview screen for search (`#search`).
+ *
+ * A search screen with an empty field shows only its own empty state, which says
+ * nothing about whether results render - and the default source is the online one,
+ * which a browser preview cannot reach at all. So this seeds a query *and* leaves
+ * the screen on the local source, which is the only one that can answer here: the
+ * screenshot then exercises the result list, the tabs and their counts.
+ */
+export const SEARCH_TEST_QUERY = !isNative && window.location.hash.replace(/^#/, '') === 'search' ? '夜' : ''
+export const SEARCH_TEST_LOCAL = SEARCH_TEST_QUERY !== ''
+
+/**
  * Preview stress harness: `window.__AURORA_STRESS = 5000` before the bundle runs.
  *
  * A personal library runs to thousands of rows, and the 27-row demo library cannot

@@ -808,6 +808,65 @@ input::placeholder {
   border-radius: var(--r-panel);
   width: 100%;
 }
+/* --- search screen --------------------------------------------------------- */
+
+/*
+ * Source tabs, in the spirit of the app's `.seg`: the choice of catalogue is the
+ * point of the screen, so it sits at the top and states how many results each
+ * source has. Not centred and not a segmented pill - this is a filter over a list,
+ * and the first thing the eye should find is which list it is filtering.
+ */
+.search-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  min-height: 0;
+}
+
+.search-view__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  border-bottom: var(--line-soft);
+}
+
+.search-view__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 32px;
+  padding: 0 var(--s3);
+  color: var(--text-mid);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 120ms var(--ease-out);
+}
+.search-view__tab:hover {
+  color: var(--text-hi);
+}
+.search-view__tab.is-active {
+  color: var(--text-hi);
+  border-bottom-color: var(--accent);
+}
+/* The count answers "is this tab empty, or merely not asked yet" - it is not
+   meant to be read before the name. */
+.search-view__tab em {
+  font-style: normal;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  font-variant-numeric: tabular-nums;
+}
+
+.search-view__go {
+  margin-left: auto;
+}
+
+.search-view__hint {
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+  max-width: 52ch;
+  line-height: 1.6;
+}
 
 .rows {
   list-style: none;

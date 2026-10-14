@@ -37,8 +37,18 @@ import type { Track } from './types'
 import { LIBRARY_VIEWS, VIEW_TITLES, initialRoute, type Route } from './app/routing'
 import { useKeyboardShortcuts } from './app/useKeyboardShortcuts'
 import { useTrackActions } from './app/useTrackActions'
+import { SearchView } from './app/search/SearchView'
+import { useSearch } from './app/search/store'
 import { useLibraryData } from './app/useLibraryData'
-import { MENU_TEST_MODE, PERF_MODE, SCROLL_TEST_MODE, SCROLL_TEST_START, STRESS_TRACKS } from './app/preview'
+import {
+  MENU_TEST_MODE,
+  PERF_MODE,
+  SCROLL_TEST_MODE,
+  SCROLL_TEST_START,
+  SEARCH_TEST_LOCAL,
+  SEARCH_TEST_QUERY,
+  STRESS_TRACKS
+} from './app/preview'
 import { usePlaylistFiles } from './features/playlists/io'
 import { EmptyLibrary } from './views/EmptyLibrary'
 import { Sources } from './views/Sources'
@@ -88,7 +98,6 @@ export function App() {  if (!isNative) {
   const view = route.view
 
   const [collapsed, setCollapsed] = useState(false)
-  const [query, setQuery] = useState('')
   const [stageOpen, setStageOpen] = useState(false)
   const [eqOpen, setEqOpen] = useState(false)
   const [queueOpen, setQueueOpen] = useState(false)
@@ -372,12 +381,11 @@ export function App() {  if (!isNative) {
     playlistTracks,
     representative,
     band,
-    visibleTracks,
     currentAlbumId,
     albumDetail,
     currentArtistId,
     currentFolder
-  } = useLibraryData(route, tracks, playlists, query, track)
+  } = useLibraryData(route, tracks, playlists, track)
 
   const { playAlbum, playArtist, playFolder, createPlaylist } = useTrackActions({
     tracks,
@@ -393,6 +401,20 @@ export function App() {  if (!isNative) {
     navigate,
     onMessage: setFlash
   })
+
+  /**
+   * Harness only: give the search screen something to search for.
+   *
+   * Without this the preview screen shows an empty field and its own empty state,
+   * which would prove nothing about whether results render.
+   */
+  useEffect(() => {
+    if (!SEARCH_TEST_QUERY) return
+    useSearch.getState().setQuery(SEARCH_TEST_QUERY)
+    // The local source is the only one a browser preview can answer from.
+    if (SEARCH_TEST_LOCAL) useSearch.getState().setSource('local')
+    void useSearch.getState().submit(useLibrary.getState().tracks)
+  }, [])
 
   /** Adding folders is only useful once they are indexed, so scan right after. */
   const addFolders = useCallback(async () => {
@@ -420,47 +442,50 @@ export function App() {  if (!isNative) {
    * scroll past forever.
    */
   const headTitle = route.artistId ? (band?.artist?.name ?? '艺术家') : VIEW_TITLES[view]
+  /*
+   * Only scan state belongs here now. The header used to also report "N tracks"
+   * while the shell's field was filtering the library in place; filtering moved to
+   * the search screen, so there is no filtered count to report.
+   */
   const headStatus = scanning
     ? `正在扫描 ${Math.round(progress * 100)}%${
         currentScan ? `，${currentScan.split(/[\\/]/).pop()}` : ''
       }`
     : scanError
       ? scanError
-      : query.trim()
-        ? `${visibleTracks.length} 首`
-        : null
+      : null
 
   /*
-   * One search field, two meanings.
+   * One search field, one meaning.
    *
-   * On the online screen the field searches Netease: the draft lives in that
-   * store (so the page can show what is being searched for) and Enter sends the
-   * request. Everywhere else it filters the library as you type, which needs no
-   * submit. The placeholder states which of the two is in effect, because the
-   * previous arrangement had two identical-looking fields and no indication that
-   * one of them did nothing on this screen.
+   * The field always edits the search screen's query and Enter always goes there;
+   * the screen owns the source tabs. The previous version made the field filter
+   * the library on local pages and issue a Netease request on the online page,
+   * which meant the same control silently did different things depending on where
+   * you were - and did nothing at all on the online page. Following the reference
+   * player, "which catalogue" is now a visible choice, not an implicit one.
    */
-  const searchingOnline = view === 'netease'
-  const neteaseDraft = useNetease((s) => s.query)
-  const searchValue = searchingOnline ? neteaseDraft : query
-  const searchPlaceholder = searchingOnline ? '搜索网易云的音乐' : '筛选本机曲库'
+  const searchQuery = useSearch((s) => s.query)
+  const searchValue = searchQuery
+  const searchPlaceholder = '搜索本机曲库与网易云'
 
-  const onSearchInput = useCallback(
-    (next: string) => {
-      if (searchingOnline) useNetease.getState().setQuery(next)
-      else setQuery(next)
-    },
-    [searchingOnline]
-  )
+  const onSearchInput = useCallback((next: string) => {
+    useSearch.getState().setQuery(next)
+  }, [])
 
   const submitSearch = useCallback(() => {
-    if (!searchingOnline) return
-    void useNetease.getState().runSearch()
-  }, [searchingOnline])
+    navigate({ view: 'search' })
+    // The screen submits for its active source; the library is what the local
+    // source searches, so it has to be handed over here rather than read there.
+    void useSearch.getState().submit(useLibrary.getState().tracks)
+  }, [navigate])
 
   const body = () => {
     if (view === 'sources') return <Sources roots={roots} onAdd={addFolders} onRemove={remove} busy={busy} />
     if (view === 'settings') return <SettingsView />
+    // Search is its own screen: it answers from either catalogue, so it cannot be
+    // a mode of the library views or of the online one.
+    if (view === 'search') return <SearchView onMenu={setTrackMenu} />
     // The online source stands on its own: its tracks never enter the library
     // store, so it must stay reachable with an empty local library - hence
     // before the `tracks.length === 0` check below.
@@ -522,17 +547,6 @@ export function App() {  if (!isNative) {
           busy={busy}
           scanning={scanning}
           roots={roots}
-        />
-      )
-    }
-    if (query.trim()) {
-      return (
-        <TrackList
-          tracks={visibleTracks}
-          currentId={track?.id ?? null}
-          playing={playing}
-          onPlayAt={(index) => player.playQueue(visibleTracks, index)}
-          onMenu={setTrackMenu}
         />
       )
     }

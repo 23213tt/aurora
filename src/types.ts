@@ -17,6 +17,14 @@ export type ViewId =
    * of them: its tracks never enter the library store, so it stands alone.
    */
   | 'netease'
+  /**
+   * Search, as a screen rather than a behaviour of whichever page is open.
+   *
+   * It answers from either catalogue depending on the tab on the screen, which is
+   * why it is its own view: the field in the shell now means one thing everywhere,
+   * and "which source" is chosen visibly instead of being implied by the page.
+   */
+  | 'search'
 
 export type SortKey = 'title' | 'artist' | 'album' | 'added' | 'year' | 'duration'
 

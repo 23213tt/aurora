@@ -68,6 +68,22 @@ export function Rail({
     <nav className="rail" aria-label="主导航">
       <div className="rail__scroll">
         {/*
+          Search sits above both sources because it spans them: it answers from
+          either catalogue depending on its own tabs. Putting it inside one of the
+          two groups would say it belongs to that one.
+        */}
+        <div className="rail__group">
+          <NavRow
+            view={view}
+            own="search"
+            onView={onView}
+            icon={<Search size={17} />}
+            label="搜索"
+            collapsed={collapsed}
+          />
+        </div>
+
+        {/*
           Online first.
           In a streaming-era player the catalogue is the product and the local
           files are the supplement - so the main section is the online one, and

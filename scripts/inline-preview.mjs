@@ -177,6 +177,7 @@ const SCREENS = [
   'sources',
   'settings',
   'netease',
+  'search',
   'eq',
   'queue',
   'stage',

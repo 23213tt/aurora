@@ -18,6 +18,7 @@ export const VIEW_TITLES: Record<ViewId, string> = {
   accounts: '档案',
   sources: '音源',
   netease: '网易云音乐',
+  search: '搜索',
   settings: '偏好设置'
 }
 

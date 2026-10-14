@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { albumKey, groupAlbums, groupArtists, scoreTrack } from '../features/library/store'
+import { albumKey, groupAlbums, groupArtists } from '../features/library/store'
 import { buildFolderTree } from '../features/library/tree'
 import type { Playlist } from '../features/playlists/store'
 import type { Album, Artist, Track } from '../types'
@@ -27,7 +27,6 @@ export interface LibraryData {
   playlistTracks: { tracks: Track[]; missing: number }
   representative: Map<string, Track>
   band: { artist: Artist | null; albums: Album[]; tracks: Track[] } | null
-  visibleTracks: Track[]
   currentAlbumId: string | null
   albumDetail: { album: Album; tracks: Track[] } | null
   currentArtistId: string | null
@@ -38,7 +37,6 @@ export function useLibraryData(
   route: Route,
   tracks: Track[],
   playlists: Playlist[],
-  query: string,
   currentTrack: Track | null
 ): LibraryData {
   const albums = useMemo(() => groupAlbums(tracks), [tracks])
@@ -77,15 +75,6 @@ export function useLibraryData(
     }
   }, [route.artistId, artists, albums, tracks])
 
-  const visibleTracks = useMemo(() => {
-    if (!query.trim()) return tracks
-    return tracks
-      .map((item) => ({ item, score: scoreTrack(item, query) }))
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map((entry) => entry.item)
-  }, [tracks, query])
-
   /*
    * The album being viewed, with its tracks in the album's own order.
    *
@@ -112,7 +101,6 @@ export function useLibraryData(
     playlistTracks,
     representative,
     band,
-    visibleTracks,
     currentAlbumId: currentTrack ? albumKey(currentTrack) : null,
     albumDetail,
     currentArtistId: currentTrack?.albumArtist ?? null,
