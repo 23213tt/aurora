@@ -26,7 +26,7 @@ const FALLBACK_SETTINGS: AppSettings = {
   desktopLyrics: { size: 34, min: 18, max: 64 }
 }
 
-export interface SettingsPage {
+ interface SettingsPage {
   settings: AppSettings
   prefs: UpdatePrefs
   storage: StorageUsage | null

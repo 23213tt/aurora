@@ -48,7 +48,7 @@ export function getActiveStorageProfile(): string | null {
   return activeProfile
 }
 
-export interface ProfileStorage {
+ interface ProfileStorage {
   getItem(name: string): string | null
   setItem(name: string, value: string): void
   removeItem(name: string): void

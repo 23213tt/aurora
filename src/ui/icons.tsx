@@ -222,14 +222,6 @@ export const Plus = (p: IconProps) => (
   </Svg>
 )
 
-export const More = (p: IconProps) => (
-  <Svg {...p}>
-    <circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none" />
-    <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
-    <circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none" />
-  </Svg>
-)
-
 export const Trash = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4.5 6.5h15M9.5 6.5V4.8a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.7" />

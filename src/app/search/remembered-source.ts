@@ -27,7 +27,7 @@ export type SearchSource = string
 const SOURCE_KEY = 'aurora.search.source'
 
 /** Exported for tests, which assert the slot a write lands in. */
-export const searchSourceKey = (): string => profileScopedKey(SOURCE_KEY, getActiveStorageProfile())
+ const searchSourceKey = (): string => profileScopedKey(SOURCE_KEY, getActiveStorageProfile())
 
 /**
  * The source stored before platforms were named.
@@ -91,7 +91,3 @@ export function sourceKeyFor(profileId: string | null): string {
   return profileScopedKey(SOURCE_KEY, profileId)
 }
 
-/** Whether a source string names something this build can search. */
-export function isKnownSource(source: string, platformIds: readonly string[]): boolean {
-  return source === 'local' || platformIds.includes(source)
-}

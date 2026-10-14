@@ -28,9 +28,9 @@ import type { QqQuality } from './types'
 // --- quality ------------------------------------------------------------
 
 /** The upstream's own format tokens. */
-export type QqFormat = '128' | '320' | 'm4a' | 'flac' | 'ape'
+ type QqFormat = '128' | '320' | 'm4a' | 'flac' | 'ape'
 
-export interface QualityFormat {
+ interface QualityFormat {
   /** The file-name prefix the CDN expects. */
   prefix: string
   suffix: string
@@ -93,7 +93,7 @@ export function tierLadder(quality: QqQuality): QqQuality[] {
   return order.slice(start)
 }
 
-export function formatOf(format: QqFormat): QualityFormat {
+ function formatOf(format: QqFormat): QualityFormat {
   return QUALITY_FORMATS[format]
 }
 
@@ -148,7 +148,7 @@ export function buildPlayUrl(sip: unknown, purl: unknown): string {
 
 // --- reading the play response -----------------------------------------
 
-export interface PlayInfo {
+ interface PlayInfo {
   /** `data.code` (or `body.code`): the request-level verdict. */
   envelopeCode: number | null
   /** `data.req_0.code`: the module-level verdict. */
@@ -192,7 +192,7 @@ export function playInfoOf(response: unknown): PlayInfo {
 
 // --- cookies ------------------------------------------------------------
 
-export interface CookieJar {
+ interface CookieJar {
   [name: string]: string
 }
 
@@ -299,7 +299,7 @@ export function loadSdk(): QqSdk {
  * calls the SDK does not wrap: the account lookup that doubles as a login
  * liveness probe, and the membership endpoint.
  */
-export function loadServices(): QqServices {
+ function loadServices(): QqServices {
   if (!services) services = require(SERVICES_PACKAGE) as QqServices
   return services
 }

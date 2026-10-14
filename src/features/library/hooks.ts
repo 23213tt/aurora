@@ -42,7 +42,7 @@ export function usePalette(track: Track | null): Palette {
   return palette
 }
 
-export interface LyricsState {
+ interface LyricsState {
   lyrics: Lyrics
   /** Whether online lookup is allowed; the stage offers to turn it on. */
   onlineEnabled: boolean

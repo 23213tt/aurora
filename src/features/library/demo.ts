@@ -110,7 +110,7 @@ function buildLibrary(): Track[] {
 
 export const demoLibrary: Track[] = buildLibrary()
 
-export function demoCovers(): Map<string, string> {
+ function demoCovers(): Map<string, string> {
   const map = new Map<string, string>()
   for (const track of demoLibrary) {
     if (!map.has(track.album)) map.set(track.album, coverFor(track.album))
@@ -170,5 +170,3 @@ const LYRICS_BY_ALBUM: Record<string, string> = {
 export function demoLyricsFor(track: Track): string | null {
   return LYRICS_BY_ALBUM[track.album] ?? null
 }
-
-export const demoArt = (track: Track): string => demoCoverFor(track)

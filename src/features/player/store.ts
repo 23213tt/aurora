@@ -9,14 +9,14 @@ import type { RepeatMode, Track } from '../../types'
 import { identityOrder, reconcile, shuffledOrder } from './queue.ts'
 
 export const EQ_BANDS = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000] as const
-export const EQ_FLAT: number[] = EQ_BANDS.map(() => 0)
+ const EQ_FLAT: number[] = EQ_BANDS.map(() => 0)
 
 /**
  * Pure state. Nothing here touches the audio engine - the engine subscribes to
  * this store for *intent* and writes back *observations*, which keeps the data
  * flow one-directional and avoids action/report feedback loops.
  */
-export interface PlayerState {
+ interface PlayerState {
   queue: Track[]
   order: number[]
   index: number

@@ -29,7 +29,7 @@ export function shuffledOrder(length: number, current: number): number[] {
   return order
 }
 
-export interface StepResult {
+ interface StepResult {
   index: number
   /** False when playback should stop because the queue ran out. */
   play: boolean

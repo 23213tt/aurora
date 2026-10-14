@@ -28,7 +28,7 @@ export type NeteaseFailureReason =
   | 'service-unavailable'
   | 'unknown'
 
-export interface StreamFailureInput {
+ interface StreamFailureInput {
   /** Envelope `body.code`; null when there was no usable response. */
   code?: number | null
   /** Per-track `body.data[0].code`. */
@@ -160,7 +160,7 @@ function httpStatusOf(error: unknown): number | null {
  * so the classifier can tell that shape apart from a genuine transport error,
  * which carries no code at all.
  */
-export function envelopeCodeOf(error: unknown): number | null {
+ function envelopeCodeOf(error: unknown): number | null {
   if (!error || typeof error !== 'object') return null
   const body = (error as { body?: unknown }).body
   if (body && typeof body === 'object') {

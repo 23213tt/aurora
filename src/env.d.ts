@@ -24,7 +24,7 @@ export interface LibraryIndex {
   tracks: Track[]
 }
 
-export interface LibraryApi {
+ interface LibraryApi {
   getRoots(): Promise<string[]>
   /**
    * One-time search for music already on this machine.
@@ -46,7 +46,7 @@ export interface LibraryApi {
   onProgress(handler: (progress: ScanProgress) => void): () => void
 }
 
-export interface PlaylistsApi {
+ interface PlaylistsApi {
   /** Opens a file picker and returns the m3u text plus its directory. */
   import(): Promise<{ name: string; dir: string; text: string } | null>
   export(name: string, text: string): Promise<boolean>
@@ -65,7 +65,7 @@ export interface WindowVisibilityState {
   hidden: boolean
 }
 
-export interface AppApi {
+ interface AppApi {
   getVisibility(): Promise<WindowVisibilityState>
   onVisibility(handler: (state: WindowVisibilityState) => void): () => void
 }
@@ -118,7 +118,7 @@ export interface UpdatePrefs {
   autoInstallAvailable: boolean
 }
 
-export interface UpdatesApi {
+ interface UpdatesApi {
   check(): Promise<UpdateResult>
   open(url: string): Promise<boolean>
   getAutoCheck(): Promise<boolean>
@@ -144,7 +144,7 @@ export interface StorageUsage {
 
 export type MediaCommand = 'toggle' | 'next' | 'prev'
 
-export interface PlayerApi {
+ interface PlayerApi {
   reportState(state: { playing: boolean }): Promise<boolean>
   onCommand(handler: (command: MediaCommand) => void): () => void
 }
@@ -165,7 +165,7 @@ export interface LyricsHit {
   synced: boolean
 }
 
-export interface LyricsApi {
+ interface LyricsApi {
   lookup(query: LyricsQuery): Promise<LyricsHit | null>
   isOnlineEnabled(): Promise<boolean>
   setOnlineEnabled(enabled: boolean): Promise<boolean>
@@ -185,7 +185,7 @@ export interface OverlayStatus {
   size: number
 }
 
-export interface OverlayApi {
+ interface OverlayApi {
   toggle(enabled?: boolean): Promise<OverlayStatus>
   getStatus(): Promise<OverlayStatus>
   setLocked(locked: boolean): Promise<boolean>
@@ -198,7 +198,7 @@ export interface OverlayApi {
   onSize(handler: (size: number) => void): () => void
 }
 
-export interface DesktopLyricsSettings {
+ interface DesktopLyricsSettings {
   size: number
   min: number
   max: number
@@ -225,7 +225,7 @@ export interface AppSettings {
   desktopLyrics: DesktopLyricsSettings
 }
 
-export interface SettingsApi {
+ interface SettingsApi {
   getAll(): Promise<AppSettings>
   setOnlineLyrics(enabled: boolean): Promise<AppSettings>
   setDesktopLyricsSize(size: number): Promise<AppSettings>

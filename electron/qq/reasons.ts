@@ -23,7 +23,7 @@ import type { NeteaseFailureReason } from '../netease/reasons'
 
 export type QqFailureReason = NeteaseFailureReason
 
-export interface QqStreamFailureInput {
+ interface QqStreamFailureInput {
   /** The rejection, when the call itself threw (transport level). */
   error?: unknown
   /** `req_0.code` / `body.response.code` - the request-level verdict. */

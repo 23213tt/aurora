@@ -9,7 +9,7 @@ import type { Track } from '../../types'
  * which is how playlists exported from portable installs look.
  */
 
-export interface M3uEntry {
+ interface M3uEntry {
   path: string
   /** From the `#EXTINF` line, when present. */
   title: string | null

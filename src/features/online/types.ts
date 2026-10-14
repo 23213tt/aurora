@@ -1,4 +1,4 @@
-import type { NeteaseFailureReason, NeteaseQuality } from '../../env'
+﻿import type { NeteaseFailureReason, NeteaseQuality } from '../../env'
 
 /**
  * The online-platform contract.
@@ -35,13 +35,13 @@ export type ProviderId = string
  * every such addition a cross-module edit; an open `string` would lose the
  * exhaustiveness that makes the wording table trustworthy.
  */
-export type OnlineFailureReason = NeteaseFailureReason | (string & {})
+ type OnlineFailureReason = NeteaseFailureReason | (string & {})
 
 /** Sound quality tiers, in the upstream names Aurora already uses. */
 export type QualityTier = NeteaseQuality
 
 /** Worst to best. A provider may support any subset of this order. */
-export const QUALITY_TIERS: QualityTier[] = ['standard', 'higher', 'exhigh', 'lossless']
+ const QUALITY_TIERS: QualityTier[] = ['standard', 'higher', 'exhigh', 'lossless']
 
 export const QUALITY_LABELS: Record<QualityTier | 'hires', string> = {
   standard: '标准 128k',
@@ -96,7 +96,7 @@ export interface OnlineArtistRef {
   albumCount: number
 }
 
-export interface OnlineSearchResult {
+ interface OnlineSearchResult {
   songs: OnlineSong[]
   albums: OnlineAlbumRef[]
   artists: OnlineArtistRef[]
@@ -112,12 +112,6 @@ export interface OnlineAccount {
   level: number
 }
 
-export interface OnlineStatus {
-  /** The backend answered and can reach the upstream. */
-  ready: boolean
-  loggedIn: boolean
-  detail?: string
-}
 
 export interface OnlinePlaylistSummary {
   id: number
@@ -144,7 +138,7 @@ export interface OnlineStream {
   trialTo?: number
 }
 
-export type OnlineStreamResult =
+ type OnlineStreamResult =
   | { ok: true; stream: OnlineStream }
   | { ok: false; reason: OnlineFailureReason; message?: string }
 
@@ -183,8 +177,8 @@ export type PlaybackSourceRef =
   | { kind: 'online'; providerId: ProviderId; mediaId: string }
   | { kind: 'local'; mediaId: string }
 
-export type SongAvailabilityState = 'playable' | 'unavailable' | 'unknown'
-export type SongUnavailableReason = 'taken-down' | 'restricted'
+ type SongAvailabilityState = 'playable' | 'unavailable' | 'unknown'
+ type SongUnavailableReason = 'taken-down' | 'restricted'
 
 /**
  * Whether a song can be played, as far as the platform can prove without asking.
@@ -221,24 +215,24 @@ export function takenDown(label?: string): ProviderSongAvailability {
   return label ? { state: 'unavailable', reason: 'taken-down', label } : { state: 'unavailable', reason: 'taken-down' }
 }
 
-export interface ProviderSearchApi {
+ interface ProviderSearchApi {
   search(keywords: string, kind: OnlineSearchKind, limit?: number): Promise<OnlineSearchResult>
   /** Fetch one song's full record, for a row that arrived from somewhere else. */
   songDetail?(ids: number[]): Promise<OnlineSong[]>
 }
 
-export interface ProviderPlaybackApi {
+ interface ProviderPlaybackApi {
   streamUrl(songId: number, quality?: QualityTier): Promise<OnlineStreamResult>
   /** Proves a song is gone, when the platform can. Absent means "unknown", never "gone". */
   getAvailability?(song: OnlineSong): ProviderSongAvailability
 }
 
-export interface ProviderLyricsApi {
+ interface ProviderLyricsApi {
   /** Raw LRC, translation already merged when the platform supplies one. */
   lyrics(songId: number): Promise<string | null>
 }
 
-export interface ProviderAuthApi {
+ interface ProviderAuthApi {
   loginStatus(): Promise<OnlineAccount | null>
   logout(): Promise<void>
   /** Which account a given profile is signed in as, for the profiles screen. */
@@ -246,14 +240,14 @@ export interface ProviderAuthApi {
   logoutProfile?(profileId: string): Promise<boolean>
 }
 
-export interface ProviderCatalogApi {
+ interface ProviderCatalogApi {
   album(id: number): Promise<{ id: number; name: string; coverUrl: string | null; songs: OnlineSong[] } | null>
   artistTopSongs(id: number, limit?: number): Promise<OnlineSong[]>
   playlistTracks(id: number): Promise<OnlineSong[]>
   myPlaylists?(): Promise<OnlinePlaylistSummary[]>
 }
 
-export interface ProviderRecommendationsApi {
+ interface ProviderRecommendationsApi {
   dailySongs?(): Promise<OnlineSong[]>
   likeList?(): Promise<OnlineSong[]>
   cloudSongs?(): Promise<OnlineSong[]>

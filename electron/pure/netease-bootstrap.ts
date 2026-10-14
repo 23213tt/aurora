@@ -14,7 +14,7 @@
  */
 
 /** Failures the client can report from a handshake attempt. */
-export type HandshakeFailure =
+ type HandshakeFailure =
   | 'login-required'
   | 'vip-required'
   | 'region-limited'

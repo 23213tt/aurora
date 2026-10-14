@@ -18,7 +18,7 @@ import type { Route } from './routing'
  * file that was deleted or moved simply does not resolve. That gap is the
  * difference between "empty playlist" and "broken playlist".
  */
-export interface LibraryData {
+ interface LibraryData {
   albums: Album[]
   artists: Artist[]
   folderTree: ReturnType<typeof buildFolderTree>

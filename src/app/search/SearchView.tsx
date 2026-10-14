@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { useLibrary } from '../../features/library/store'
-import { sourceLabelFor } from '../../features/online/registry'
 import { player } from '../../features/player/actions'
 import { usePlayer } from '../../features/player/store'
 import { TrackList, type TrackMenuRequest } from '../../ui/TrackList'
@@ -131,7 +130,3 @@ export function SearchView({ onMenu }: { onMenu(request: TrackMenuRequest): void
   )
 }
 
-/** The platform a row came from, for a caller that needs the label on its own. */
-export function trackSourceLabel(track: Track): string | null {
-  return sourceLabelFor(track)
-}

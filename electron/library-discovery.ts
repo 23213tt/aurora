@@ -24,7 +24,7 @@ export { pickMusicRoots }
  * players keeps everything), then the two names Windows uses for it in a
  * localized profile, then the places a download actually lands.
  */
-export function candidateBases(): string[] {
+ function candidateBases(): string[] {
   const home = app.getPath('home')
   const bases = [app.getPath('music')]
   for (const name of ['Music', '音乐']) bases.push(path.join(home, name))

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Domain model. These shapes are shared with the main process over IPC, so
  * they are deliberately plain data - no class instances, no Dates.
  */
@@ -32,7 +32,6 @@ export type ViewId =
    */
   | 'search'
 
-export type SortKey = 'title' | 'artist' | 'album' | 'added' | 'year' | 'duration'
 
 export interface Track {
   /** Stable hash of the file path; survives re-scans and library moves. */

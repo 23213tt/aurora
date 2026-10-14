@@ -327,7 +327,7 @@ export function mergeTranslation(lrc: string | null, translation: string | null)
  */
 export const UNAUTHENTICATED_CODE = 1000
 
-export interface AccountProbe {
+ interface AccountProbe {
   /** False when upstream said "not signed in" rather than "here is the account". */
   authenticated: boolean
   nickname: string
@@ -450,7 +450,7 @@ function asFlag(value: unknown): boolean | null {
   return null
 }
 
-export interface VipProbe {
+ interface VipProbe {
   /** Whether upstream actually answered the membership question. */
   answered: boolean
   vip: boolean | null
@@ -500,7 +500,7 @@ export function normalizeQr(response: unknown): {
   return { ptqrtoken, qrsig, imageDataUrl }
 }
 
-export interface QrCheck {
+ interface QrCheck {
   confirmed: boolean
   /** Upstream said the code expired and a new one is needed. */
   expired: boolean

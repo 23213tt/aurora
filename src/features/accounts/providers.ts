@@ -23,14 +23,14 @@ export type ProviderId =
   | 'netease'
   | 'qq'
 
-export interface ProviderField {
+ interface ProviderField {
   key: string
   label: string
   type: 'text' | 'password' | 'url'
   placeholder?: string
 }
 
-export interface AuthProvider {
+ interface AuthProvider {
   id: ProviderId
   name: string
   summary: string
@@ -42,7 +42,7 @@ export interface AuthProvider {
   note: string
 }
 
-export const AUTH_PROVIDERS: AuthProvider[] = [
+ const AUTH_PROVIDERS: AuthProvider[] = [
   {
     id: 'local',
     name: '本地档案',

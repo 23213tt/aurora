@@ -1,11 +1,10 @@
-import type { Track } from '../../types'
+﻿import type { Track } from '../../types'
 import type { ViewId } from '../../types'
 import type {
   OnlineMusicProvider,
   PlaybackSourceRef,
   ProviderCapabilities,
-  ProviderId,
-  ProviderSongAvailability
+  ProviderId
 } from './types'
 
 /**
@@ -48,18 +47,6 @@ export function getProvider(id: ProviderId): OnlineMusicProvider | null {
  */
 export function platformView(provider: OnlineMusicProvider): ViewId {
   return provider.id as ViewId
-}
-
-/**
- * Whether the shell knows this platform's route.
- *
- * A platform can be registered while its route is not (a new client landing before
- * the route is added), and a link to a route the router does not render is a blank
- * page. The rail asks this before drawing the entry, so the failure mode is "this
- * platform is not in the sidebar yet" rather than an empty window.
- */
-export function platformRouteExists(provider: OnlineMusicProvider, knownRoutes: ReadonlySet<string>): boolean {
-  return knownRoutes.has(provider.id)
 }
 
 /**
@@ -112,42 +99,18 @@ export function getPlaybackSourceRef(track: Track | null | undefined): PlaybackS
 }
 
 /** The upstream id inside a `<providerId>:<id>` track id. */
-export function mediaIdOf(trackId: string, providerId: ProviderId): string {
+ function mediaIdOf(trackId: string, providerId: ProviderId): string {
   const prefix = `${providerId}:`
   return trackId.startsWith(prefix) ? trackId.slice(prefix.length) : trackId
 }
 
 /** The provider a track came from, or null for a local file. */
-export function providerForTrack(track: Track | null | undefined): OnlineMusicProvider | null {
+ function providerForTrack(track: Track | null | undefined): OnlineMusicProvider | null {
   const ref = getPlaybackSourceRef(track)
   return ref.kind === 'online' ? getProvider(ref.providerId) : null
 }
 
-/**
- * Whether the platform can play this track at all - i.e. it is registered and
- * declares playback. Deliberately says nothing about entitlement: that is the
- * runtime's answer and, per the availability contract, cannot be known here.
- */
-export function canPlayTrack(track: Track | null | undefined): boolean {
-  const provider = providerForTrack(track)
-  return providerSupports(provider, 'playback') && Boolean(provider?.playback)
-}
 
-/**
- * The bridge calls a view needs in order to open a platform's screen.
- *
- * Deliberately here and not in a component: these are the two questions every
- * platform screen asks - "does this platform have a session to sign into" and
- * "does it have a catalogue to browse" - and answering them from the capability
- * flags rather than from the platform's name is the whole point of the layer.
- */
-export function providerCanAuthenticate(provider: OnlineMusicProvider | null): boolean {
-  return providerSupports(provider, 'auth') && Boolean(provider?.auth)
-}
-
-export function providerOffersAccountContent(provider: OnlineMusicProvider | null): boolean {
-  return Boolean(provider?.collections?.some((collection) => collection.requiresAccount))
-}
 
 /**
  * The display name of wherever a track came from, for a row's source label.
@@ -159,52 +122,3 @@ export function sourceLabelFor(track: Track | null | undefined): string | null {
   return providerForTrack(track)?.shortName ?? providerForTrack(track)?.displayName ?? null
 }
 
-/** A provider's search API, or null when it has none. */
-export function searchApiOf(provider: OnlineMusicProvider | null | undefined) {
-  return providerSupports(provider, 'search') ? (provider?.search ?? null) : null
-}
-
-export function playbackApiOf(provider: OnlineMusicProvider | null | undefined) {
-  return providerSupports(provider, 'playback') ? (provider?.playback ?? null) : null
-}
-
-/**
- * "Can this song be played", answered by the platform that owns it.
- *
- * A local file is always playable here: the engine checks the disk. A song from a
- * platform that declares no `getAvailability` is `unknown`, never `unavailable` -
- * the platform has not proved it is gone, so the interface must not say it is.
- */
-export function songAvailability(track: Track | null | undefined): ProviderSongAvailability {
-  const provider = providerForTrack(track)
-  if (!provider) return { state: 'playable' }
-  return provider.playback?.getAvailability?.(asOnlineSong(track)) ?? { state: 'unknown' }
-}
-
-/** Whether the platform has already proved this song is gone. */
-export function isTrackUnavailable(track: Track | null | undefined): boolean {
-  return songAvailability(track).state === 'unavailable'
-}
-
-/** The platform's own wording for a refusal, or the caller's fallback. */
-export function unavailableLabel(track: Track | null | undefined, fallback: string): string {
-  if (!track) return fallback
-  return songAvailability(track).label ?? fallback
-}
-
-/**
- * `getAvailability` is handed the upstream record, and a `Track` that came back
- * from a queue is all the caller has. The fields a platform can use to prove
- * something about a song are carried on the track (fee, bitrate, duration), so the
- * adapter reads those rather than the queue having to keep the raw song alive.
- */
-function asOnlineSong(track: Track | null | undefined) {
-  return {
-    id: Number(getPlaybackSourceRef(track).mediaId),
-    name: track?.title ?? '',
-    artists: [],
-    album: { id: 0, name: track?.album ?? '', picUrl: null },
-    duration: track?.duration ?? 0,
-    fee: 0
-  }
-}

@@ -22,7 +22,7 @@ import { resolveAppAsset } from '../pure/app-paths'
  * loading, `crossorigin` stylesheets and `'self'` all behave normally.
  */
 
-export const APP_SCHEME = 'aurora-app'
+ const APP_SCHEME = 'aurora-app'
 export const APP_ORIGIN = `${APP_SCHEME}://app`
 
 /** Where the built renderer lives, inside the asar when packaged. */

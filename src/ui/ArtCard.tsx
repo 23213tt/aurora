@@ -21,7 +21,7 @@ import { Note, Play } from './icons'
  *  - artist and count sit at two ends of one row, so the eye can compare down a
  *    column instead of reading a dotted string per card.
  */
-export interface ArtCardProps {
+ interface ArtCardProps {
   title: string
   /** Optional second line: the artist, the owner, whatever identifies it. */
   subtitle?: string

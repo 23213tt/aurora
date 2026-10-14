@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
-import { getProvider, listAvailableProviders, listProviders } from './registry'
-import type { OnlineMusicProvider, ProviderId } from './types'
-import { useOnlineStore, type OnlineStore } from './store'
+﻿import { useEffect, useState } from 'react'
+import { listAvailableProviders, listProviders } from './registry'
+import type { OnlineMusicProvider } from './types'
 
 /**
  * React access to the provider registry.
@@ -41,7 +40,7 @@ class AvailabilitySignal {
   }
 }
 
-export const availabilitySignal = new AvailabilitySignal()
+ const availabilitySignal = new AvailabilitySignal()
 
 function useAvailabilityVersion(): number {
   const [version, setVersion] = useState(() => availabilitySignal.snapshot)
@@ -63,19 +62,3 @@ export function useAvailableProviders(): OnlineMusicProvider[] {
   return listAvailableProviders()
 }
 
-export function useProvider(id: ProviderId | null): OnlineMusicProvider | null {
-  return id ? getProvider(id) : null
-}
-
-/**
- * The state of one platform.
- *
- * A platform with no backend is a real case, not an error: the browser preview
- * has no main process at all, and a packaged build may ship without one of the
- * two clients. Callers get `null` and render their own "not available here"
- * state, which is what keeps a single view able to serve both.
- */
-export function useOnlineProviderState(id: ProviderId | null): OnlineStore | null {
-  if (!id) return null
-  return useOnlineStore(id).getState()
-}

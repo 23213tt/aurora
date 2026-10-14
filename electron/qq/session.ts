@@ -29,7 +29,7 @@ import type { QqQuality } from './types'
  * - it stays in memory for the session and is never written in the clear.
  */
 
-export interface QqProfileState {
+ interface QqProfileState {
   cookie: string
   uin: string
   /** The encrypted uin upstream returns alongside the session; unused today. */

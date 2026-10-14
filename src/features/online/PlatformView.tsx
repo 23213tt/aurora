@@ -620,12 +620,3 @@ function SongMenu({
   )
 }
 
-/**
- * Whether a list is worth rendering a header for.
- *
- * Exported because the result tabs decide with it whether to show a count, and the
- * rule - "all three empty means no results" - is the platform layer's, not a view's.
- */
-export function hasResults(songs: OnlineSong[], albums: OnlineAlbumRef[], artists: OnlineArtistRef[]): boolean {
-  return songs.length > 0 || albums.length > 0 || artists.length > 0
-}

@@ -41,7 +41,7 @@ export interface TrackSource {
  * filesystem, so artwork comes from the generated demo covers and audio is
  * handled by the synthetic driver instead.
  */
-export const localSource: TrackSource = {
+ const localSource: TrackSource = {
   id: 'local',
   name: '本地文件夹',
   summary: '扫描你添加的文件夹，直接播放磁盘上的文件，不联网',
@@ -94,7 +94,7 @@ export const localSource: TrackSource = {
  *   four different messages, and the store keeps the classified reason for the
  *   view to show.
  */
-export const neteaseSource: TrackSource = {
+ const neteaseSource: TrackSource = {
   id: 'netease',
   name: '网易云音乐（在线）',
   summary: '第三方逆向接口，仅供个人学习自用；不是官方客户端，不提供绕过会员的能力',
@@ -157,8 +157,6 @@ export function setMissingStreamHandler(handler: ((songId: number) => void) | nu
 }
 
 export const SOURCES: TrackSource[] = [localSource, neteaseSource]
-
-export const DEFAULT_SOURCE_ID = localSource.id
 
 /** Resolve the source responsible for a track. */
 export function sourceFor(track: Track | null): TrackSource {

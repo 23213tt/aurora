@@ -21,7 +21,7 @@ import { bridge, isNative } from './bridge'
  * In the browser preview there is no main process, so `document.hidden` is the
  * only source and it is accurate there.
  */
-export interface WindowVisibility {
+ interface WindowVisibility {
   /** The player window exists and is on screen (not hidden, not minimised). */
   visible: boolean
   minimized: boolean

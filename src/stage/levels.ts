@@ -8,7 +8,7 @@
  * makes motion look like it is following music rather than twitching.
  */
 
-export interface Levels {
+ interface Levels {
   bass: number
   mid: number
   treble: number

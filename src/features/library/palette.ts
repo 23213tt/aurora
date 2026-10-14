@@ -26,7 +26,7 @@ function clamp255(value: number): number {
   return Math.max(0, Math.min(255, Math.round(value)))
 }
 
-export function toHex([r, g, b]: [number, number, number]): string {
+ function toHex([r, g, b]: [number, number, number]): string {
   return `#${[r, g, b].map((c) => clamp255(c).toString(16).padStart(2, '0')).join('')}`
 }
 

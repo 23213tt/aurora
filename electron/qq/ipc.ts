@@ -84,16 +84,6 @@ async function guard<T>(label: string, fallback: T, run: () => Promise<T>): Prom
   }
 }
 
-/**
- * Kick off nothing at startup on purpose.
- *
- * The Netease client has a handshake to warm up; QQ does not - its package is
- * simply loaded on the first call - so this exists only so `main.ts` can wire
- * both platforms the same way without one of them needing a special case.
- */
-export function warmUpQq(): Promise<void> {
-  return Promise.resolve()
-}
 
 export function registerQqIpc(): void {
   const statusFailure: QqStatusResult = { ready: false, loggedIn: false }

@@ -191,7 +191,7 @@ const qqBackend: PlatformBackend = {
   }
 }
 
-export const qqProvider: OnlineMusicProvider = {
+ const qqProvider: OnlineMusicProvider = {
   id: 'qq',
   displayName: 'QQ 音乐',
   shortName: 'QQ 音乐',

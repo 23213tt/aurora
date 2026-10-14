@@ -15,7 +15,7 @@ import type { ScanProgress } from './pure/scan-progress'
  * minute, and it is why the index stores mtimeMs.
  */
 
-export interface ScannedTrack {
+ interface ScannedTrack {
   id: string
   path: string
   title: string
@@ -269,7 +269,7 @@ async function readTrack(filePath: string, stat: fs.Stats): Promise<ScannedTrack
 
 // --- artwork ---------------------------------------------------------------
 
-export interface EmbeddedArt {
+ interface EmbeddedArt {
   mime: string
   data: Buffer
 }
@@ -335,7 +335,7 @@ export async function readFolderArt(filePath: string): Promise<string | null> {
 
 // --- index -----------------------------------------------------------------
 
-export function indexFile(): string {
+ function indexFile(): string {
   return path.join(app.getPath('userData'), 'library.json')
 }
 
@@ -360,7 +360,7 @@ async function saveIndex(index: LibraryIndex): Promise<void> {
   }
 }
 
-export interface ScanOptions {
+ interface ScanOptions {
   onProgress?: (progress: ScanProgress) => void
   /** Checked between files so a rescan can be abandoned. */
   cancelled?: () => boolean

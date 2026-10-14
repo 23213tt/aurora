@@ -1,4 +1,4 @@
-export interface LyricLine {
+ interface LyricLine {
   /** Seconds from the start of the track. */
   time: number
   text: string

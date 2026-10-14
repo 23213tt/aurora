@@ -52,7 +52,7 @@ export interface PlatformFail {
   at: number
 }
 
-export interface PlatformSearchResult {
+ interface PlatformSearchResult {
   songs: OnlineSong[]
   albums: OnlineAlbumRef[]
   artists: OnlineArtistRef[]
@@ -222,7 +222,7 @@ export function onlineStoreState(providerId: ProviderId): OnlineStore {
  */
 const resumeHandlers = new Map<ProviderId, () => void>()
 
-export function setResumeHandler(providerId: ProviderId, handler: () => void): void {
+ function setResumeHandler(providerId: ProviderId, handler: () => void): void {
   resumeHandlers.set(providerId, handler)
 }
 

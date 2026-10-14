@@ -126,7 +126,7 @@ export interface NeteaseSearchResult {
   artists: { id: number; name: string; picUrl: string | null; albumCount: number }[]
 }
 
-export type NeteaseQrStatus = 'waiting' | 'scanned' | 'expired' | 'confirmed' | 'failed'
+ type NeteaseQrStatus = 'waiting' | 'scanned' | 'expired' | 'confirmed' | 'failed'
 
 /** Upstream availability, as `netease:status` reports it. */
 export interface NeteaseStatusResult {

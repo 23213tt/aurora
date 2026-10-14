@@ -222,7 +222,7 @@ export async function checkForUpdate(): Promise<UpdateResult> {
 /** True when a background check is due (never twice at once). */
 let checkInFlight = false
 
-export function shouldAutoCheck(): boolean {
+ function shouldAutoCheck(): boolean {
   if (checkInFlight) return false
   const settings = loadSettings()
   const interval = INTERVAL_MS[settings.updateInterval]
@@ -253,7 +253,7 @@ export async function autoCheck(onResult: (result: UpdateResult) => void): Promi
  * checkout, where there is no installer to replace and the updater would only
  * produce errors.
  */
-export function shouldAutoInstall(result: UpdateResult): boolean {
+ function shouldAutoInstall(result: UpdateResult): boolean {
   return result.state === 'available' && appSettings().autoInstallUpdates && app.isPackaged
 }
 
@@ -308,7 +308,7 @@ export async function autoInstallAvailable(): Promise<boolean> {
 
 let installing = false
 
-export async function downloadAndInstall(result: UpdateResult): Promise<void> {
+ async function downloadAndInstall(result: UpdateResult): Promise<void> {
   if (installing || result.state !== 'available') return
   // Narrowed once, so the progress callback and the failure path below cannot
   // lose track of which member of the union they are working with.

@@ -5,7 +5,7 @@ import { Close, Wave } from '../ui/icons'
 const MIN_DB = -12
 const MAX_DB = 12
 
-export interface EqPreset {
+ interface EqPreset {
   name: string
   gains: number[]
 }
@@ -16,7 +16,7 @@ export interface EqPreset {
  * about correctness: an EQ curve depends entirely on the headphones or speakers
  * in front of you.
  */
-export const EQ_PRESETS: EqPreset[] = [
+ const EQ_PRESETS: EqPreset[] = [
   { name: '平直', gains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
   { name: '低频加强', gains: [6, 5, 3, 1, 0, 0, 0, 0, 0, 0] },
   { name: '人声', gains: [-2, -1, 0, 2, 4, 4, 3, 1, 0, 0] },

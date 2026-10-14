@@ -22,7 +22,7 @@ import { readRememberedSource, rememberSource, type SearchSource } from './remem
  */
 export type { SearchSource }
 
-export interface SearchSourceTab {
+ interface SearchSourceTab {
   id: SearchSource
   label: string
   /** One line describing what this source is, shown with the tab. */
@@ -55,7 +55,7 @@ export function searchSources(): SearchSourceTab[] {
 }
 
 /** The default tab: the first remote catalogue, or local when there is none. */
-export function defaultSource(): SearchSource {
+ function defaultSource(): SearchSource {
   return searchSources().find((tab) => tab.remote)?.id ?? 'local'
 }
 

@@ -122,7 +122,7 @@ node scripts/move-files.mjs --plan scripts/moves/features.json --apply  # 执行
 - **`src/App.tsx`（830 行）**仍是最大的渲染层文件：键盘快捷键、播放/导航动作、
   六段视图分发的 JSX 都在其中。`useKeyboardShortcuts` 与 `usePlaybackActions` 已经抽出
   （曾经约 1180 行），剩下的主要是视图分发与头部接线，可以再拆，但收益已经不如从前。
-- **`electron/netease/client.ts`（856 行）**按 bootstrap / 会话 / 搜索 / 播放 / 登录拆分。
+- **`electron/netease/client.ts`（840 行）**按 bootstrap / 会话 / 搜索 / 播放 / 登录拆分。
   它是全项目最大的文件，且 `bootstrap` 那段逻辑（含重试策略）已经证明值得独立。
 - **`electron/main.ts`（683 行）**的 IPC 注册可拆到 `electron/ipc/`。
 - **`src/features/online/store.ts`（592 行）与 `PlatformView.tsx`（591 行）**是平台层的两个大件；

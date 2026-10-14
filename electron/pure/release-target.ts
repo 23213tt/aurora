@@ -21,7 +21,7 @@ interface PublishConfig {
 
 const PLACEHOLDER = /REPLACE-WITH-YOUR-USERNAME/i
 
-export interface RepositoryTarget {
+ interface RepositoryTarget {
   owner: string
   repo: string
 }

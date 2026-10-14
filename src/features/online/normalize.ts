@@ -123,7 +123,7 @@ export function normalizeSearchResult(raw: unknown): {
   }
 }
 
-export function normalizeAlbum(raw: unknown): OnlineAlbumRef {
+ function normalizeAlbum(raw: unknown): OnlineAlbumRef {
   const album = asRecord(raw)
   return {
     id: num(album.id, num(album.albumId)),
@@ -135,7 +135,7 @@ export function normalizeAlbum(raw: unknown): OnlineAlbumRef {
   }
 }
 
-export function normalizeArtist(raw: unknown): OnlineArtistRef {
+ function normalizeArtist(raw: unknown): OnlineArtistRef {
   const artist = asRecord(raw)
   return {
     id: num(artist.id, num(artist.artistId)),
@@ -149,20 +149,6 @@ function albumCountOf(artist: Loose): unknown {
   return artist.albumSize ?? artist.album_count ?? 0
 }
 
-/**
- * The upstream failure vocabulary -> what the interface should say.
- *
- * Both clients classify their own upstream into the shared reason set, so this is
- * only a pass-through with one rule attached: an unrecognised reason is `unknown`,
- * never `taken-down`. Saying a song is gone is a claim the renderer has no
- * evidence for.
- */
-export function normalizeFailure(raw: unknown): { reason: string; message?: string } {
-  const failure = asRecord(raw)
-  const reason = str(failure.reason, 'unknown')
-  const message = optionalStr(failure.message)
-  return message ? { reason, message } : { reason }
-}
 
 /** A song's fee flag, in words. Re-exported here so adapters need one import. */
 export { paymentLabel }
@@ -171,18 +157,6 @@ export { paymentLabel }
 export { playable, takenDown, unknownAvailability }
 export type { ProviderSongAvailability }
 
-/**
- * A song that a platform has *proved* is gone.
- *
- * No adapter in this build calls it: neither upstream has a verified
- * taken-down signal, and the contract says a claim of this kind needs evidence.
- * It exists as the single sanctioned way to make the claim, so that a future
- * adapter that gains real evidence does not invent its own phrasing - and so that
- * `takenDown` is not silently unused.
- */
-export function noVerifiedTakenDown(): ProviderSongAvailability {
-  return takenDown()
-}
 
 /** Re-exported for adapters that hand the main process a song list back. */
 export type { NeteaseAlbumRef, NeteaseArtist, NeteaseSong }

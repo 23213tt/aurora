@@ -1,4 +1,4 @@
-import { isTransientFailure, type OnlineStream, type ProviderId, type QualityTier } from './types'
+﻿import { isTransientFailure, type OnlineStream, type ProviderId, type QualityTier } from './types'
 
 /**
  * Resolved stream URLs, per platform.
@@ -30,13 +30,8 @@ const FINAL_FAILURE_TTL_MS = 5 * 60 * 1000
 /** After a load found no URL, how long a late arrival may still auto-recover it. */
 export const RECOVER_WINDOW_MS = 20 * 1000
 
-export interface CachedStream {
-  stream: OnlineStream
-  /** When this entry stops being trustworthy. */
-  expiresAt: number
-}
 
-export interface CachedFailure {
+ interface CachedFailure {
   reason: string
   message?: string
   expiresAt: number
@@ -95,10 +90,6 @@ export function rememberFailure(
     expiresAt: now + (isTransientFailure(reason as never) ? TRANSIENT_FAILURE_TTL_MS : FINAL_FAILURE_TTL_MS),
     failure: { reason, message, expiresAt: now + TRANSIENT_FAILURE_TTL_MS }
   })
-}
-
-export function forgetStream(providerId: ProviderId, songId: number): void {
-  cache.delete(key(providerId, songId))
 }
 
 /** Called when the tier changes: none of the cached links were signed for it. */

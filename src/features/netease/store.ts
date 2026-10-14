@@ -13,9 +13,8 @@ import {
   type OnlineStore,
   type PlatformFail
 } from '../online/store'
-import { DEFAULT_QUALITY, cachedStream } from '../online/streams'
+import { cachedStream } from '../online/streams'
 import type { OnlineCollectionKind, OnlineSearchKind } from '../online/types'
-import { neteaseBackend } from './provider'
 
 /**
  * The Netease screen's state, as the rest of the app sees it.
@@ -36,7 +35,7 @@ export type { PlatformFail as NeteaseFail }
 export { toTrack, songCover } from './track'
 
 /** The generated collections this platform declares, as the screen's own name for them. */
-export type NeteaseCategory = OnlineCollectionKind
+ type NeteaseCategory = OnlineCollectionKind
 
 /**
  * What a selector may read.
@@ -46,7 +45,7 @@ export type NeteaseCategory = OnlineCollectionKind
  * `searchType` for the active result tab). A type rather than a mapped object, so
  * there is no second copy of the state to keep in sync.
  */
-export interface NeteaseStateView {
+ interface NeteaseStateView {
   ready: boolean
   backendBlocked: boolean
   statusDetail: string | null
@@ -150,7 +149,7 @@ export function useNeteaseLoginOpen(): boolean {
  * imperative form the rail's click handlers and the playback wiring use. Both read
  * the one shared store for this platform, so there is a single copy of the state.
  */
-export interface NeteaseStoreHook {
+ interface NeteaseStoreHook {
   <T>(selector: (state: NeteaseStateView) => T): T
   getState(): NeteaseActions
 }
@@ -169,7 +168,7 @@ export const useNetease = neteaseHook
  * state change acts on the current state - which is why callers read it through
  * `getState()` in the first place.
  */
-export interface NeteaseActions extends NeteaseStateView {
+ interface NeteaseActions extends NeteaseStateView {
   init(): Promise<void>
   setQuality(quality: NeteaseQuality): Promise<void>
   setQuery(query: string): void
@@ -199,7 +198,7 @@ export interface NeteaseActions extends NeteaseStateView {
   logout(): Promise<void>
 }
 
-export function useNeteaseState(): NeteaseActions {
+ function useNeteaseState(): NeteaseActions {
   const state = onlineStoreState('netease')
   return {
     ...viewOf(state),
@@ -231,12 +230,10 @@ export function useNeteaseState(): NeteaseActions {
 }
 
 /** The resolved, unexpired URL for a song, or null. Read by the library source. */
-export function neteaseStreamOf(songId: number): NeteaseStream | null {
+ function neteaseStreamOf(songId: number): NeteaseStream | null {
   return cachedStream('netease', songId) as NeteaseStream | null
 }
 
-/** The default tier, mirroring the shared layer's. */
-export const DEFAULT_NETEASE_QUALITY: NeteaseQuality = DEFAULT_QUALITY
 
 /**
  * Re-exported for the playback wiring: `features/player/netease.ts` registers the
@@ -251,7 +248,3 @@ export { setNeteaseResumeHandler as setNeteaseResume } from './provider'
  */
 export { neteaseStreamOf as streamOf }
 
-/** One song id resolved from a track, for the prefetch path. */
-export function neteaseSongIdOf(track: Track): number | null {
-  return neteaseBackend.songIdOf(track)
-}

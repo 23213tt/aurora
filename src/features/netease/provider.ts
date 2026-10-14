@@ -4,7 +4,6 @@ import { netease, hasNeteaseBackend } from './api'
 import { mergeTranslation } from './lrc'
 import { neteaseSongId, toTrack as toNeteaseTrack } from './track'
 import { rememberNeteaseCover } from '../library/source'
-import { remoteImageUrl } from '../player/urls'
 import { registerProvider } from '../online/registry'
 import { previewBackendsForced } from '../online/preview-harness'
 import { registerResumeHandler } from '../online/store'
@@ -15,7 +14,6 @@ import {
   type OnlineCollection,
   type OnlineMusicProvider,
   type OnlinePlaylistSummary,
-  type OnlineSong,
   type ProviderCapabilities,
   type QualityTier
 } from '../online/types'
@@ -161,7 +159,7 @@ export const neteaseBackend: PlatformBackend = {
   }
 }
 
-export const neteaseProvider: OnlineMusicProvider = {
+ const neteaseProvider: OnlineMusicProvider = {
   id: 'netease',
   displayName: '网易云音乐',
   shortName: '网易云',
@@ -268,15 +266,6 @@ export function setNeteaseResumeHandler(handler: (() => void) | null): void {
 }
 
 
-/**
- * Cover art for a Netease song, through the media proxy.
- *
- * `album.picUrl` arrives as a raw upstream address, and pointing an `<img>` at one
- * is exactly what the production CSP refuses, so it is wrapped here.
- */
-export function neteaseCover(song: OnlineSong): string | null {
-  return song.album.picUrl ? remoteImageUrl(song.album.picUrl) : null
-}
 
 export function registerNeteaseProvider(): void {
   registerProvider(neteaseProvider)

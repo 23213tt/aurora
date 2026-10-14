@@ -473,22 +473,6 @@ export async function neteaseStatus(): Promise<NeteaseStatusResult> {
   return { ready: true, loggedIn: account !== null, detail: state.detail || undefined }
 }
 
-/**
- * Boot facts for the smoke probe and for support. Never exposed over IPC: it
- * names local files, which page code has no business knowing about.
- */
-export async function upstreamDiagnostics(): Promise<Record<string, unknown>> {
-  const state = await bootstrapOnce()
-  return {
-    ready: state.ready,
-    detail: state.detail,
-    deviceIdLength: state.deviceId.length,
-    keyVersion: state.keyVersion,
-    hasAnonymousToken: state.hasAnonymousToken,
-    tokenFileBytes: readText(TOKEN_PATH).length,
-    hasSession: readCookie(activeProfileId).length > 0
-  }
-}
 
 // --- search and metadata -------------------------------------------------
 

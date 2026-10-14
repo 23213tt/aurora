@@ -51,7 +51,7 @@ export interface ScanProgress {
  */
 const PROGRESS_THROTTLE_MS = 100
 
-export interface ProgressTransport {
+ interface ProgressTransport {
   /** Deliver one report to every window that cares. */
   send(progress: ScanProgress): void
 }
@@ -71,10 +71,6 @@ export function configureProgressTransport(next: ProgressTransport): void {
  * swappable `now()` lets the measurement advance time exactly.
  */
 let now: () => number = Date.now
-
-export function configureProgressClock(next: () => number): void {
-  now = next
-}
 
 let pending: ScanProgress | null = null
 let timer: NodeJS.Timeout | null = null

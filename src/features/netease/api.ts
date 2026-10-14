@@ -1,6 +1,5 @@
 import { bridge, isNative } from '../../bridge'
 import type { NeteaseApi } from '../../env'
-import { remoteImageUrl } from '../player/urls'
 
 /**
  * The one way the online source is reached.
@@ -25,11 +24,3 @@ export const netease: NeteaseApi = isNative
  */
 export const hasNeteaseBackend = isNative && Boolean(window.aurora?.netease)
 
-/**
- * Upstream image -> same-origin proxy URL.
- *
- * Re-exported under this module's own name so views have a single import for
- * "the online source", and so nobody is tempted to point an `<img>` at an
- * upstream host, which the production CSP refuses.
- */
-export const remoteImage = remoteImageUrl

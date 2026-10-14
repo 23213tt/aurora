@@ -27,7 +27,7 @@ export type { QqFailureReason }
  */
 export type QqQuality = 'standard' | 'higher' | 'exhigh' | 'lossless'
 
-export const QQ_QUALITIES: readonly QqQuality[] = ['standard', 'higher', 'exhigh', 'lossless']
+ const QQ_QUALITIES: readonly QqQuality[] = ['standard', 'higher', 'exhigh', 'lossless']
 
 export function isQqQuality(value: unknown): value is QqQuality {
   return typeof value === 'string' && (QQ_QUALITIES as readonly string[]).includes(value)
@@ -97,7 +97,7 @@ export interface QqSong {
   paid: boolean
 }
 
-export interface QqStream {
+ interface QqStream {
   /** Upstream http(s) URL. Played through `aurora-remote:`, never fetched by the page. */
   url: string
   /** The tier that was asked for. */

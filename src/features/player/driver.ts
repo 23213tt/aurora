@@ -18,7 +18,7 @@ import { usePlayer } from './store'
  * without launching Electron), and a future backend - native audio, or a
  * streaming provider - can replace the engine without touching transport logic.
  */
-export interface AudioDriver {
+ interface AudioDriver {
   load(track: Track, autoplay: boolean): Promise<void>
   play(): Promise<void>
   pause(): void
