@@ -507,14 +507,16 @@ Electron 44 · React 19 · TypeScript 5.9 · Vite 7 · Zustand 5 · music-metada
 npm run dist
 ```
 
-产物在 `release/` 目录：
+产物在 `release/` 目录（下面的版本号以当前 `package.json` 的 `version` 为准）：
 
 | 文件 | 用途 |
 | --- | --- |
-| `Aurora-0.1.0-Setup.exe` | 分发给用户的安装程序（约 106 MB） |
-| `Aurora-0.1.0-Setup.exe.blockmap` | 增量更新索引，和安装包一起上传 |
+| `Aurora-<版本>-Setup.exe` | 分发给用户的安装程序（约 123 MB） |
+| `Aurora-<版本>-Setup.exe.blockmap` | 增量更新索引，和安装包一起上传 |
 | `latest.yml` | 自动安装读的版本清单（`electron-updater` 不看 GitHub API）。**只有开启自动安装的用户需要它，但每次发版都要传** |
 | `win-unpacked/` | 免安装目录，自己测试用，**不要分发**，和 `win-unpacked` 一起发会让人以为是安装包 |
+
+已发布的版本可以从 [Releases](https://github.com/23213tt/aurora/releases) 看。
 
 安装程序是 NSIS：非静默安装、可以让用户选安装目录、自动创建桌面与开始菜单快捷方式、
 卸载时保留用户数据（曲库索引和设置不会被删）。
@@ -544,28 +546,32 @@ git push -u origin main
 `build.publish.owner` 决定了应用内「检查更新」去哪个仓库查。填错的话，设置页会如实显示
 「这个构建还没有配置发布仓库」，而不是假装已是最新。
 
-**发布新版本的步骤**，把 `package.json` 里的 `version` 改掉，
-例如 `0.1.0` 改成 `0.2.0`。这一步不能省——更新检查就是拿这个数字和远端最新 Release 比。
-
-重新打包：
+**发布新版本的步骤**：把 `package.json` 里的 `version` 改掉（例如 `0.1.0` → `0.2.0`），
+然后 `npm run dist` 重新打包，再提交、打 tag、推送。tag 名要和版本号一致（前面加 `v`）。
+以 0.2.0 为例：
 
 ```bash
 npm run dist
-```
-
-然后提交、打 tag、推送。tag 名要和版本号一致（前面加 `v`）：
-
-```bash
 git add -A
 git commit -m "release 0.2.0"
 git tag v0.2.0
+git push
 git push --tags
 ```
 
+版本号这一步不能省——更新检查就是拿它和远端最新 Release 比。
+
 最后在 GitHub 网页上打开这个仓库的 Releases，点 `Draft a new release`，
-选择刚推上去的 `v0.2.0` 标签，把 `release/Aurora-0.2.0-Setup.exe`、
-`release/Aurora-0.2.0-Setup.exe.blockmap` 和 `release/latest.yml`
-三个文件拖进附件区，写上更新说明，发布。
+选择刚推上去的 `v0.2.0` 标签，把下面三个文件拖进附件区（名字里的版本号换成你刚发的），
+写上更新说明，发布：
+
+```
+release/Aurora-0.2.0-Setup.exe
+release/Aurora-0.2.0-Setup.exe.blockmap
+release/latest.yml
+```
+
+**`latest.yml` 不能漏。** 它是 `electron-updater` 唯一读的清单，漏了自动安装就永远拿不到更新。
 
 完成后，已经装了 Aurora 的用户最多一天内会在「偏好设置」里看到新版本提示
 （也可以手动点「检查更新」），点「打开下载页」会在系统浏览器里打开 Release 页面。
