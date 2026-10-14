@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { hasNeteaseBackend, netease } from '../../features/netease/api'
 import { toTrack } from '../../features/netease/track'
 import { searchLocalTracks } from '../../features/library/search'
+import { readRememberedSource, rememberSource, type SearchSource } from './remembered-source'
 import type { NeteaseSong } from '../../env'
 import type { Track } from '../../types'
 
@@ -17,8 +18,12 @@ import type { Track } from '../../types'
  * Why a store rather than component state: the query has to survive leaving the
  * screen (the field in the title bar owns the text) and coming back, and the
  * online results have to survive a re-render triggered by a local keystroke.
+ *
+ * The remembered source lives in `./remembered-source`, which has no bundler-only
+ * imports and is therefore testable; nothing that touches the Netease client can
+ * be loaded outside Vite.
  */
-export type SearchSource = 'local' | 'online'
+export type { SearchSource }
 
 export const SEARCH_SOURCES: { id: SearchSource; label: string; note: string }[] = [
   { id: 'online', label: '网易云音乐', note: '联网搜索在线曲库' },
@@ -47,7 +52,8 @@ interface SearchState {
 
 export const useSearch = create<SearchState>((set, get) => ({
   query: '',
-  source: 'online',
+  // Whatever was used last, or the online tab on a first visit.
+  source: readRememberedSource() ?? 'online',
   searching: false,
   local: [],
   online: [],
@@ -66,6 +72,9 @@ export const useSearch = create<SearchState>((set, get) => ({
   },
 
   setSource(source) {
+    // Persisted because the choice is a preference, not a per-visit decision:
+    // whoever searches one catalogue nearly always wants that same one next time.
+    rememberSource(source)
     set({ source, submitted: false })
   },
 
