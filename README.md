@@ -482,6 +482,7 @@ npm run dist
 | --- | --- |
 | `Aurora-0.1.0-Setup.exe` | 分发给用户的安装程序（约 106 MB） |
 | `Aurora-0.1.0-Setup.exe.blockmap` | 增量更新索引，和安装包一起上传 |
+| `latest.yml` | 自动安装读的版本清单（`electron-updater` 不看 GitHub API）。**只有开启自动安装的用户需要它，但每次发版都要传** |
 | `win-unpacked/` | 免安装目录，自己测试用，**不要分发**，和 `win-unpacked` 一起发会让人以为是安装包 |
 
 安装程序是 NSIS：非静默安装、可以让用户选安装目录、自动创建桌面与开始菜单快捷方式、
@@ -531,8 +532,9 @@ git push --tags
 ```
 
 最后在 GitHub 网页上打开这个仓库的 Releases，点 `Draft a new release`，
-选择刚推上去的 `v0.2.0` 标签，把 `release/Aurora-0.2.0-Setup.exe` 和
-`release/Aurora-0.2.0-Setup.exe.blockmap` 两个文件拖进附件区，写上更新说明，发布。
+选择刚推上去的 `v0.2.0` 标签，把 `release/Aurora-0.2.0-Setup.exe`、
+`release/Aurora-0.2.0-Setup.exe.blockmap` 和 `release/latest.yml`
+三个文件拖进附件区，写上更新说明，发布。
 
 完成后，已经装了 Aurora 的用户最多一天内会在「偏好设置」里看到新版本提示
 （也可以手动点「检查更新」），点「打开下载页」会在系统浏览器里打开 Release 页面。
@@ -554,9 +556,12 @@ Aurora 没有代码签名证书，这意味着用户会遇到两次系统警告�
 
 设置页里有一个**默认关闭**的「自动下载并安装」开关，留给愿意拿警告换省事的人。
 开启后会用 `electron-updater` 下载安装包并在退出时安装，也就是说 SmartScreen 那一步被跳过了。
-两点说明：这个开关只在自己打包的构建里有效（开发检出里没有安装器可替换），
-而且它需要额外安装 `electron-updater` 依赖——**这个依赖目前不在 `package.json` 里**，
-所以那个开关在现在的构建里是禁用状态，并如实写明原因。要用它，先装依赖再打包。
+这个开关只在自己打包的构建里有效（`app.isPackaged` 为假时不出现——开发检出里没有安装器可替换），
+所以它在开发模式下是禁用的，界面会写明原因。
+
+**发布时多了一个文件要传。** `electron-updater` 不读 GitHub 的 releases API，它读 Release 附件里的
+`latest.yml`。`npm run dist` 会自动生成这个文件（和安装包、blockmap 放在一起），**上传 Release 时要把它一起传上去，否则自动安装拿不到更新信息**。而「检查更新」那条路径读的是 GitHub API，两者互不影响——
+但正因为如此，版本号与附件必须同时更新，否则会出现「应用说有新版本，自动安装却说没有」的不一致。
 
 ---
 

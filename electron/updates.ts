@@ -269,44 +269,42 @@ export function shouldAutoInstall(result: UpdateResult): boolean {
 /**
  * Download the pending release and hand it to the installer.
  *
- * `electron-updater` is loaded dynamically and by name, and it is an **optional**
- * dependency: it is not installed in this checkout, and the feature reports
- * itself as unavailable when it is missing (see `autoInstallAvailable`). That
- * keeps a ~1 MB dependency plus its transitive tree out of the installer until
- * someone actually decides to ship automatic installation. The check above
- * stays the source of truth for *whether* there is an update; this only fetches
- * the file.
+ * `electron-updater` is loaded dynamically so that a user who never turns the
+ * option on does not pay for loading it at startup. It is a real dependency now,
+ * so `autoInstallAvailable` normally reports true - but the dynamic form stays,
+ * because a packaged build can still be missing it and the settings page must be
+ * able to say so instead of throwing.
+ *
+ * The GitHub check above remains the source of truth for *whether* there is an
+ * update; this only fetches the file. That is why the update info shown here is
+ * the info the check produced, not whatever the updater's own feed says.
  */
 
-/** The slice of `electron-updater` this file uses, declared locally so the package is optional. */
+/** The slice of `electron-updater` this file uses. */
 type ProgressInfo = { percent: number; transferred: number; total: number }
 
 interface AutoUpdaterLike {
   autoDownload: boolean
   autoInstallOnAppQuit: boolean
-  on(event: 'download-progress', listener: (progress: ProgressInfo) => void): void
-  checkForUpdates(): Promise<{ downloadPromise?: Promise<unknown> } | null>
+  on(event: 'download-progress', listener: (progress: ProgressInfo) => void): unknown
+  checkForUpdates(): Promise<unknown>
+  downloadUpdate(): Promise<unknown>
   quitAndInstall(): void
 }
 
 /**
- * Load `electron-updater`, or null when it is not installed.
+ * Load `electron-updater`, or null when it is not present.
  *
- * `import()` is the only form that works for a package that may not exist: a
- * static import would fail at build time and a `require` of a missing module
- * throws before the try block can decide anything.
+ * `import()` rather than a static import: the module registers itself against
+ * `electron`'s app lifecycle on load, and a dev checkout should not pay that
+ * cost at startup for a feature that is off by default.
  */
 async function loadUpdater(): Promise<AutoUpdaterLike | null> {
   try {
-    // `electron-updater` is optional: it is deliberately not a dependency yet,
-    // so this import is neither resolvable by tsc nor present at runtime. That
-    // is the intended state - the feature reports itself unavailable
-    // (`autoInstallAvailable`) instead of shipping a megabyte of updater code
-    // nobody has opted into.
-    // @ts-expect-error optional dependency, installed only when the feature is enabled
     const module = (await import('electron-updater')) as unknown as { autoUpdater: AutoUpdaterLike }
     return module.autoUpdater ?? null
-  } catch {
+  } catch (error) {
+    console.error('[aurora] electron-updater is unavailable', error)
     return null
   }
 }
@@ -321,13 +319,19 @@ let installing = false
 
 export async function downloadAndInstall(result: UpdateResult): Promise<void> {
   if (installing || result.state !== 'available') return
-  // Narrowed once, so the progress callback and the retry path below cannot
+  // Narrowed once, so the progress callback and the failure path below cannot
   // lose track of which member of the union they are working with.
   const pending = result
   installing = true
   try {
     const updater = await loadUpdater()
     if (!updater) return
+    /*
+     * `autoDownload = false` plus an explicit `downloadUpdate()` is the ordering
+     * the API expects: check first, then download. The alternative -
+     * `checkForUpdatesAndNotify()` - downloads without asking, which would make
+     * the setting's default a lie.
+     */
     updater.autoDownload = false
     updater.autoInstallOnAppQuit = true
 
@@ -342,18 +346,8 @@ export async function downloadAndInstall(result: UpdateResult): Promise<void> {
       })
     })
 
-    const downloaded = await updater.checkForUpdates()
-    const file = downloaded?.downloadPromise
-    if (!file) {
-      broadcast({
-        state: 'available',
-        current: pending.current,
-        checkedAt: Date.now(),
-        info: pending.info
-      })
-      return
-    }
-    await file
+    await updater.checkForUpdates()
+    await updater.downloadUpdate()
     broadcast({ state: 'ready', current: pending.current, info: pending.info })
   } catch (error) {
     // Failing to download must not look like failing to check: the user still
