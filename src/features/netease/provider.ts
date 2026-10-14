@@ -1,4 +1,4 @@
-import type { NeteaseQuality, NeteaseSong } from '../../env'
+﻿import type { NeteaseQuality, NeteaseSong } from '../../env'
 import type { Track } from '../../types'
 import { netease, hasNeteaseBackend } from './api'
 import { mergeTranslation } from './lrc'
@@ -6,6 +6,7 @@ import { neteaseSongId, toTrack as toNeteaseTrack } from './track'
 import { rememberNeteaseCover } from '../library/source'
 import { remoteImageUrl } from '../player/urls'
 import { registerProvider } from '../online/registry'
+import { previewBackendsForced } from '../online/preview-harness'
 import { registerResumeHandler } from '../online/store'
 import type { PlatformBackend } from '../online/store'
 import {
@@ -167,10 +168,14 @@ export const neteaseProvider: OnlineMusicProvider = {
   summary: '搜索、歌单、每日推荐、红心与云盘，全部走第三方逆向接口',
   disclosure:
     '通过第三方逆向接口（NeteaseCloudMusicApiEnhanced）接入，仅供个人学习自用，不是官方客户端，也不提供绕过付费或会员的能力。',
+  // Verified by measurement, not assumed: signed out, free tracks play in full and
+  // paid ones arrive as trial fragments. No sign-in is required to search or play.
+  anonymousNote: '搜索和播放不需要登录：免费歌曲可以完整播放，需要会员的歌给试听片段。',
   // True only when the main process actually exposes this client. A browser
   // preview and a build without the Electron half both answer false, and the rail
-  // then shows no entry rather than an entry that cannot work.
-  available: () => hasNeteaseBackend,
+  // then shows no entry rather than an entry that cannot work. The harness override
+  // exists so the layout *with* platforms stays checkable in a preview.
+  available: () => previewBackendsForced() || hasNeteaseBackend,
   capabilities: CAPABILITIES,
   collections: COLLECTIONS,
   qualityTiers: TIERS,

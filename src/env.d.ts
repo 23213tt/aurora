@@ -550,6 +550,14 @@ export interface AuroraApi {
 declare global {
   interface Window {
     aurora?: AuroraApi
+    /**
+     * Preview harness only: makes every registered platform report itself as
+     * available, so the layout with platforms can be screenshotted without a main
+     * process. Read at call time by each provider's `available()`; a shipping build
+     * never sets it, and the preview does not set it either unless a harness
+     * deliberately asserts it.
+     */
+    __AURORA_FAKE_BACKENDS?: boolean
   }
 }
 

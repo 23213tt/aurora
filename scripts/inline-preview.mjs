@@ -177,6 +177,10 @@ const SCREENS = [
   'sources',
   'settings',
   'netease',
+  // Every platform screen gets a harness page. One per registered platform is what
+  // keeps "the shared screen renders correctly" checkable as platforms are added,
+  // instead of only the platform whose page someone remembered to list.
+  'qq',
   'search',
   'eq',
   'queue',
@@ -186,8 +190,23 @@ const SCREENS = [
 ]
 
 const player = inlinePage(playerDir, 'index.html')
+
+/*
+ * `--fake-backends` builds the harness in the state where every platform looks
+ * present, which is the only way to screenshot the layout *with* platforms: a
+ * browser has no main process, so `available()` is false for all of them and the
+ * rail renders no platform sections at all.
+ *
+ * Opt-in through a flag rather than baked in, because an ordinary preview's job is
+ * to show what the app actually does in a browser - with the platform sections
+ * honestly absent. Naming the switch makes the departure visible in the file and in
+ * the command that produced it.
+ */
+const FAKE_BACKENDS = process.argv.includes('--fake-backends')
+const fakeBackends = FAKE_BACKENDS ? '<script>window.__AURORA_FAKE_BACKENDS = true</script>' : ''
+
 const playerPayload = (bootstrap) =>
-  `${ERROR_TRAP}\n${bootstrap ? `${bootstrap}\n` : ''}${player.bundle}\n`
+  `${ERROR_TRAP}\n${fakeBackends ? `${fakeBackends}\n` : ''}${bootstrap ? `${bootstrap}\n` : ''}${player.bundle}\n`
 
 emit(outDir, 'aurora-preview.html', insertBeforeBodyClose(player.html, playerPayload(null)))
 for (const screen of SCREENS) {

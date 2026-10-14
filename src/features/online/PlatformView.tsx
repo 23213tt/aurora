@@ -254,7 +254,8 @@ function AccountStrip({
         </span>
         <div className="online__account-text">
           <span className="online__account-name">未登录</span>
-          <span className="online__account-meta">搜索和播放不需要登录</span>
+          {/* The platform's own account of what works signed out (see the contract). */}
+          <span className="online__account-meta">{provider.anonymousNote}</span>
         </div>
         {onLogin ? (
           <button className="btn btn--small" onClick={onLogin}>
@@ -495,7 +496,7 @@ function FrontPage({
       <p className="online__welcome-note">
         {canUsePersonal
           ? `已连接${provider.displayName}，当前「${QUALITY_LABELS[state.quality]}」音质。上面选一个列表，也可以直接搜索。`
-          : '搜索和播放不需要登录。登录后会多出你的歌单与个人列表。'}{' '}
+          : provider.anonymousNote}{' '}
         {!canUsePersonal && onLogin ? (
           <button className="online__link" onClick={onLogin}>
             登录{provider.displayName}

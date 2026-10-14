@@ -1,5 +1,6 @@
-import type { QqApi, QqSong } from '../../env'
+﻿import type { QqApi, QqSong } from '../../env'
 import type { QualityTier } from './types'
+import { previewBackendsForced } from './preview-harness'
 import { normalizeSearchResult } from './normalize'
 import { registerProvider } from './registry'
 import type { PlatformBackend } from './store'
@@ -38,6 +39,7 @@ function client(): QqApi | null {
   if (typeof window === 'undefined') return null
   return window.aurora?.qq ?? null
 }
+
 
 /**
  * QQ's tiers, in the same vocabulary as everyone else's.
@@ -196,10 +198,17 @@ export const qqProvider: OnlineMusicProvider = {
   summary: '搜索并播放 QQ 音乐上的歌曲；高音质需要登录，付费曲目只如实显示原因',
   disclosure:
     '通过第三方逆向接口（qq-music-api）接入，仅供个人学习自用，不是官方客户端，也不提供绕过付费或会员的能力。',
+  /*
+   * Measured, and much weaker than Netease's: of a 293-track sample, only 18.4%
+   * returned an audio URL signed out (all of them `payplay === 0`, at 128 kbps),
+   * while every paid track answered `result=104003`. Saying "no sign-in needed"
+   * here would describe a catalogue where most clicks do nothing.
+   */
+  anonymousNote: '未登录也能搜索，但只有免费歌曲能播放（128k）。多数歌曲需要登录账号。',
   // True only in a build whose main process exposes the client. A browser preview
   // and any build made before that client landed both answer false, and the rail
   // then shows no entry rather than one that cannot work.
-  available: () => client() !== null,
+  available: () => previewBackendsForced() || client() !== null,
   capabilities: CAPABILITIES,
   collections: COLLECTIONS,
   qualityTiers: TIERS,
@@ -266,4 +275,5 @@ function trackIdFor(song: OnlineSong): string {
 export function registerQqProvider(): void {
   registerProvider(qqProvider)
 }
+
 

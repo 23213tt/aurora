@@ -10,9 +10,12 @@ src/
   app/          外壳与装配：App、路由、预览开关、Rail、TitleBar、跨功能的派生数据
   features/     功能模块，每个功能自成一目录（store / hooks / 该功能专属组件）
     accounts/     档案、按档案分区存储、在线账号绑定
+    online/       **平台层**（与具体平台无关的一切）：契约、注册表、共享 store、
+                  共享屏幕、直链缓存、预览开关
+    netease/      网易云：provider 声明 + 它自己的登录弹窗 + api/track/stream/lrc
+    qq/           QQ 音乐：它自己的登录弹窗与视图（provider 声明在 online/qq-provider.ts）
     library/      本地曲库：store、扫描、来源接缝、封面、歌单树、配色
     lyrics/       歌词解析（LRC）
-    netease/      在线音乐：api、store、hooks、歌词、音质、以及它的视图
     player/       播放内核：engine、driver、queue、urls、进度条
     playlists/    歌单：m3u 读写、存储、导入导出的流程
     settings/     设置状态的读写
@@ -23,13 +26,32 @@ src/
   styles/       全局样式；功能专属样式跟随其目录
   preview/      仅预览构建使用的压力测试种子
 electron/
-  pure/         零 Electron 依赖、可在裸 Node 下测试的纯逻辑
+  pure/         零 Electron 依赖、可在裸 Node 下测试的纯逻辑（含 netease-bootstrap 的
+                重试策略）
   protocols/    三个私有协议：aurora-app:// aurora-media:// aurora-remote://
   netease/      网易云客户端与 IPC
+  qq/           QQ 音乐客户端与 IPC，按 transport / normalize / reasons / session 分文件
   main.ts       Electron 主进程
 scripts/        开发与审计工具（见下方「审计」）
 tests/          单元测试，主要覆盖纯逻辑
 ```
+
+### 平台层（`src/features/online/`）
+
+在线音乐曾经是硬编码的网易云。结构照参考软件 Folia 的 provider 模式做（分析见
+[`reference-players.md`](./reference-players.md)），因为它是被验证过的形状，而自己发明一个
+只会得到同一套东西的另一版命名。
+
+- **注册表**：`Map<ProviderId, Provider>`，UI 只调 `listProviders()`，不 import 任何具体平台。
+  `providerForTrack(track)` 按歌曲反查平台。
+- **契约是一组布尔能力**：`capabilities` 里 `search / playback / lyrics / auth / collections / …`
+  全是布尔，每个能力对应一个可选子接口。**平台没有某功能是 `false`，不是在 UI 里判断它是谁。**
+- **歌曲自带来源**：`{ kind: 'online', providerId }`，取代了以前的 `track.source === 'netease'`。
+- **侧栏与搜索页从注册表生成**：加一个平台不改这两个文件一行代码。
+- **可用性三态**：`playable` / `unknown + restricted` / `takenDown`。判决只来自真实请求，
+  运行时不回写（这是 Folia 契约里的规则：权限/付费/地区属于「受限」，不能当成「已下架」）。
+- **平台专属界面留在平台自己目录里**：两个登录弹窗不共用，因为它们的流程真的不同；
+  硬抽象成「通用登录」会比它替换掉的两份代码更长。
 
 ## 依赖方向（硬规则）
 
@@ -95,9 +117,21 @@ node scripts/move-files.mjs --plan scripts/moves/features.json --apply  # 执行
 
 ## 尚待完成
 
-- `App()` 仍有约 790 行：键盘快捷键、播放/导航动作、以及六段视图分发的 JSX 仍在其中。
-  下一步应抽出 `useKeyboardShortcuts`、`usePlaybackActions`，并把视图分发拆到 `views/`。
-- `electron/netease/client.ts`（818 行）应按 bootstrap / 会话 / 搜索 / 播放 / 登录 拆分。
-- `electron/main.ts`（673 行）的 IPC 注册应拆到 `electron/ipc/` 下的几个模块。
-- `src/features/netease/store.ts`（571 行）需要分离在线状态与播放衔接。
-- 未统一 store 写法；有一批导出只在本文件内使用，可以收窄。
+按「值不值得」排序，附当前行数（2026-10，平台抽象之后）：
+
+- **`src/App.tsx`（830 行）**仍是最大的渲染层文件：键盘快捷键、播放/导航动作、
+  六段视图分发的 JSX 都在其中。`useKeyboardShortcuts` 与 `usePlaybackActions` 已经抽出
+  （曾经约 1180 行），剩下的主要是视图分发与头部接线，可以再拆，但收益已经不如从前。
+- **`electron/netease/client.ts`（856 行）**按 bootstrap / 会话 / 搜索 / 播放 / 登录拆分。
+  它是全项目最大的文件，且 `bootstrap` 那段逻辑（含重试策略）已经证明值得独立。
+- **`electron/main.ts`（683 行）**的 IPC 注册可拆到 `electron/ipc/`。
+- **`src/features/online/store.ts`（592 行）与 `PlatformView.tsx`（591 行）**是平台层的两个大件；
+  前者可分离「搜索 / 目录 / 直链」三块状态，后者可按界面区块拆组件。
+- 未统一 store 写法；有一批导出只在本文件内使用，可以收窄（`npm run audit:exports` 是入口）。
+
+**已经做完、不必再列**（这份文档曾经把它们列为待办）：
+
+- `src/features/netease/store.ts` 从 571 行降到 237 行：它现在是**适配器**而非实现，
+  内部转发到平台层的共享 store。两套直链缓存合并成了一套——那正是抽象要消灭的重复。
+- 在线音乐不再是硬编码网易云：见上方「平台层」。
+- 三个死代码审计都接入了 `npm run check`。

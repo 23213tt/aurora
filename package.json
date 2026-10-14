@@ -23,6 +23,7 @@
     "test": "node --test \"tests/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.json",
     "check": "npm run typecheck && npm run test && node scripts/audit-reachability.mjs && node scripts/audit-css.mjs && node scripts/audit-stale-paths.mjs",
+    "audit:exports": "node scripts/audit-exports.mjs",
     "start": "npm run build && electron .",
     "dist": "npm run build && electron-builder --win"
   },

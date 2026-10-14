@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AccountsView } from './views/AccountsView'
 import { AlbumDetail } from './views/AlbumDetail'
 import { AlbumGrid } from './views/AlbumGrid'
@@ -6,6 +6,8 @@ import { ArtistList } from './views/ArtistList'
 import { EqPanel } from './views/EqPanel'
 import { FolderTree } from './views/FolderTree'
 import { NeteaseView } from './features/netease/NeteaseView'
+import { QqView } from './features/qq/QqView'
+import { useAvailableProviders } from './features/online/hooks'
 import { PlayerBar } from './views/PlayerBar'
 import { PlaylistDetail } from './views/PlaylistDetail'
 import { PlaylistList } from './views/PlaylistList'
@@ -467,7 +469,18 @@ export function App() {  if (!isNative) {
    */
   const searchQuery = useSearch((s) => s.query)
   const searchValue = searchQuery
-  const searchPlaceholder = '搜索本机曲库与网易云'
+  /*
+   * Generated from the registry rather than written out.
+   *
+   * It used to read "搜索本机曲库与网易云", which became wrong the moment a second
+   * platform was registered - a placeholder that names the catalogues is only
+   * accurate while it is derived from them.
+   */
+  const availableProviders = useAvailableProviders()
+  const searchPlaceholder = useMemo(() => {
+    const names = availableProviders.map((provider) => provider.shortName ?? provider.displayName)
+    return names.length > 0 ? `搜索本机曲库与${names.join('、')}` : '搜索本机曲库'
+  }, [availableProviders])
 
   const onSearchInput = useCallback((next: string) => {
     useSearch.getState().setQuery(next)
@@ -490,6 +503,9 @@ export function App() {  if (!isNative) {
     // store, so it must stay reachable with an empty local library - hence
     // before the `tracks.length === 0` check below.
     if (view === 'netease') return <NeteaseView />
+    // A second platform is the same kind of destination: one line here, because the
+    // screen itself is shared and driven by the provider's declared capabilities.
+    if (view === 'qq') return <QqView />
     if (view === 'accounts') {
       return (
         <AccountsView

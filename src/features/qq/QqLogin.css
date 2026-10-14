@@ -1,0 +1,104 @@
+/*
+ * QQ Music's sign-in dialog.
+ *
+ * Same design rules as the rest of the app (see docs/ui-design.md): the window's
+ * colours come from the current cover, so nothing here sets a hue of its own - it
+ * uses the shared tokens and inherits whatever `--accent` is. Written as its own
+ * file rather than a section of a shared dialog because the two platforms' flows
+ * genuinely differ: this one is a QR code, Netease's is a QR code plus a phone
+ * form.
+ */
+
+.qq-login {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--s5);
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.qq-login__panel {
+  width: min(360px, 100%);
+  padding: var(--s5);
+  border: 1px solid var(--ink-600);
+  border-radius: var(--r-panel);
+  background: var(--ink-800);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
+}
+
+.qq-login__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+}
+
+.qq-login__title {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+.qq-login__close {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-control);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-low);
+}
+
+.qq-login__close:hover {
+  color: var(--text-hi);
+  background: var(--ink-700);
+}
+
+.qq-login__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s3);
+  text-align: center;
+}
+
+.qq-login__code {
+  display: grid;
+  place-items: center;
+  width: 200px;
+  height: 200px;
+  padding: var(--s2);
+  border-radius: var(--r-panel);
+  background: #fff;
+}
+
+.qq-login__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.qq-login__placeholder {
+  padding: var(--s3);
+  font-size: var(--fs-meta);
+  color: #444;
+  line-height: 1.5;
+}
+
+.qq-login__hint {
+  margin: 0;
+  font-size: var(--fs-meta);
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+
+.qq-login__note {
+  margin: 0;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  line-height: 1.5;
+}

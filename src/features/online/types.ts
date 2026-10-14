@@ -271,6 +271,20 @@ export interface OnlineMusicProvider {
    * than a per-platform disclosure buried in a view.
    */
   disclosure: string
+  /**
+   * What actually works without signing in, in the platform's own words.
+   *
+   * A field rather than one shared sentence, because the platforms genuinely
+   * differ and the shared sentence was wrong for one of them: Netease plays free
+   * tracks in full and hands out trial fragments of paid ones, while QQ was
+   * measured at only 18.4% playable signed out (free tracks, 128 kbps) - every
+   * `payplay === 1` track answers `result=104003`. The screen used to tell both
+   * platforms "searching and playback need no sign-in", which for QQ described a
+   * catalogue where most clicks do nothing.
+   *
+   * Shown while signed out, where the decision to sign in is actually made.
+   */
+  anonymousNote: string
   capabilities: ProviderCapabilities
   /**
    * False when this build has no backend for the platform at all (a browser
