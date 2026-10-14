@@ -21,6 +21,7 @@ export type ProviderId =
   | 'spotify'
   | 'apple'
   | 'netease'
+  | 'qq'
 
 export interface ProviderField {
   key: string
@@ -110,7 +111,19 @@ export const AUTH_PROVIDERS: AuthProvider[] = [
       '它只能播放你这个账号本来就有权播放的内容——不绕过付费、不破解会员音质、不解锁 VIP 单曲；' +
       '遇到需要会员或受地区限制的歌，界面会如实说明原因，而不是假装能播。' +
       '这类接口随时可能被平台改动而失效，账号也可能被风控波及。' +
-      '想稳定听会员曲库，请用官方客户端。QQ 音乐不接入。'
+      '想稳定听会员曲库，请用官方客户端。'
+  },
+  {
+    id: 'qq',
+    name: 'QQ 音乐',
+    summary: '搜索并播放 QQ 音乐上的歌曲',
+    kind: 'password',
+    status: 'planned',
+    note:
+      '还没有实现。这个软件做的是各音乐平台的客户端，所以 QQ 音乐是目标之一，' +
+      '但在真正能用之前它不会出现在界面上——没有可用实现的入口只会被当成坏的。' +
+      '接入时会先核实官方开发者平台是否对个人桌面软件开放（y.qq.com/music_developer）；' +
+      '如果只能用第三方逆向接口，代价与网易云那条一样，会在这里写明。'
   }
 ]
 
