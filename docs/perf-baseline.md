@@ -63,7 +63,7 @@ node scripts/perf-report.mjs --counters=perf-counters.json    # 并入外部计�
 | **DOM 节点数** | `document.getElementsByTagName('*').length` 在窗口首尾的差 | 页内 | 个 |
 | **DOM 变更** | 窗口内 `MutationObserver` 收到的 record 条数（childList + characterData + attributes），并给出变更最多的节点与样本 | 页内 `MutationObserver(subtree)` | 条 / 条每秒 |
 | **根组件渲染次数** | `window.__auroraRenders` 在窗口首尾的差（沿用 `src/App.tsx` 里已有的 preview-only 计数器） | 页内 | 次 |
-| **位置写入次数** | **不是测出来的**：`#perf` 屏跑 `setInterval(1000/60)`，预览的合成驱动每帧又写一次，所以按构造是 60 或 120 次/秒 | 代码事实（`src/App.tsx` / `src/player/driver.ts`） | 次/秒 |
+| **位置写入次数** | **不是测出来的**：`#perf` 屏跑 `setInterval(1000/60)`，预览的合成驱动每帧又写一次，所以按构造是 60 或 120 次/秒 | 代码事实（`src/App.tsx` / `src/features/player/driver.ts`） | 次/秒 |
 | **进程 CPU（全部进程）** | 窗口内 browser+renderer+GPU+utility 全部进程的 `cpuTime` 增量之和 | 浏览器级 CDP `SystemInfo.getProcessInfo` | ms |
 
 ### 3.1 百分比换算（**必读，否则会误读 10 倍以上**）
@@ -111,7 +111,7 @@ node scripts/perf-report.mjs --counters=perf-counters.json    # 并入外部计�
 | `hidden-stage-browser` | 不可见·对照 | `#stage` | 同上但不加任何反节流开关 |
 
 > **为什么必须有 `idle-paused` 而不能直接用 `#settings`**：浏览器预览的启动引导会 `player.playQueue(demoLibrary)` 自动起播，
-> 而预览的**合成音频驱动**（`src/player/driver.ts:62-79`）在 `requestAnimationFrame` 里每帧调用 `store.setPosition()`，
+> 而预览的**合成音频驱动**（`src/features/player/driver.ts:62-79`）在 `requestAnimationFrame` 里每帧调用 `store.setPosition()`，
 > 且**没有做任何可见性判断**。所以「打开设置页」根本不是空闲态，它自带一个 60Hz 写 store 的循环。
 > 只有点真实的暂停按钮才能得到真正静止的页面（脚本会验证暂停后 DOM 变更残值为 0，否则打警告）。
 
@@ -240,13 +240,13 @@ fps = 0、主线程忙时 0.05%、DOM 变更 0 条/秒、渲染进程 CPU 0.30%�
   这一行是可以直接当真的**（`hidden-stage-browser` 那一行是节流后的对照，不要用来代表 Electron）。
 
 > 这条区分现在很要紧：当前工作区的新构建已经给播放位置加了**可见性策略**——
-> 可见时走 rAF，隐藏时改用 `setInterval(advance, 250ms)`（见 `src/player/driver.ts` 的 `armClock`）。
+> 可见时走 rAF，隐藏时改用 `setInterval(advance, 250ms)`（见 `src/features/player/driver.ts` 的 `armClock`）。
 > 实测在隐藏态下（带反节流开关）它仍然保持约 **16.7 次/秒的 DOM 变更**
 > （对比基线构建的 0 次/秒）——**这是设计使然，不是 bug**，但它意味着「看不见就不花代价」这条性质
 > 在新实现里不再自动成立，必须靠这个口径持续盯着。
 > 而浏览器默认节流下同一场景只有约 4 次/秒——**两个数字差了 4 倍，用错那一行就会低估隐藏开销。**
 
-另外有一条**代码事实**（读代码得到，不是实测），指基线构建：真实音频路径 `src/player/engine.ts` 的
+另外有一条**代码事实**（读代码得到，不是实测），指基线构建：真实音频路径 `src/features/player/engine.ts` 的
 `startTicker()` 只用 `pause()` 停止，**没有任何可见性判断**，而 `src/stage/Visualizer.tsx` 有
 （`visibilitychange → stop()`）。也就是说当时隐藏时 **canvas 会停、位置流不会停**。当前工作区已经
 在改这两处，改完要用本装置重测，不要沿用这条描述。

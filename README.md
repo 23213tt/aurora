@@ -262,7 +262,7 @@ node scripts/probe-netease6-verify.cjs
 ### 5. 音源是可插拔的
 
 播放内核从不假设「歌就是磁盘上的文件」。所有「这首歌的音频、封面、歌词从哪来」
-都经过 `src/library/source.ts` 里的 `TrackSource` 接口：
+都经过 `src/features/library/source.ts` 里的 `TrackSource` 接口：
 
 ```ts
 export interface TrackSource {
@@ -281,7 +281,7 @@ export interface TrackSource {
 就是**加一个对象进 `SOURCES`，并给它产出的 track 标上 `source` id**——
 引擎、队列、视图一行都不用改。网易云就是按这个接缝接进去的。
 
-播放本身也有对应的接缝：`src/player/driver.ts` 里的 `AudioDriver`。
+播放本身也有对应的接缝：`src/features/player/driver.ts` 里的 `AudioDriver`。
 Electron 里是 Web Audio 引擎，浏览器预览里是一个合成频谱的假驱动
 （这样不启动 Electron 也能调视觉）。
 
@@ -349,7 +349,7 @@ npm run preview
 `aurora-app://app/` 提供渲染层文件，文档就有了真实且安全的源，模块加载、`crossorigin`
 样式表和 `'self'` 全部按正常规则工作。
 
-协议处理器里唯一有安全含义的是路径包含检查，所以它被单独抽成 `electron/app-paths.ts` 里的
+协议处理器里唯一有安全含义的是路径包含检查，所以它被单独抽成 `electron/pure/app-paths.ts` 里的
 纯函数并写了测试——`..`、百分号编码的 `..`、绝对路径（含 Windows 盘符）、NUL 字节、
 畸形编码，每一条都是「读到了曲库之外的文件」的尝试。
 

@@ -371,7 +371,7 @@ function createWindow(): void {
   } else {
     // Served over a private scheme rather than file://. An opaque file:// origin
     // blocks the module script and defeats the app's own `script-src 'self'`;
-    // see electron/app-protocol.ts.
+    // see electron/protocols/app-protocol.ts.
     void mainWindow.loadURL(`${APP_ORIGIN}/index.html`)
   }
 

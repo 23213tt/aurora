@@ -28,7 +28,7 @@ export interface ScanProgress {
  * (measured: scripts/probe-aurora-bg.mjs reports `messagesPerFile: 2`). Each one
  * cost the renderer two store writes (`setCurrentScan` + `setProgress`) and one
  * render of the whole App tree, because the progress bar is state at the root
- * (src/library/scan.ts, src/App.tsx). None of it is visible while the window is
+ * (src/features/library/scan.ts, src/App.tsx). None of it is visible while the window is
  * hidden.
  *
  * The fix belongs on the sending side: a message the renderer never receives
