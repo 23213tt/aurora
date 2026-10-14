@@ -82,26 +82,55 @@ export function handleAppProtocol(): void {
     const target = resolveAppAsset(root, url.pathname)
     if (!target) return new Response('forbidden', { status: 403 })
 
-    let stat: fs.Stats
+    /*
+     * Read first, ask questions later.
+     *
+     * The previous version called `fs.promises.stat` and answered 404 when it threw.
+     * That made "the file is not there" and "stat cannot see inside an asar" the same
+     * answer - and the second one is not hypothetical: a packaged build shipped with
+     * this handler and showed nothing but `not found`, while the very same file was
+     * provably inside `app.asar` (checked by extracting it). Reading the file is the
+     * operation that actually matters, it works on asar paths, and it needs no
+     * separate stat: a failure to read *is* a 404.
+     *
+     * `statSync` is kept only to fill in `content-length`, where the size is worth
+     * having but a failure to obtain it must not turn into a missing page.
+     */
+    let size = 0
     try {
-      stat = await fs.promises.stat(target)
-    } catch {
-      return new Response('not found', { status: 404 })
+      const stat = fs.statSync(target)
+      if (!stat.isFile()) return new Response('not found', { status: 404 })
+      size = stat.size
+    } catch (error) {
+      /*
+       * Distinguish the two cases in the answer instead of collapsing them: a route
+       * that is genuinely absent should stay a plain 404, while anything else is a
+       * bug worth seeing. The body is shown in the window, so this is the difference
+       * between "blank page" and a sentence naming the file and the reason.
+       */
+      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+        return new Response('not found', { status: 404 })
+      }
+      return new Response(`cannot stat ${url.pathname}: ${(error as Error)?.message ?? error}`, { status: 404 })
     }
-    if (!stat.isFile()) return new Response('not found', { status: 404 })
 
     const type = MIME[path.extname(target).toLowerCase()] ?? 'application/octet-stream'
-    const stream = fs.createReadStream(target)
+    let stream: fs.ReadStream
+    try {
+      stream = fs.createReadStream(target)
+    } catch (error) {
+      return new Response(`cannot read ${url.pathname}: ${(error as Error)?.message ?? error}`, { status: 404 })
+    }
 
-    return new Response(Readable.toWeb(stream) as WebReadableStream, {
-      status: 200,
-      headers: {
-        'content-type': type,
-        'content-length': String(stat.size),
-        // Hashed asset filenames make the renderer safe to cache hard; the HTML
-        // itself must not be, or a new build would never be picked up.
-        'cache-control': path.extname(target) === '.html' ? 'no-store' : 'public, max-age=31536000, immutable'
-      }
-    })
+    const headers: Record<string, string> = {
+      'content-type': type,
+      // Hashed asset filenames make the renderer safe to cache hard; the HTML
+      // itself must not be, or a new build would never be picked up.
+      'cache-control': path.extname(target) === '.html' ? 'no-store' : 'public, max-age=31536000, immutable'
+    }
+    // Only claim a length when it is known, rather than sending 0 and truncating.
+    if (size > 0) headers['content-length'] = String(size)
+
+    return new Response(Readable.toWeb(stream) as WebReadableStream, { status: 200, headers })
   })
 }

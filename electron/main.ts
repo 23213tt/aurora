@@ -366,6 +366,30 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  /*
+   * Surface a failed renderer load instead of showing an empty window.
+   *
+   * A packaged build shipped with a bug in the app protocol handler and opened as a
+   * black window with the word "not found" - no error, no dialog, nothing to act on.
+   * The renderer never runs in that state, so it cannot report anything itself; the
+   * only place that knows is here. The message replaces the page, which turns
+   * "it is blank" into a sentence naming the step that failed.
+   */
+  const reportLoadFailure = (reason: string): void => {
+    const text = `Aurora 无法加载界面（${reason}）。这是程序错误，请把这句话连同下面的地址一起反馈。\n\n地址：${APP_ORIGIN}/index.html`
+    void mainWindow?.webContents
+      .executeJavaScript(
+        `document.body.innerHTML = '<pre style="font:13px/1.6 ui-monospace,Consolas,monospace;color:#e6e6e6;background:#141414;padding:24px;white-space:pre-wrap;margin:0">' +
+          ${JSON.stringify(text)}.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]) +
+          '</pre>'`
+      )
+      .catch(() => undefined)
+  }
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error('[aurora] renderer load failed', errorCode, errorDescription, validatedURL)
+    reportLoadFailure(`${errorDescription || errorCode} ← ${validatedURL}`)
+  })
+
   if (isDev) {
     void mainWindow.loadURL(DEV_URL)
     if (!captureArg) mainWindow.webContents.openDevTools({ mode: 'detach' })
