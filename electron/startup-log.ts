@@ -1,15 +1,4 @@
-/**
- * A startup log, written next to the app's other user data.
- *
- * Needed because a packaged build opened as a blank window and there was no way to
- * find out why: the renderer never runs in that state, so it cannot report anything,
- * and the only visible trace was a 404 body. This records what the main process
- * actually saw - every renderer request and its outcome, plus anything the renderer
- * itself managed to log before it died.
- *
- * Deliberately a file rather than only a window or the console: a user can send a
- * file, and a window that never renders cannot show anything at all.
- */
+/** 启动日志。渲染层没跑起来时，这是唯一能留下线索的地方。 */
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -39,15 +28,7 @@ export function openStartupLog(logDir: string, appVersion: string, packaged: boo
   }
 }
 
-/**
- * Appends one line, synchronously.
- *
- * Not a `WriteStream`: that buffers, and the first version of this file proved the
- * point by leaving a zero-byte `startup.log` behind after a run that never flushed.
- * The whole purpose here is to survive a crash, so each line has to be on disk by
- * the time the call returns - the cost of a synchronous append on a handful of lines
- * is nothing next to losing the only evidence.
- */
+/** 同步追加。用 WriteStream 会缓冲，进程被强杀时日志是空的（踩过一次）。 */
 export function write(line: string): void {
   if (!usable || !logPath) return
   try {

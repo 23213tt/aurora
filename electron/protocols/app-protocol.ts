@@ -26,19 +26,8 @@ import { write } from '../startup-log'
  const APP_SCHEME = 'aurora-app'
 export const APP_ORIGIN = `${APP_SCHEME}://app`
 
-/**
- * Where the built renderer lives, inside the asar when packaged.
- *
- * Two levels up, not one: this file compiles to `dist-electron/protocols/`, so a
- * single `..` lands on `dist-electron/` and the renderer root is computed as
- * `dist-electron/dist`. That is precisely the bug that shipped in 0.3.0 through
- * 0.3.3 - the file was moved from `electron/` into `electron/protocols/` during a
- * refactor and this relative path was not updated with it, so every request for the
- * renderer answered 404 and the window came up empty.
- *
- * The log line in `handleAppProtocol` is the countermeasure: `root=… exists=false`
- * states this failure outright, where three releases were spent inferring it.
- */
+/** 渲染层产物目录。本文件编译到 dist-electron/protocols/，所以要上两级。 */
+
 const distRoot = (): string => path.resolve(__dirname, '..', '..', 'dist')
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -82,12 +71,7 @@ export function handleAppProtocol(): void {
       return new Response('bad url', { status: 400 })
     }
 
-    /*
-     * Logged before any decision, so the log shows what the renderer actually asked
-     * for even when the answer was wrong. A packaged build once showed a blank
-     * window and the only trace was a 404 body; without this line there was no way to
-     * tell which request produced it.
-     */
+    // 任何判断之前先记录：答错时也要能看出请求了什么。
     write(`app-protocol ${request.method} host=${url.host} path=${url.pathname}`)
 
     if (url.host !== 'app') {
@@ -96,14 +80,7 @@ export function handleAppProtocol(): void {
     }
 
     const root = distRoot()
-    /*
-     * The paths themselves, not just the outcome.
-     *
-     * A log line that said only "404" left the reason ambiguous twice over; printing
-     * where the handler thinks it is (`__dirname`), what it therefore computes as the
-     * renderer root, and whether that root exists turns the next report into an
-     * answer rather than another round of guessing.
-     */
+    // 连路径一起记：只写 404 无法判断是算错了路径还是文件真的不在。
     write(`  __dirname=${__dirname}`)
     write(`  module=${__filename}`)
     write(`  root=${root} exists=${fs.existsSync(root)}`)
@@ -120,20 +97,7 @@ export function handleAppProtocol(): void {
     }
     write(`  target=${target}`)
 
-    /*
-     * Read first, ask questions later.
-     *
-     * The previous version called `fs.promises.stat` and answered 404 when it threw.
-     * That made "the file is not there" and "stat cannot see inside an asar" the same
-     * answer - and the second one is not hypothetical: a packaged build shipped with
-     * this handler and showed nothing but `not found`, while the very same file was
-     * provably inside `app.asar` (checked by extracting it). Reading the file is the
-     * operation that actually matters, it works on asar paths, and it needs no
-     * separate stat: a failure to read *is* a 404.
-     *
-     * `statSync` is kept only to fill in `content-length`, where the size is worth
-     * having but a failure to obtain it must not turn into a missing page.
-     */
+    // 以能否读取为准：ENOENT 才算 404。statSync 只用来取 content-length。
     let size = 0
     try {
       const stat = fs.statSync(target)
@@ -143,12 +107,7 @@ export function handleAppProtocol(): void {
       }
       size = stat.size
     } catch (error) {
-      /*
-       * Distinguish the two cases in the answer instead of collapsing them: a route
-       * that is genuinely absent should stay a plain 404, while anything else is a
-       * bug worth seeing. The body is shown in the window, so this is the difference
-       * between "blank page" and a sentence naming the file and the reason.
-       */
+      // 真正不存在就是 404，其他原因把话写进响应体，窗口会显示出来。
       const code = (error as NodeJS.ErrnoException)?.code
       write(`  -> 404 stat failed code=${code} message=${(error as Error)?.message}`)
       if (code === 'ENOENT') {

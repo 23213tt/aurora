@@ -176,6 +176,10 @@ let bootstrapping: Promise<BootstrapState> | null = null
  */
 const RETRY_AFTER_MS = HANDSHAKE_COOLDOWN_MS
 
+/** 二维码生成的重试次数与间隔。用户正开着弹窗等，所以比握手策略更短。 */
+const QR_ATTEMPTS = 3
+const QR_BACKOFF_MS = [500, 1200]
+
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 let failedAt = 0
@@ -657,20 +661,40 @@ async function feeOf(songId: number): Promise<number> {
 
 export async function neteaseQrCreate(): Promise<NeteaseQrSession> {
   await bootstrapOnce()
-  const keyRes = await call('login_qr_key', {})
-  const key = asString(asRecord(payloadOf(keyRes.body)).unikey)
-  if (!key) throw new Error('netease: no qr key')
 
-  // `qrimg` is what makes the package render the PNG data URL for us; without
-  // it the response carries only the URL and the renderer would need a QR
-  // encoder of its own.
-  const created = await call('login_qr_create', { key, qrimg: true })
-  const data = asRecord(payloadOf(created.body))
-  return {
-    key,
-    url: asString(data.qrurl) || `https://music.163.com/login?codekey=${key}`,
-    imageDataUrl: asString(data.qrimg)
+  // 这个调用会间歇失败（实测 login_qr_key 回 502 ECONNRESET，稍后即成功），所以重试。
+  const attempt = async (): Promise<{ key: string; url: string; imageDataUrl: string }> => {
+    const keyRes = await call('login_qr_key', {})
+    const key = asString(asRecord(payloadOf(keyRes.body)).unikey)
+    if (!key) throw new Error('netease: no qr key')
+
+    // `qrimg` is what makes the package render the PNG data URL for us; without
+    // it the response carries only the URL and the renderer would need a QR
+    // encoder of its own.
+    const created = await call('login_qr_create', { key, qrimg: true })
+    const data = asRecord(payloadOf(created.body))
+    const imageDataUrl = asString(data.qrimg)
+    // 空图片就是失败：界面拿到空字符串就是一个空白框。
+    if (!imageDataUrl) throw new Error('netease: qr image missing')
+    return {
+      key,
+      url: asString(data.qrurl) || `https://music.163.com/login?codekey=${key}`,
+      imageDataUrl
+    }
   }
+
+  let lastError: unknown = null
+  for (let i = 0; i < QR_ATTEMPTS; i += 1) {
+    try {
+      return await attempt()
+    } catch (error) {
+      lastError = error
+      // Only transport failures are worth repeating; a rejected key is not.
+      if (!isTransientHandshakeFailure(classifyStreamFailure({ error }))) throw error
+      if (i < QR_ATTEMPTS - 1) await sleep(QR_BACKOFF_MS[i] ?? 800)
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('netease: qr create failed')
 }
 
 export async function neteaseQrCheck(key: string): Promise<NeteaseQrResult> {

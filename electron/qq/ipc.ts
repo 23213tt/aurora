@@ -1,4 +1,5 @@
-import { ipcMain } from 'electron'
+﻿import { ipcMain } from 'electron'
+import { write } from '../startup-log'
 import * as client from './client'
 import { describeFailure } from './reasons'
 import { isQqQuality } from './types'
@@ -77,9 +78,14 @@ function asSearchType(value: unknown): SearchType {
 
 async function guard<T>(label: string, fallback: T, run: () => Promise<T>): Promise<T> {
   try {
-    return await run()
+    const value = await run()
+    // 成功路径也记：失败时返回空结果与抛错在界面上一模一样。
+    write(`qq:${label} ok`)
+    return value
   } catch (error) {
-    console.error(`[aurora] qq:${label} failed`, error instanceof Error ? error.message : error)
+    const message = error instanceof Error ? error.message : String(error)
+    write(`qq:${label} FAILED ${message}`)
+    console.error(`[aurora] qq:${label} failed`, message)
     return fallback
   }
 }

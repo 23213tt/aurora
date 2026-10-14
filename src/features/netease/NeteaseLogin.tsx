@@ -98,15 +98,18 @@ export function NeteaseLogin({ onClose }: NeteaseLoginProps) {
       try {
         const created = await netease.qrCreate()
         if (!alive) return
-        // The upstream hands back a data URL, so it renders without a network
-        // request and without an origin the CSP would have to allow.
+        // IPC 用空结果表示失败而不是抛错，所以空图片必须当成失败，否则只剩一个空白框。
+        if (!created.imageDataUrl || !created.key) {
+          setQr({ kind: 'failed', message: '暂时拿不到二维码，可能连不上网易云' })
+          return
+        }
         setQr({ kind: 'ready', image: created.imageDataUrl })
         timer = window.setTimeout(() => void poll(created.key), POLL_MS)
       } catch (error) {
         if (!alive) return
         setQr({
           kind: 'failed',
-          message: error instanceof Error ? error.message : '无法创建二维码'
+          message: error instanceof Error ? error.message : '暂时拿不到二维码，可能连不上网易云'
         })
       }
     }

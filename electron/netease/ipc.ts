@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import { write } from '../startup-log'
 import { loadSettings, saveSettings } from '../settings'
 import * as client from './client'
 import { describeFailure } from './reasons'
@@ -91,11 +92,30 @@ const unknownStream = (): NeteaseStreamResult => ({
 
 async function guard<T>(label: string, fallback: T, run: () => Promise<T>): Promise<T> {
   try {
-    return await run()
+    const value = await run()
+    // 成功路径也记（只记失败看不出是哪一步返回了空结果）。label 不含参数，避免密码进日志。
+    write(`netease:${label} ok`)
+    return value
   } catch (error) {
-    // Only the message, never the call arguments: `loginCellphone` passes a
-    // phone number and a password through this same path.
-    console.error(`[aurora] netease:${label} failed`, error instanceof Error ? error.message : error)
+    // 上游用普通对象 reject，String() 会得到 "[object Object]"（日志里就是这么丢掉原因的）。
+    const detail = (value: unknown): string => {
+      if (value instanceof Error) return value.message
+      if (value && typeof value === 'object') {
+        const record = value as { body?: unknown; status?: unknown; message?: unknown }
+        const body = record.body as { msg?: unknown; message?: unknown; code?: unknown } | undefined
+        const msg = body?.msg ?? body?.message ?? record.message
+        if (typeof msg === 'string' && msg) return `${msg}${body?.code !== undefined ? ` (code ${String(body.code)})` : ''}${record.status !== undefined ? ` [http ${String(record.status)}]` : ''}`
+        try {
+          return JSON.stringify(value).slice(0, 200)
+        } catch {
+          return '[unserialisable error]'
+        }
+      }
+      return String(value)
+    }
+    const message = detail(error)
+    write(`netease:${label} FAILED ${message}`)
+    console.error(`[aurora] netease:${label} failed`, message)
     return fallback
   }
 }

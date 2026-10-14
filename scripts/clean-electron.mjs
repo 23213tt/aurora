@@ -1,19 +1,6 @@
 /*
- * Deletes the compiled main-process output before a rebuild.
- *
- * `tsc` writes into `outDir` but never prunes it, and `dist-electron/` is not in
- * version control, so a file that is renamed or moved leaves its old compiled copy
- * behind for good. Two consequences, both real:
- *
- *   - the stale copy is packaged and shipped, so `app.asar` carries modules whose
- *     source no longer exists;
- *   - a stale module can resolve `__dirname` differently from the current one,
- *     which is how a packaged build ended up computing its renderer root one
- *     directory too deep and showing an empty window.
- *
- * `vite build` empties `dist/` on its own, which is why only this half needed a fix.
- *
- * Usage: node scripts/clean-electron.mjs
+ * 重建前清掉主进程编译产物。tsc 不清理 outDir，移动过的文件会留下旧产物并被一起打包。
+ * 用法: node scripts/clean-electron.mjs
  */
 import fs from 'node:fs'
 import path from 'node:path'
