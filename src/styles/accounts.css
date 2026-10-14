@@ -1,0 +1,160 @@
+/* =============================================================================
+   Profiles
+   ========================================================================== */
+
+.accounts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  max-width: 780px;
+}
+
+.accounts__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+/* --- profile rows -------------------------------------------------------- */
+
+.profile-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: var(--line-soft);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto 30px 30px;
+  align-items: center;
+  gap: var(--s2);
+  min-height: 48px;
+  padding: 0 var(--s2) 0 var(--s3);
+  transition: background 90ms var(--ease-out);
+}
+.profile-row + .profile-row {
+  border-top: var(--line-soft);
+}
+.profile-row:hover {
+  background: var(--ink-850);
+}
+.profile-row.is-active {
+  background: rgb(var(--accent-rgb) / 0.09);
+}
+
+.profile-row__avatar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--ink-700);
+  color: var(--text-mid);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+.profile-row.is-active .profile-row__avatar {
+  background: var(--accent);
+  color: var(--ink-1000);
+}
+
+.profile-row__name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+  padding: var(--s2) 0;
+}
+.profile-row__label {
+  font-size: var(--fs-body);
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-row__meta {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+
+.profile-row__edit {
+  height: 30px;
+  min-width: 0;
+  padding: 0 var(--s2);
+  border-radius: var(--r-control);
+  background: var(--ink-800);
+  border: 1px solid rgb(var(--accent-rgb) / 0.5);
+  color: var(--text-hi);
+  outline: none;
+}
+
+.profile-row__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 var(--s2);
+  border-radius: 999px;
+  background: rgb(var(--accent-rgb) / 0.18);
+  color: var(--accent);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.profile-row__remove {
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out);
+}
+.profile-row:hover .profile-row__remove,
+.profile-row__remove:focus-visible {
+  opacity: 1;
+}
+.profile-row__remove:disabled {
+  opacity: 0;
+  cursor: default;
+}
+
+/* --- new profile --------------------------------------------------------- */
+
+.accounts__new {
+  display: flex;
+  gap: var(--s2);
+}
+.accounts__new input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 var(--s3);
+  border-radius: var(--r-control);
+  background: var(--ink-800);
+  border: 1px solid transparent;
+  color: var(--text-hi);
+  transition: border-color 140ms var(--ease-out);
+}
+.accounts__new input:focus {
+  outline: none;
+  border-color: rgb(var(--accent-rgb) / 0.55);
+}
+.accounts__new input::placeholder {
+  color: var(--text-low);
+}
+
+/* --- small button variant ------------------------------------------------ */
+
+.btn--small {
+  height: 26px;
+  padding: 0 var(--s3);
+  font-size: var(--fs-meta);
+}
+
+/* The active profile sits in the rail's footer: a profile system needs a
+   permanent "who is active" indicator, or switching is invisible. */
+.rail__profile .nav-item__label {
+  color: var(--text-hi);
+  font-weight: 600;
+}

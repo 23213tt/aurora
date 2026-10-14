@@ -1,0 +1,89 @@
+/* =============================================================================
+   Update status (settings screen)
+   ========================================================================== */
+
+.update {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  width: 100%;
+  padding-top: var(--s4);
+  border-top: var(--line-soft);
+}
+
+.update__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s4);
+  justify-content: space-between;
+}
+
+.update__row--quiet {
+  padding-top: var(--s3);
+  border-top: var(--line-soft);
+}
+
+.update__version {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.update__label {
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+
+.update__number {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+.update__hint {
+  margin: var(--s1) 0 0;
+  max-width: 60ch;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+
+.update__result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-panel);
+  background: var(--ink-850);
+  border: var(--line-soft);
+  font-size: var(--fs-meta);
+  color: var(--text-mid);
+}
+.update__result p {
+  margin: 0;
+}
+.update__result.is-available {
+  background: rgb(var(--accent-rgb) / 0.1);
+  border-color: rgb(var(--accent-rgb) / 0.32);
+}
+
+.update__headline {
+  font-size: var(--fs-body);
+  color: var(--text-hi);
+}
+
+/* Release notes arrive as markdown flattened to text; a scroll box keeps a long
+   changelog from pushing the rest of the settings screen off-screen. */
+.update__notes {
+  margin: 0;
+  max-height: 180px;
+  width: 100%;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  color: var(--text-mid);
+  user-select: text;
+}

@@ -1,0 +1,295 @@
+/* =============================================================================
+   Immersive lyrics stage
+   Full-bleed, and the only place in the app where the interface is allowed to
+   be this loud. Everything is sized in viewport units so the composition holds
+   from a 940px window to a maximised 4K display.
+   ========================================================================== */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /*
+   * Opaque immediately, and deliberately not animated.
+   *
+   * An earlier version faded the whole overlay in with
+   * `animation: stage-in ... both`. That binds the overlay's visibility to an
+   * animation completing: if the animation is frozen or never runs, the stage
+   * stays permanently translucent and the library shows through it. A
+   * full-screen surface must be opaque the moment it exists; the fade belongs
+   * on the decorative canvas below.
+   */
+  background: var(--ink-1000);
+}
+
+@keyframes viz-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.viz {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /*
+   * The bed must stay behind the words without a hard seam. The fade lives here
+   * rather than on the overlay: this layer is purely decorative, so a frozen
+   * animation costs a visual nicety, never legibility or opacity.
+   */
+  mask-image: radial-gradient(120% 95% at 50% 46%, #000 42%, rgb(0 0 0 / 0.55) 100%);
+  animation: viz-in 520ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viz {
+    animation: none;
+  }
+}
+
+.stage > *:not(.viz) {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- top bar ------------------------------------------------------------- */
+
+.stage__top {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s5) var(--s5) 0;
+}
+
+.stage__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  height: 30px;
+  padding: 0 var(--s3) 0 var(--s2);
+  border-radius: var(--r-control);
+  color: var(--text-mid);
+  background: rgb(255 255 255 / 0.04);
+  transition: color 140ms var(--ease-out), background 140ms var(--ease-out);
+}
+.stage__back:hover {
+  color: var(--text-hi);
+  background: rgb(255 255 255 / 0.09);
+}
+.stage__back span {
+  font-size: var(--fs-meta);
+}
+
+.stage__meta {
+  margin-left: auto;
+  text-align: right;
+  min-width: 0;
+}
+.stage__album {
+  display: block;
+  font-size: var(--fs-meta);
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40vw;
+}
+.stage__artist {
+  display: block;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+
+/* --- the lyric column ---------------------------------------------------- */
+
+.stage__lyrics {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0 var(--s6);
+  /* Lyrics are the whole point here; nothing should be selectable chrome. */
+  overflow: hidden;
+}
+
+/*
+ * Nine fixed slots. Because the slot count never changes, the middle slot is
+ * always at the vertical centre, so the active line is pinned without any
+ * measurement or scroll maths. Slot heights are fixed for the same reason.
+ */
+.lyr {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  transition: height 360ms var(--ease-out);
+}
+
+.lyr__text {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3.1vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  line-height: 1.2;
+  max-width: min(1100px, 82vw);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-hi);
+  transform-origin: center;
+  transition: transform 360ms var(--ease-out), opacity 360ms var(--ease-out),
+    color 360ms var(--ease-out), text-shadow 360ms var(--ease-out);
+}
+.lyr__text:not(.lyr__text--empty):hover {
+  opacity: 1 !important;
+  color: var(--text-hi);
+}
+
+.lyr--d0 {
+  height: clamp(72px, 9.5vh, 108px);
+}
+.lyr--d0 .lyr__text {
+  transform: scale(1);
+  opacity: 1;
+  /* The playing line is lit by the album's own colour. */
+  text-shadow: 0 0 42px rgb(var(--accent-rgb) / 0.5), 0 2px 20px rgb(0 0 0 / 0.55);
+}
+
+/* Not yet started: the centre slot holds the upcoming line at reduced weight,
+   because size is driven by distance from the centre, not by whether the line
+   is actually playing. Without this the first line looks permanently active. */
+.lyr--d0.is-pending .lyr__text {
+  opacity: 0.5;
+  text-shadow: none;
+}
+.lyr--d1 {
+  height: clamp(44px, 6vh, 64px);
+}.lyr--d1 .lyr__text {
+  transform: scale(0.6);
+  opacity: 0.34;
+}
+.lyr--d2 {
+  height: clamp(36px, 4.6vh, 48px);
+}
+.lyr--d2 .lyr__text {
+  transform: scale(0.5);
+  opacity: 0.15;
+}
+.lyr--d3,
+.lyr--d4 {
+  height: clamp(30px, 3.6vh, 38px);
+}
+.lyr--d3 .lyr__text,
+.lyr--d4 .lyr__text {
+  transform: scale(0.44);
+  opacity: 0.07;
+}
+
+.stage__nolyrics {
+  text-align: center;
+  color: var(--text-mid);
+  max-width: 46ch;
+}
+.stage__nolyrics p {
+  margin: 0 0 var(--s2);
+}
+.stage__nolyrics-hint {
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+.stage__nolyrics code {
+  font-family: var(--font-ui);
+  color: var(--text-mid);
+  background: rgb(255 255 255 / 0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.stage__nolyrics-action {
+  margin: var(--s5) 0 var(--s3);
+  background: rgb(255 255 255 / 0.09);
+  border-color: rgb(255 255 255 / 0.16);
+}
+.stage__nolyrics-action:hover {
+  background: rgb(255 255 255 / 0.16);
+}
+
+/* --- bottom bar ---------------------------------------------------------- */
+
+.stage__bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  padding: 0 var(--s5) var(--s5);
+}
+
+.stage__play {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 999px;
+  color: var(--ink-1000);
+  background: var(--text-hi);
+  transition: scale 140ms var(--ease-out), background 200ms var(--ease-out);
+}
+.stage__play:hover {
+  scale: 1.06;
+}
+.stage__play:disabled {
+  background: var(--ink-600);
+  color: var(--text-low);
+  scale: 1;
+}
+
+.stage__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex: 1;
+  min-width: 0;
+}
+
+.stage__time {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+  width: 44px;
+}
+
+.stage__track {
+  position: relative;
+  flex: 1;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+/* A hairline, not a bar: at this size the progress line is a horizon. */
+.stage__track::before {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 1.5px;
+  background: rgb(255 255 255 / 0.13);
+  border-radius: 999px;
+}
+.stage__track-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  height: 1.5px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgb(var(--accent-rgb) / 0.75);
+  transition: background 620ms var(--ease-out);
+}

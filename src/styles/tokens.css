@@ -1,0 +1,82 @@
+/* =============================================================================
+   Aurora design tokens
+   Concept: the shell carries no colour of its own. Every chromatic value in the
+   UI is derived at runtime from the artwork of the track that is playing.
+   Nothing playing -> a fully desaturated interface.
+   ========================================================================== */
+
+:root {
+  /* --- ink: a cool graphite ramp, deliberately not a tinted near-black ----- */
+  --ink-1000: #080a0c;
+  --ink-900: #0d1013;
+  --ink-850: #11151a;
+  --ink-800: #14181d;
+  --ink-700: #1b2027;
+  --ink-600: #262c35;
+  --ink-500: #39414d;
+
+  /* --- text: three stops, no more ----------------------------------------- */
+  --text-hi: #e8ebf0;
+  --text-mid: #99a2b0;
+  --text-low: #5f6875;
+
+  /* --- the one dynamic value ---------------------------------------------- */
+  /* Overwritten by the artwork colour extractor on every track change.
+     The idle value is a flat steel, so an empty player is monochrome. */
+  --accent: #7d8899;
+  --accent-strong: #9aa5b5;
+  --accent-rgb: 125 136 153; /* space-separated for rgb(... / a) usage */
+
+  /* --- feedback: reserved for destructive things only --------------------- */
+  --danger: #d4574f;
+  --ok: #4f9d76;
+
+  /* --- geometry: three radii, assigned by role, never one-size-fits-all --- */
+  --r-control: 4px;
+  --r-panel: 8px;
+  --r-art: 12px;
+
+  /* --- space: a 4px base -------------------------------------------------- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+
+  /* --- metrics ------------------------------------------------------------ */
+  --titlebar-h: 44px;
+  --rail-w: 224px;
+  --rail-w-collapsed: 60px;
+  --player-h: 84px;
+  --row-h: 34px;
+
+  /* --- separators: hairlines, not borders --------------------------------- */
+  --line: 1px solid var(--ink-600);
+  --line-soft: 1px solid rgb(255 255 255 / 0.055);
+
+  /* --- type: Segoe UI Variable is optical-size aware and ships with Win 11 - */
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system,
+    'Microsoft YaHei UI', 'PingFang SC', sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui,
+    'Microsoft YaHei UI', sans-serif;
+
+  --fs-display: 26px;
+  --fs-title: 15px;
+  --fs-body: 13.5px;
+  --fs-meta: 12px;
+  --fs-micro: 11px;
+
+  /* --- motion: one orchestrated transition, everything else is instant ---- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --tint-ms: 620ms;
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tint-ms: 1ms;
+  }
+}

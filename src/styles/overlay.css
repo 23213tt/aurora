@@ -1,0 +1,124 @@
+@import './tokens.css';
+
+/* The desktop lyric window is transparent; everything drawn here floats over
+   whatever is behind it. */
+html,
+body.overlay-body,
+#overlay-root {
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+body.overlay-body {
+  font-family: var(--font-display);
+  user-select: none;
+  cursor: default;
+}
+
+.stage-lyric {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 14px;
+  /*
+   * A translucent plate behind the words. Without it the lyric has to survive
+   * every possible wallpaper, and white-on-a-white-photo is unreadable no matter
+   * how good the text shadow is. This is the one place blur is worth its cost in
+   * a floating widget: it keeps the text legible without hiding the desktop.
+   */
+  background: rgb(8 10 12 / 0.42);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-radius: 14px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  /* Draggable, except for the controls, which opt out below. */
+  -webkit-app-region: drag;
+}
+
+.stage-lyric__line {
+  max-width: 100%;
+  font-size: var(--lyric-size, 34px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 0.85), 0 0 2px rgb(0 0 0 / 0.9);
+}
+
+.stage-lyric__next {
+  max-width: 100%;
+  font-size: calc(var(--lyric-size, 34px) * 0.5);
+  font-weight: 400;
+  color: rgb(255 255 255 / 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.8);
+}
+
+.stage-lyric__idle {
+  font-size: calc(var(--lyric-size, 34px) * 0.55);
+  font-weight: 400;
+  color: rgb(255 255 255 / 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.8);
+}
+
+/* --- controls ------------------------------------------------------------ */
+
+.stage-lyric__controls {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgb(8 10 12 / 0.7);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  opacity: 0;
+  transition: opacity 140ms var(--ease-out);
+  /* Buttons must receive clicks, so they cannot be part of the drag region. */
+  -webkit-app-region: no-drag;
+}
+.stage-lyric:hover .stage-lyric__controls,
+.stage-lyric__controls:focus-within {
+  opacity: 1;
+}
+
+.stage-lyric__button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: rgb(255 255 255 / 0.72);
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.stage-lyric__button:hover {
+  background: rgb(255 255 255 / 0.14);
+  color: #fff;
+}
+.stage-lyric__button:disabled {
+  color: rgb(255 255 255 / 0.3);
+  cursor: default;
+}
+.stage-lyric__button:disabled:hover {
+  background: none;
+}
+
+/* Locked: the whole thing is click-through, so the controls are meaningless. */
+.stage-lyric.is-locked .stage-lyric__controls {
+  display: none;
+}

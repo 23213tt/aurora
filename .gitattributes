@@ -1,0 +1,20 @@
+# Line endings.
+#
+# Without this, Git uses each machine's core.autocrlf, so a Windows checkout
+# commits CRLF and a Linux one commits LF, and every file shows as modified
+# depending on who touched it last. Declaring it once removes that whole class of
+# noise: files are stored with LF and checked out however the platform prefers.
+* text=auto
+
+# Binary assets. Git must never try to normalise these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.webp binary
+*.exe binary
+*.woff binary
+*.woff2 binary
+
+# Keep the lockfile diffable but out of merge conflicts nobody can resolve by hand.
+package-lock.json -diff linguist-generated

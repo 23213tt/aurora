@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+
+# build output - all generated, none of it belongs in the repository
+dist/
+dist-electron/
+dist-preview/
+dist-preview-overlay/
+preview-dist/
+release/
+
+# logs and local crash reports
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# local tooling artifacts
+.dsh-vision-toolkit/
+*.tsbuildinfo
+
+# Local npm registry mirror configuration.
+#
+# Deliberately not published: it points npm and the Electron downloader at a
+# third-party mirror, which would be imposed on everyone who clones this, and the
+# electron_* keys are not npm config keys, so npm prints a warning for each of
+# them on every single command. The README documents the same settings for anyone
+# who needs the mirror.
+.npmrc

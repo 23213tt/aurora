@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aurora icon sheet</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 28px;
+        background: #14181d;
+        color: #e8ebf0;
+        font: 13px/1.5 "Segoe UI", "Microsoft YaHei UI", sans-serif;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #99a2b0;
+      }
+      section {
+        margin-bottom: 26px;
+      }
+      .row {
+        display: flex;
+        align-items: flex-end;
+        gap: 18px;
+      }
+      figure {
+        margin: 0;
+        text-align: center;
+      }
+      figcaption {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #5f6875;
+      }
+      /* Light and dark strips, because the tray mark has a variant per theme. */
+      .strip {
+        display: flex;
+        gap: 18px;
+        align-items: flex-end;
+        padding: 14px 18px;
+        border-radius: 8px;
+      }
+      .strip--dark {
+        background: #1c1c1c;
+      }
+      .strip--light {
+        background: #f3f3f3;
+      }
+      .strip--taskbar {
+        background: #202020;
+      }
+      img.pixel {
+        image-rendering: pixelated;
+      }
+      code {
+        color: #99a2b0;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Verification sheet for the generated icons. Renders every shipped icon at
+      its real size and magnified, on the backgrounds it will actually appear
+      against, so a missing alpha channel or an inverted variant is obvious.
+    -->
+    <section>
+      <h2>应用图标 <code>build/icon.png</code></h2>
+      <div class="row">
+        <figure>
+          <img src="../build/icon.png" width="128" height="128" alt="" />
+          <figcaption>128</figcaption>
+        </figure>
+        <figure>
+          <img src="../build/icon.png" width="64" height="64" alt="" />
+          <figcaption>64</figcaption>
+        </figure>
+        <figure>
+          <img src="../build/icon.png" width="32" height="32" alt="" />
+          <figcaption>32</figcaption>
+        </figure>
+        <figure>
+          <img src="../build/icon.png" width="16" height="16" alt="" />
+          <figcaption>16</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>托盘图标：深色任务栏用 <code>tray.png</code>（白）</h2>
+      <div class="strip strip--dark">
+        <img class="pixel" src="../assets/icons/tray.png" width="16" height="16" alt="" />
+        <img class="pixel" src="../assets/icons/tray.png" width="32" height="32" alt="" />
+        <img class="pixel" src="../assets/icons/tray@2x.png" width="32" height="32" alt="" />
+      </div>
+    </section>
+
+    <section>
+      <h2>托盘图标：浅色任务栏用 <code>tray-dark.png</code>（深）</h2>
+      <div class="strip strip--light">
+        <img class="pixel" src="../assets/icons/tray-dark.png" width="16" height="16" alt="" />
+        <img class="pixel" src="../assets/icons/tray-dark.png" width="32" height="32" alt="" />
+        <img class="pixel" src="../assets/icons/tray-dark@2x.png" width="32" height="32" alt="" />
+      </div>
+    </section>
+
+    <section>
+      <h2>任务栏缩略图按钮（白，会在深色缩略图条上）</h2>
+      <div class="strip strip--taskbar">
+        <figure>
+          <img class="pixel" src="../assets/icons/thumb-prev.png" width="16" height="16" alt="" />
+          <figcaption>prev 16</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel" src="../assets/icons/thumb-play.png" width="16" height="16" alt="" />
+          <figcaption>play 16</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel" src="../assets/icons/thumb-pause.png" width="16" height="16" alt="" />
+          <figcaption>pause 16</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel" src="../assets/icons/thumb-next.png" width="16" height="16" alt="" />
+          <figcaption>next 16</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel" src="../assets/icons/thumb-play@2x.png" width="32" height="32" alt="" />
+          <figcaption>play 32</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel" src="../assets/icons/thumb-pause@2x.png" width="32" height="32" alt="" />
+          <figcaption>pause 32</figcaption>
+        </figure>
+      </div>
+    </section>
+  </body>
+</html>

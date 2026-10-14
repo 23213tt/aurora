@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      `aurora-media:` is the private scheme the main process serves local audio
+      and artwork from. It must be listed explicitly or the renderer cannot load
+      any media at all.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file: aurora-media:; media-src 'self' file: blob: aurora-media:; font-src 'self' data:; connect-src 'self' aurora-media: ws://127.0.0.1:5173 http://127.0.0.1:5173"
+    />
+    <title>Aurora</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

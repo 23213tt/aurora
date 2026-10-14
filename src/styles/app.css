@@ -1,0 +1,1253 @@
+@import './tokens.css';
+@import './stage.css';
+@import './panels.css';
+@import './playlists.css';
+@import './update.css';
+@import './accounts.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--text-hi);
+  background: var(--ink-900);
+  /* A player is a window you leave open for hours; nothing here should be
+     selectable by accident, only where text genuinely needs copying. */
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Numbers that sit in columns (durations, track numbers, timecodes) must not
+   jitter as they change. Tabular figures, not a monospace face. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: rgb(var(--accent-rgb) / 0.3);
+  color: var(--text-hi);
+}
+
+/* --- scrollbars: present, but not a piece of furniture -------------------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-600);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-500);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* --- focus: always visible, never removed -------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: var(--r-control);
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  user-select: text;
+}
+input::placeholder {
+  color: var(--text-low);
+}
+
+/* =============================================================================
+   Shell
+   ========================================================================== */
+
+.shell {
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--titlebar-h) 1fr var(--player-h);
+  grid-template-columns: var(--rail-w) 1fr;
+  grid-template-areas:
+    'titlebar titlebar'
+    'rail     main'
+    'player   player';
+  height: 100%;
+  transition: grid-template-columns 200ms var(--ease-out);
+}
+
+.shell.is-collapsed {
+  grid-template-columns: var(--rail-w-collapsed) 1fr;
+}
+
+/* The artwork backdrop. Sits behind everything, blurred beyond recognition so
+   it reads as ambience rather than as an image, and crossfades on track change. */
+.shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    120% 90% at 12% 0%,
+    rgb(var(--accent-rgb) / 0.22) 0%,
+    transparent 58%
+  );
+  transition: opacity var(--tint-ms) var(--ease-out),
+    background var(--tint-ms) var(--ease-out);
+}
+
+.shell.has-art::before {
+  opacity: 1;
+}
+
+/*
+ * Frosted backdrop: the playing album's own artwork, blurred past recognition.
+ *
+ * The scrim is load-bearing, not decoration. A bright cover at full strength
+ * floods the window and destroys text contrast - the accent is supposed to come
+ * from the artwork, not the whole interface. Stacking a dark gradient over the
+ * image (and keeping the layer's own opacity low) leaves only a colour cast, so
+ * the room is lit by the record without the room becoming the record.
+ *
+ * Overscan keeps the blur from showing a hard edge where the layer ends.
+ */
+.shell__backdrop {
+  position: absolute;
+  inset: -90px;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      180deg,
+      rgb(8 10 12 / 0.66) 0%,
+      rgb(8 10 12 / 0.84) 100%
+    ),
+    var(--backdrop-url);
+  background-position: center;
+  background-size: cover;
+  filter: blur(76px) saturate(1.3);
+  opacity: 0.55;
+  transition: opacity var(--tint-ms) var(--ease-out);
+}
+
+/* When a reader asks for more contrast, decorative tint is the first thing to go. */
+@media (prefers-contrast: more) {
+  .shell__backdrop {
+    opacity: 0.2;
+  }
+}
+
+/*
+ * Raise the four grid planes above the ambient backdrop.
+ *
+ * Named explicitly rather than written as `.shell > *`. A blanket child
+ * selector has the same specificity as a single class, so any later overlay
+ * rule (`.stage`, `.panel`) loses to it on source order and silently turns
+ * `position: fixed` into `position: relative` - which collapses a full-screen
+ * surface into the layout and drags the player bar up with it.
+ */
+.shell > .titlebar,
+.shell > .rail,
+.shell > .main,
+.shell > .player {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- title bar ----------------------------------------------------------- */
+
+.titlebar {
+  grid-area: titlebar;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding-left: var(--s4);
+  border-bottom: var(--line-soft);
+  /* Reserve the strip Windows paints its caption buttons into. */
+  padding-right: 148px;
+  -webkit-app-region: drag;
+}
+
+.titlebar__mark {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.titlebar__mark svg {
+  color: var(--accent);
+  transition: color var(--tint-ms) var(--ease-out);
+}
+
+.titlebar__history {
+  display: flex;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-control);
+  color: var(--text-mid);
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--ink-700);
+  color: var(--text-hi);
+}
+.icon-btn:disabled {
+  color: var(--ink-500);
+  cursor: default;
+}
+
+/* Search lives in the title bar: in a library app, finding a track is a
+   primary action, not a sidebar afterthought. */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: min(420px, 36vw);
+  height: 28px;
+  padding: 0 var(--s2) 0 var(--s3);
+  border-radius: var(--r-control);
+  background: var(--ink-800);
+  border: 1px solid transparent;
+  color: var(--text-mid);
+  -webkit-app-region: no-drag;
+  transition: border-color 140ms var(--ease-out), background 140ms var(--ease-out);
+}
+.search:focus-within {
+  background: var(--ink-700);
+  border-color: rgb(var(--accent-rgb) / 0.55);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+.search kbd {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--ink-900);
+}
+
+.titlebar__spacer {
+  flex: 1;
+}
+
+/* --- left rail ----------------------------------------------------------- */
+
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--s2) var(--s3) var(--s3);
+  border-right: var(--line-soft);
+  overflow: hidden;
+}
+
+.rail__group {
+  padding-top: var(--s3);
+}
+.rail__group + .rail__group {
+  margin-top: var(--s2);
+  border-top: var(--line-soft);
+}
+
+.rail__heading {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-low);
+  padding: 0 var(--s2) var(--s1);
+  white-space: nowrap;
+}
+.is-collapsed .rail__heading {
+  opacity: 0;
+}
+
+.rail__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--s2);
+  border-radius: var(--r-control);
+  color: var(--text-mid);
+  white-space: nowrap;
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.nav-item:hover {
+  background: var(--ink-800);
+  color: var(--text-hi);
+}
+.nav-item.is-active {
+  background: var(--ink-700);
+  color: var(--text-hi);
+}
+/* The active marker is the accent, so the rail picks up the album colour too. */
+.nav-item.is-active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 2px;
+  height: 16px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
+  transition: background var(--tint-ms) var(--ease-out);
+}
+.nav-item svg {
+  flex: none;
+  color: currentColor;
+  opacity: 0.85;
+}
+.nav-item__label {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-item__count {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  font-variant-numeric: tabular-nums;
+}
+.is-collapsed .nav-item__label,
+.is-collapsed .nav-item__count {
+  display: none;
+}
+.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* --- main plane ---------------------------------------------------------- */
+
+.main {
+  grid-area: main;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main__header {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s4);
+  padding: var(--s5) var(--s5) var(--s3);
+  border-bottom: var(--line-soft);
+}
+
+.main__titles {
+  min-width: 0;
+}
+.main__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+}
+.main__sub {
+  margin-top: 2px;
+  color: var(--text-mid);
+  font-size: var(--fs-meta);
+}
+
+.main__tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.seg {
+  display: flex;
+  padding: 2px;
+  border-radius: var(--r-control);
+  background: var(--ink-800);
+}
+.seg button {
+  height: 26px;
+  padding: 0 var(--s3);
+  border-radius: 3px;
+  font-size: var(--fs-meta);
+  color: var(--text-mid);
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.seg button:hover {
+  color: var(--text-hi);
+}
+.seg button.is-active {
+  background: var(--ink-600);
+  color: var(--text-hi);
+}
+
+.main__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--s3) var(--s5) var(--s5);
+}
+
+/* A hairline under the header while a scan runs: enough to show liveness
+   without stealing the header's space for a full progress bar. */
+.scanbar {
+  height: 2px;
+  flex: none;
+  background: var(--ink-800);
+  overflow: hidden;
+}
+.scanbar__fill {
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgb(var(--accent-rgb) / 0.7);
+  transition: width 240ms linear, background 620ms var(--ease-out);
+}
+
+/* --- empty state: an invitation, not a mood ------------------------------ */
+
+.empty {
+  max-width: 62ch;
+  margin: 0 auto;
+  padding: var(--s7) var(--s4);
+  text-align: center;
+}
+.empty__art {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--s5);
+  border-radius: var(--r-art);
+  background: var(--ink-800);
+  border: var(--line-soft);
+  color: var(--text-low);
+}
+.empty h2 {
+  margin: 0 0 var(--s2);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* The folders the library is currently reading, shown when nothing was found in
+   them: it is the difference between "empty folder" and "the button did nothing". */
+.empty__roots {
+  list-style: none;
+  margin: 0 auto var(--s5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 52ch;
+}
+.empty__roots li {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 32px;
+  padding: 0 var(--s4);
+  border-radius: var(--r-control);
+  background: var(--ink-700);
+  border: var(--line-soft);
+  color: var(--text-hi);
+  font-size: var(--fs-body);
+  transition: background 120ms var(--ease-out);
+}
+.btn:hover {
+  background: var(--ink-600);
+}
+.btn--accent {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--ink-1000);
+  font-weight: 600;
+}
+.btn--accent:hover {
+  background: var(--accent-strong);
+}
+
+/* --- player bar ---------------------------------------------------------- */
+
+.player {
+  grid-area: player;
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(360px, 2fr) minmax(200px, 1fr);
+  align-items: center;
+  gap: var(--s4);
+  padding: 0 var(--s4);
+  background: var(--ink-850);
+  /* One shadow in the whole app: the bar floats above the library. */
+  box-shadow: 0 -12px 32px rgb(0 0 0 / 0.34);
+}
+
+.now {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-width: 0;
+}
+.now__art {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-panel);
+  background: var(--ink-700);
+  overflow: hidden;
+}
+.now__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.now__text {
+  min-width: 0;
+}
+.now__title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.now__artist {
+  font-size: var(--fs-meta);
+  color: var(--text-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.now__idle {
+  color: var(--text-low);
+}
+
+.transport {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.transport__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.play-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--text-hi);
+  color: var(--ink-1000);
+  transition: scale 120ms var(--ease-out);
+}
+.play-btn:hover {
+  scale: 1.06;
+}
+.play-btn:active {
+  scale: 0.97;
+}
+.play-btn:disabled {
+  background: var(--ink-600);
+  color: var(--text-low);
+  cursor: default;
+  scale: 1;
+}
+/* Repeat / shuffle / mode toggles read as accent when engaged, since accent is
+   the app's single "this is on" signal. */
+.icon-btn.is-on {
+  color: var(--accent);
+}
+
+.seek {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+}
+.seek__time {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  font-variant-numeric: tabular-nums;
+  width: 40px;
+  flex: none;
+}
+.seek__time--end {
+  text-align: right;
+}
+
+.bar {
+  position: relative;
+  flex: 1;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.bar__track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--ink-600);
+  overflow: visible;
+}
+.bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: background var(--tint-ms) var(--ease-out);
+}
+.bar__knob {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: var(--text-hi);
+  translate: -50% -50%;
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out);
+}
+.bar:hover .bar__knob,
+.bar:focus-within .bar__knob {
+  opacity: 1;
+}
+
+.player__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s1);
+}
+.volume {
+  width: 96px;
+  margin-left: var(--s1);
+}
+.volume .bar__knob {
+  opacity: 1;
+  width: 9px;
+  height: 9px;
+}
+
+.rail-toggle {
+  margin-top: auto;
+  padding-top: var(--s3);
+}
+
+/* --- artwork placeholder ------------------------------------------------- */
+
+.now__art-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-low);
+}
+
+/* --- buffering ----------------------------------------------------------- */
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 2px solid rgb(0 0 0 / 0.22);
+  border-top-color: var(--ink-1000);
+  animation: spin 720ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+/* --- generic stacked content (settings, sources) ------------------------- */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s4);
+  max-width: 76ch;
+}
+
+
+.notice {
+  color: var(--text-low);
+  padding: var(--s4);
+  border: var(--line-soft);
+  border-radius: var(--r-panel);
+  width: 100%;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border: var(--line-soft);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 0 var(--s3);
+  height: 38px;
+  color: var(--text-mid);
+}
+.row + .row {
+  border-top: var(--line-soft);
+}
+.row:hover {
+  background: var(--ink-850);
+}
+.row__path {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-hi);
+  font-size: var(--fs-meta);
+  white-space: nowrap;
+  overflow: hidden;
+  /* Long paths should elide in the middle, where the useful part is the end. */
+  direction: rtl;
+  text-align: left;
+}
+
+/* --- key/value spec list ------------------------------------------------- */
+
+.specs {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--s2) var(--s4);
+  margin: 0;
+  width: 100%;
+  font-size: var(--fs-meta);
+}
+.specs dt {
+  color: var(--text-low);
+}
+.specs dd {
+  margin: 0;
+  color: var(--text-hi);
+  font-variant-numeric: tabular-nums;
+}
+.specs__path {
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+/* =============================================================================
+   Album grid
+   ========================================================================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--s5) var(--s4);
+  align-content: start;
+}
+
+.card {
+  min-width: 0;
+}
+
+.card__art {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--r-art);
+  overflow: hidden;
+  background: var(--ink-800);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+/* Fills the cover and takes the "open" click; the play disc floats above it. */
+.card__art-open {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.card__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card__art-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-low);
+}
+
+/* The play affordance is a translucent disc that only exists on hover: the
+   artwork itself is the interface, so nothing sits on top of it at rest. */
+.card__play {
+  position: absolute;
+  right: var(--s3);
+  bottom: var(--s3);
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: rgb(10 12 16 / 0.72);
+  color: var(--text-hi);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  translate: 0 4px;
+  transition: opacity 160ms var(--ease-out), translate 160ms var(--ease-out),
+    background 200ms var(--ease-out);
+}
+.card__art:hover .card__play,
+.card__play:focus-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+.card__art:hover .card__play {
+  background: var(--accent);
+  color: var(--ink-1000);
+}
+
+.card__name {
+  display: block;
+  width: 100%;
+  margin: var(--s3) 0 2px;
+  padding: 0;
+  text-align: left;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card__name:hover {
+  color: var(--accent);
+}
+
+.card__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+.card__artist {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card__size {
+  flex: none;
+  font-size: var(--fs-micro);
+}
+
+/* The playing album gets a hairline in the artwork's own colour. */
+.card.is-current .card__art {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 2px;
+}
+/* --- track actions menu -------------------------------------------------- */
+
+.menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 188px;
+  max-width: 280px;
+  padding: var(--s1);
+  border-radius: var(--r-panel);
+  background: var(--ink-800);
+  border: 1px solid rgb(255 255 255 / 0.09);
+  box-shadow: 0 14px 40px rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.menu__item {
+  display: block;
+  width: 100%;
+  padding: 6px var(--s3);
+  border-radius: var(--r-control);
+  text-align: left;
+  font-size: var(--fs-meta);
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 90ms var(--ease-out), color 90ms var(--ease-out);
+}
+.menu__item:hover:not(:disabled) {
+  background: rgb(var(--accent-rgb) / 0.16);
+  color: var(--accent);
+}
+.menu__item:disabled {
+  color: var(--text-low);
+  cursor: default;
+}
+
+.menu__sep {
+  height: 1px;
+  margin: var(--s1) var(--s2);
+  background: rgb(255 255 255 / 0.07);
+}
+
+.menu__label {
+  padding: var(--s1) var(--s3) 3px;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+
+.menu__scroll {
+  max-height: 216px;
+  overflow: auto;
+}
+
+.menu__empty {
+  padding: 4px var(--s3) 6px;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+
+/* --- album detail -------------------------------------------------------- */
+
+.album {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+.album__head {
+  display: flex;
+  gap: var(--s5);
+  align-items: flex-end;
+}
+
+.album__art {
+  flex: none;
+  width: 172px;
+  aspect-ratio: 1;
+  border-radius: var(--r-art);
+  overflow: hidden;
+  background: var(--ink-800);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.45);
+}
+.album__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.album__art-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-low);
+}
+
+.album__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s1);
+  min-width: 0;
+  padding-bottom: var(--s1);
+}
+
+.album__name {
+  margin: 0 0 var(--s1);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.022em;
+  color: var(--text-hi);
+}
+
+.album__artist {
+  font-size: var(--fs-body);
+  color: var(--text-mid);
+}
+.album__artist:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.album__meta {
+  margin: 0;
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+
+.album__actions {
+  display: flex;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+
+.card.is-current .card__name {  color: var(--accent);
+}
+
+/* =============================================================================
+   Track list
+   ========================================================================== */
+
+.tracks {
+  display: flex;
+  flex-direction: column;
+  --trk-cols: 34px minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.6fr) 54px 24px;
+}
+
+.tracks__head,
+.trk {
+  display: grid;
+  grid-template-columns: var(--trk-cols);
+  align-items: center;
+  gap: var(--s3);
+  padding: 0 var(--s3);
+}
+
+.tracks__head {
+  height: 30px;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  border-bottom: var(--line-soft);
+  position: sticky;
+  top: calc(var(--s3) * -1);
+  background: var(--ink-900);
+  z-index: 1;
+}
+
+.trk {
+  position: relative;
+  height: var(--row-h);
+  border-radius: var(--r-control);
+  text-align: left;
+  color: var(--text-mid);
+  transition: background 90ms var(--ease-out);
+}
+
+/* The row-wide click target. Underneath the actions button, above nothing else. */
+.trk__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  border-radius: inherit;
+}
+
+.trk__more {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-control);
+  color: var(--text-low);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out), background 120ms var(--ease-out);
+}
+.trk:hover .trk__more,
+.trk__more:focus-visible {
+  opacity: 1;
+}
+.trk__more:hover {
+  background: var(--ink-700);
+  color: var(--text-hi);
+}
+.trk:hover {
+  background: var(--ink-850);
+}
+.trk.is-current {
+  color: var(--text-hi);
+}
+.trk.is-current .trk__title-text {
+  color: var(--accent);
+}
+
+.trk__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-width: 0;
+  color: var(--text-hi);
+}
+.trk__title-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trk__muted {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tracks__idx {
+  text-align: right;
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+.tracks__time {
+  text-align: right;
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+
+.badge {
+  flex: none;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-low);
+  border: 1px solid var(--ink-600);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.tracks__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--text-low);
+  padding: var(--s5) var(--s3);
+}
+
+/* A three-bar meter as the "now playing" mark. Real information rather than
+   decoration: it is the only place the row says sound is happening. */
+.eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+  vertical-align: middle;
+}
+.eq i {
+  display: block;
+  width: 2px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--accent);
+  transform: scaleY(0.28);
+  transform-origin: bottom;
+}
+.eq.is-live i {
+  animation: eq-bounce 880ms ease-in-out infinite;
+}
+.eq.is-live i:nth-child(2) {
+  animation-delay: 150ms;
+}
+.eq.is-live i:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes eq-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq.is-live i {
+    animation-duration: 3s;
+  }
+}
+
+
