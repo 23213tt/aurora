@@ -14,14 +14,14 @@ import { Rail } from './app/Rail'
 import { TitleBar } from './app/TitleBar'
 import { TrackList, type TrackMenuRequest } from './ui/TrackList'
 import { TrackMenu } from './views/TrackMenu'
-import { ChevronLeft, Close, Folder, Plus, Refresh, Trash, Wave } from './ui/icons'
+import { ChevronLeft, Close, Plus, Refresh } from './ui/icons'
 import { bridge, isNative } from './bridge'
 import { demoLibrary } from './features/library/demo'
 import { useLyrics, usePalette } from './features/library/hooks'
 import { useRoots } from './features/library/roots'
 import { loadInitialIndex, runScan } from './features/library/scan'
 import { albumKey, groupAlbums, groupArtists, scoreTrack, useLibrary } from './features/library/store'
-import { SOURCES, artworkFor } from './features/library/source'
+import { artworkFor } from './features/library/source'
 import { buildFolderTree, tracksUnder } from './features/library/tree'
 import { player } from './features/player/actions'
 import { driver } from './features/player/driver'
@@ -35,31 +35,17 @@ import { SettingsView } from './views/settings/SettingsView'
 import { useWindowVisibility } from './visibility'
 import { LyricsStage } from './stage/LyricsStage'
 import type { OverlayStatus } from './env'
-import type { Track, ViewId } from './types'
-
-const VIEW_TITLES: Record<ViewId, string> = {
-  albums: '专辑',
-  artists: '艺术家',
-  songs: '歌曲',
-  folders: '文件夹',
-  playlists: '播放列表',
-  accounts: '档案',
-  sources: '音源',
-  netease: '网易云音乐',
-  settings: '偏好设置'
-}
+import type { Track } from './types'
+import { LIBRARY_VIEWS, VIEW_TITLES, initialRoute, type Route } from './app/routing'
+import { MENU_TEST_MODE, PERF_MODE, SCROLL_TEST_MODE, SCROLL_TEST_START, STRESS_TRACKS } from './app/preview'
+import { EmptyLibrary } from './views/EmptyLibrary'
+import { Sources } from './views/Sources'
 
 /**
  * One entry in the navigation stack. Keeping the artist drill-down in the route
  * rather than in separate state is what makes the title bar's back and forward
  * buttons real instead of decorative.
  */
-interface Route {
-  view: ViewId
-  artistId?: string
-  albumId?: string
-  playlistId?: string
-}
 
 /**
  * Design-harness affordance.
@@ -69,59 +55,6 @@ interface Route {
  * taken of any view without clicking through the UI. Electron ignores this
  * entirely and always starts on the album grid.
  */
-/**
- * Preview benchmark mode (`#perf`).
- *
- * A headless renderer barely runs `requestAnimationFrame`, so the 60 Hz position
- * stream a visible window produces cannot be reproduced by letting the synthetic
- * driver run - the first attempt measured six renders in six seconds, which was
- * the rig failing rather than the app performing well. `#perf` drives the same
- * store update from a timer instead, which is what makes the render-cost claim
- * reproducible: 403 app renders before the playhead subscription was moved out
- * of the root, 4 after, for the same six seconds at 60 Hz.
- */
-const PERF_MODE = !isNative && window.location.hash.replace(/^#/, '') === 'perf'
-
-/**
- * Preview screen for the auto-scroll behaviour (`#songs-far`).
- *
- * With the demo library's 27 rows, starting playback around row 19 puts the
- * playing track below the fold, so the screenshot only shows it if the list
- * really did scroll itself.
- */
-const SCROLL_TEST_START = 18
-const SCROLL_TEST_MODE = !isNative && window.location.hash.replace(/^#/, '') === 'songs-far'
-
-/** Preview screen for the track actions menu, which otherwise needs a pointer. */
-const MENU_TEST_MODE = !isNative && window.location.hash.replace(/^#/, '') === 'menu'
-
-/**
- * Preview stress harness: `window.__AURORA_STRESS = 5000` before the bundle runs.
- *
- * A personal library runs to thousands of rows, and the 27-row demo library cannot
- * answer what that costs. The seeder itself lives in a separate chunk
- * (`src/preview/stress.ts`, fetched on demand below) so the app bundle never
- * contains measurement code - see that file for why that matters more than an
- * `isNative` guard.
- */
-const STRESS_TRACKS = !isNative ? Number((window as Window & { __AURORA_STRESS?: number }).__AURORA_STRESS ?? 0) : 0
-
-function initialRoute(): Route {
-  if (isNative) return { view: 'albums' }
-  if (PERF_MODE) return { view: 'settings' }
-  if (SCROLL_TEST_MODE) return { view: 'songs' }
-  if (MENU_TEST_MODE) return { view: 'songs' }
-  if (!isNative && window.location.hash.replace(/^#/, '') === 'empty') return { view: 'songs' }
-  const hash = window.location.hash.replace(/^#/, '')
-  if (hash in VIEW_TITLES) return { view: hash as ViewId }
-  /*
-   * The online catalogue is the front door, not the local folders.
-   * A streaming-era player opens on what it can offer you; the files on this
-   * machine are the supplement you go looking for. Landing on the album wall
-   * made an empty local library look like an empty application.
-   */
-  return { view: 'netease' }
-}
 
 /**
  * Preview-only render counter.
@@ -141,13 +74,6 @@ let appRenders = 0
  * meaningful exactly here, and nowhere else. Cheap to check on every render, and
  * it keeps the condition in one place instead of growing an exception per screen.
  */
-const LIBRARY_VIEWS: ReadonlySet<ViewId> = new Set<ViewId>([
-  'albums',
-  'artists',
-  'songs',
-  'folders',
-  'playlists'
-])
 
 export function App() {  if (!isNative) {
     appRenders += 1
@@ -1059,124 +985,3 @@ export function App() {  if (!isNative) {
     </>
   )
 }
-
-interface EmptyLibraryProps {
-  onAdd(): Promise<void>
-  busy: boolean
-  scanning: boolean
-  roots: string[]
-}
-
-function EmptyLibrary({ onAdd, busy, scanning, roots }: EmptyLibraryProps) {
-  // Three genuinely different states, each with its own next action. Showing
-  // "your library is empty" to someone whose scan is running is a lie.
-  if (scanning) {
-    return (
-      <div className="empty">
-        <div className="empty__art">
-          <Wave size={30} />
-        </div>
-        <h2>正在读取标签</h2>
-      </div>
-    )
-  }
-
-  if (roots.length > 0) {
-    return (
-      <div className="empty">
-        <div className="empty__art">
-          <Refresh size={30} />
-        </div>
-        <h2>这些文件夹里没有找到音乐</h2>
-        {/*
-          Naming the folders is the whole point of this state. "Added, but there
-          is nothing in it" and "adding did not work at all" look identical
-          otherwise, and the second one is the conclusion people reach.
-        */}
-        <ul className="empty__roots">
-          {roots.map((root) => (
-            <li key={root} title={root}>
-              {root}
-            </li>
-          ))}
-        </ul>
-        <button className="btn btn--accent" onClick={() => void onAdd()} disabled={busy}>
-          <Plus size={15} />
-          换个文件夹
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="empty">
-      <div className="empty__art">
-        <Wave size={30} />
-      </div>
-      <h2>曲库还是空的</h2>
-      <button className="btn btn--accent" onClick={() => void onAdd()} disabled={busy}>
-        <Plus size={15} />
-        选择音乐文件夹
-      </button>
-    </div>
-  )
-}
-
-interface SourcesProps {
-  roots: string[]
-  busy: boolean
-  onAdd(): Promise<void>
-  onRemove(root: string): Promise<void>
-}
-
-function Sources({ roots, busy, onAdd, onRemove }: SourcesProps) {
-  return (
-    <div className="stack">
-      {/*
-       * What can actually play right now, read from the same registry the
-       * player dispatches on. The online entry says what it is in one line -
-       * a third-party reverse-engineered interface, not an official client -
-       * because that is the one consequence a user has to know before using it.
-       */}
-      <ul className="rows">
-        {SOURCES.map((source) => (
-          <li className="row" key={source.id}>
-            {source.online ? <Wave size={16} /> : <Folder size={16} />}
-            <span className="row__path" title={source.summary}>
-              {source.name}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {roots.length === 0 ? (
-        <div className="notice">还没有加入任何文件夹</div>
-      ) : (
-        <ul className="rows">
-          {roots.map((root) => (
-            <li className="row" key={root}>
-              <Folder size={16} />
-              <span className="row__path" title={root}>
-                {root}
-              </span>
-              <button
-                className="icon-btn"
-                onClick={() => void onRemove(root)}
-                title="移出曲库"
-                aria-label={`移出曲库：${root}`}
-              >
-                <Trash size={16} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <button className="btn" onClick={() => void onAdd()} disabled={busy}>
-        <Plus size={15} />
-        添加文件夹
-      </button>
-    </div>
-  )
-}
-
