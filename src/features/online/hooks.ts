@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getProvider, listAvailableProviders, listProviders } from './registry'
 import type { OnlineMusicProvider, ProviderId } from './types'
-import { useOnlineState } from './store'
-import type { OnlineStore } from './store'
+import { useOnlineStore, type OnlineStore } from './store'
 
 /**
  * React access to the provider registry.
@@ -77,5 +76,6 @@ export function useProvider(id: ProviderId | null): OnlineMusicProvider | null {
  * state, which is what keeps a single view able to serve both.
  */
 export function useOnlineProviderState(id: ProviderId | null): OnlineStore | null {
-  return useOnlineState(id)
+  if (!id) return null
+  return useOnlineStore(id).getState()
 }

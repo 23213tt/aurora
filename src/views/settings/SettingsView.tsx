@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { bridge, isNative } from '../../bridge'
-import type { NeteaseQuality, UpdateResult } from '../../env'
+import type { UpdateResult } from '../../env'
+import { listAvailableProviders } from '../../features/online/registry'
+import { QUALITY_LABELS as TIER_LABELS, type OnlineMusicProvider, type QualityTier } from '../../features/online/types'
 import { usePlayer } from '../../features/player/store'
 import { UpdatePanel } from '../../ui/UpdatePanel'
 import { Refresh } from '../../ui/icons'
@@ -10,42 +12,101 @@ import './settings.css'
 /**
  * The settings page.
  *
- * Organised the way desktop players organise theirs - one section per area of
- * the app, each row a label plus the control - so nothing has to be discovered.
- * The list is deliberately short: a settings page that mirrors every panel is
- * worse than one that only holds the things that have nowhere else to live.
+ * Organised the way desktop players organise theirs - one section per area of the
+ * app, each row a label plus the control - so nothing has to be discovered. The
+ * list is deliberately short: a settings page that mirrors every panel is worse
+ * than one that only holds the things that have nowhere else to live.
  *
  * Everything here reads and writes the main process. That is not ceremony: the
  * desktop lyric strip is a second window, and the theme is a Chromium-level
  * setting, so neither can be stored in the page's own `localStorage`.
  */
 
-const QUALITY_LABELS: { value: NeteaseQuality; label: string; hint: string }[] = [
-  { value: 'standard', label: '标准', hint: '128kbps，最省流量' },
-  { value: 'higher', label: '较高', hint: '192kbps' },
-  { value: 'exhigh', label: '极高', hint: '320kbps，无会员时通常能拿到的最高档' },
-  { value: 'lossless', label: '无损', hint: '需要会员，否则上游会自动降档' }
-]
+/**
+ * One row per platform, generated from the registry.
+ *
+ * Quality is per platform because the preferences really are separate: each client
+ * stores its own tier (a QQ account's entitlement has nothing to do with a Netease
+ * one), and a platform that declares no tiers gets no row. There is no branch on
+ * which platform this is - the name, the tiers and the labels all come from the
+ * provider.
+ */
+function PlatformQualityRows() {
+  const providers = listAvailableProviders().filter(
+    (provider) => (provider.qualityTiers?.length ?? 0) > 0 && provider.getQuality && provider.setQuality
+  )
+
+  if (providers.length === 0) {
+    return (
+      <Row label="在线音质" hint="这一版没有可用的在线平台，所以没有音质可选。">
+        <span className="settings__value">—</span>
+      </Row>
+    )
+  }
+
+  return (
+    <>
+      {providers.map((provider) => (
+        <PlatformQualityRow key={provider.id} provider={provider} />
+      ))}
+    </>
+  )
+}
+
+function PlatformQualityRow({ provider }: { provider: OnlineMusicProvider }) {
+  const [quality, setQuality] = useState<QualityTier | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    void provider
+      .getQuality?.()
+      .then((value) => {
+        if (alive) setQuality(value)
+      })
+      .catch(() => {
+        // A backend that cannot answer leaves the row unset rather than claiming a
+        // tier the account may not be on.
+        if (alive) setQuality(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [provider])
+
+  const tiers = provider.qualityTiers ?? []
+
+  return (
+    <Row
+      label={`${provider.displayName}音质`}
+      hint={
+        quality
+          ? TIER_LABELS[quality]
+          : `${provider.displayName}还没有回答当前档位；上游给不了所选档位时会自动回退，并在播放提示里说明。`
+      }
+    >
+      <div className="seg">
+        {tiers.map((tier) => (
+          <button
+            key={tier}
+            className={quality === tier ? 'is-active' : ''}
+            onClick={() => void provider.setQuality?.(tier).then(setQuality)}
+          >
+            {TIER_LABELS[tier].split(' ')[0]}
+          </button>
+        ))}
+      </div>
+    </Row>
+  )
+}
 
 export function SettingsView() {
   const page = useSettingsPage()
-  const [quality, setQuality] = useState<NeteaseQuality>('exhigh')
   const [confirmingClear, setConfirmingClear] = useState(false)
 
   const crossfadeSec = usePlayer((state) => state.crossfadeSec)
   const setCrossfade = usePlayer((state) => state.setCrossfade)
   const eqEnabled = usePlayer((state) => state.eqEnabled)
   const setEqEnabled = usePlayer((state) => state.setEqEnabled)
-
-  // Quality is stored by the Netease client, not in settings.json, because the
-  // online source validates it against the levels it actually supports.
-  useEffect(() => {
-    void bridge.netease.getQuality().then(setQuality)
-  }, [])
-
-  const applyQuality = async (next: NeteaseQuality) => {
-    setQuality(await bridge.netease.setQuality(next))
-  }
 
   const { desktopLyrics, onlineLyrics, updateInterval } = page.settings
 
@@ -140,19 +201,7 @@ export function SettingsView() {
             />
           </Row>
 
-          <Row label="网易云音质" hint={QUALITY_LABELS.find((q) => q.value === quality)?.hint}>
-            <div className="seg">
-              {QUALITY_LABELS.map((option) => (
-                <button
-                  key={option.value}
-                  className={quality === option.value ? 'is-active' : ''}
-                  onClick={() => void applyQuality(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </Row>
+          <PlatformQualityRows />
         </div>
       </section>
 

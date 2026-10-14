@@ -1,4 +1,5 @@
 import type { Track } from '../../types'
+import type { ViewId } from '../../types'
 import type {
   OnlineMusicProvider,
   PlaybackSourceRef,
@@ -33,6 +34,32 @@ export function registerProvider(provider: OnlineMusicProvider): void {
 
 export function getProvider(id: ProviderId): OnlineMusicProvider | null {
   return providers.get(id) ?? null
+}
+
+/**
+ * A platform's route.
+ *
+ * The two unions - `ViewId` and the registered provider ids - are tied together by
+ * convention: a platform's id *is* its route, which is what lets the rail render a
+ * link it can pass straight to the router and lets `App` resolve a route back to a
+ * provider by lookup. The cast is the single place that convention is asserted;
+ * `platformRouteExists` is what keeps a missing route from becoming a silent blank
+ * page in the one build where a platform is present without one.
+ */
+export function platformView(provider: OnlineMusicProvider): ViewId {
+  return provider.id as ViewId
+}
+
+/**
+ * Whether the shell knows this platform's route.
+ *
+ * A platform can be registered while its route is not (a new client landing before
+ * the route is added), and a link to a route the router does not render is a blank
+ * page. The rail asks this before drawing the entry, so the failure mode is "this
+ * platform is not in the sidebar yet" rather than an empty window.
+ */
+export function platformRouteExists(provider: OnlineMusicProvider, knownRoutes: ReadonlySet<string>): boolean {
+  return knownRoutes.has(provider.id)
 }
 
 /**
@@ -104,6 +131,22 @@ export function providerForTrack(track: Track | null | undefined): OnlineMusicPr
 export function canPlayTrack(track: Track | null | undefined): boolean {
   const provider = providerForTrack(track)
   return providerSupports(provider, 'playback') && Boolean(provider?.playback)
+}
+
+/**
+ * The bridge calls a view needs in order to open a platform's screen.
+ *
+ * Deliberately here and not in a component: these are the two questions every
+ * platform screen asks - "does this platform have a session to sign into" and
+ * "does it have a catalogue to browse" - and answering them from the capability
+ * flags rather than from the platform's name is the whole point of the layer.
+ */
+export function providerCanAuthenticate(provider: OnlineMusicProvider | null): boolean {
+  return providerSupports(provider, 'auth') && Boolean(provider?.auth)
+}
+
+export function providerOffersAccountContent(provider: OnlineMusicProvider | null): boolean {
+  return Boolean(provider?.collections?.some((collection) => collection.requiresAccount))
 }
 
 /**

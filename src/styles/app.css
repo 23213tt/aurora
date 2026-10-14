@@ -4,7 +4,12 @@
 @import './playlists.css';
 @import './update.css';
 @import './accounts.css';
-@import './netease.css';
+/*
+ * Shared by every online platform, and named for that rather than for one of them:
+ * a second platform must not need its own copy of these rules. A platform's own
+ * dialog stylesheet lives with that platform's code and is imported by its component.
+ */
+@import './online.css';
 
 *,
 *::before,

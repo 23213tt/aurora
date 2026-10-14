@@ -19,7 +19,14 @@ const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' 
   .split('\n')
   .filter(Boolean)
 
-const sources = tracked.filter((file) => /\.(ts|tsx)$/.test(file))
+/*
+ * Declaration files are excluded: `.d.ts` describes types to the compiler and is
+ * consumed through the type system, not by an import statement, so "nothing
+ * imports it" is its normal state rather than a finding. Including them made the
+ * audit always report `src/env.d.ts` as dead, which is the kind of permanent false
+ * positive that teaches people to ignore the tool.
+ */
+const sources = tracked.filter((file) => /\.(ts|tsx)$/.test(file) && !/\.d\.ts$/.test(file))
 
 /** Files that are loaded without being imported by anything else. */
 const entries = [

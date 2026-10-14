@@ -222,6 +222,28 @@ const webFallback: AuroraApi = {
     likeList: async () => [],
     getQuality: async () => 'exhigh',
     setQuality: async () => 'exhigh'
+  },
+  qq: {
+    /*
+     * Same reasoning as the Netease fallback above, with one difference that
+     * matters to the layout: this object exists so the *type* is satisfied, while
+     * `available()` in the platform layer reads `window.aurora.qq` - which is null
+     * in a browser. The result is that the preview shows no QQ section at all, which
+     * is what a build without the QQ client really looks like.
+     */
+    status: async () => ({ ready: false, loggedIn: false, detail: '浏览器预览模式没有 QQ 音乐后端' }),
+    setProfile: async () => true,
+    accountFor: async () => null,
+    logoutProfile: async () => true,
+    search: async () => ({ songs: [], albums: [], artists: [] }),
+    streamUrl: async () => ({ ok: false, reason: 'service-unavailable' }),
+    lyrics: async () => null,
+    qrCreate: async () => ({ key: 'preview', imageDataUrl: '' }),
+    qrCheck: async () => ({ status: 'waiting' }),
+    loginStatus: async () => null,
+    logout: async () => true,
+    getQuality: async () => 'exhigh',
+    setQuality: async () => 'exhigh'
   }
 }
 

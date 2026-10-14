@@ -4,6 +4,11 @@ import os from 'node:os'
 import path from 'node:path'
 import { classifyStreamFailure, describeFailure } from './reasons'
 import type { NeteaseFailureReason } from './reasons'
+import {
+  HANDSHAKE_BACKOFF_MS,
+  HANDSHAKE_COOLDOWN_MS,
+  isTransientHandshakeFailure
+} from '../pure/netease-bootstrap'
 import { clearCookie, hasCookie, readCookie, writeCookie } from './session'
 import { isUsableId } from './types'
 import type {
@@ -148,14 +153,31 @@ interface BootstrapState {
 let bootstrapping: Promise<BootstrapState> | null = null
 
 /**
- * At most one failed handshake per minute.
+ * At most one failed handshake per minute - but only for failures that retrying
+ * cannot fix.
  *
- * A failure is usually transient - the app started before the network was up,
- * DNS was not ready, the key service briefly rate-limited - so the next call is
- * allowed to try again. The gate exists because retrying on every render of the
- * online tab would turn a flaky connection into a request storm.
+ * The distinction was learned from a real report: "playback does not work, and I
+ * am not even logged in". The bootstrap had failed once with a transient
+ * `ECONNRESET`, and because *every* failure was gated behind a 60 s cooldown, the
+ * next minute of playback requests returned that stale failure without ever
+ * contacting upstream. The same call succeeded seconds later when retried
+ * directly, so a single network blip was being presented to the user as a
+ * persistent outage.
+ *
+ * So: a transient failure is retried immediately with a short backoff, while a
+ * settled answer (`login-required`, `vip-required`, `region-limited`,
+ * `taken-down`) is not retried at all - no amount of repeating turns "you need a
+ * membership" into a playable track. The one-minute gate stays for those, and for
+ * when the retries are exhausted, so that rerendering the online tab cannot become
+ * a request storm.
+ *
+ * Both policies live in `electron/pure/netease-bootstrap.ts` so they can be tested
+ * without the upstream package.
  */
-const RETRY_AFTER_MS = 60_000
+const RETRY_AFTER_MS = HANDSHAKE_COOLDOWN_MS
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
 let failedAt = 0
 let lastFailed: BootstrapState = {
   ready: false,
@@ -187,7 +209,28 @@ async function bootstrapOnce(): Promise<BootstrapState> {
     if (failedAt && Date.now() - failedAt < RETRY_AFTER_MS) return lastFailed
     bootstrapping = runBootstrap()
   }
-  const state = await bootstrapping
+
+  let state = await bootstrapping
+
+  /*
+   * Retry a transient failure in place, before anyone sees it.
+   *
+   * This is the part that was missing: one blip used to be latched for a minute,
+   * so the user's next several play attempts all reported a network problem that
+   * had already passed. Retrying here rather than in the caller keeps every
+   * entry point (search, stream, lyrics) fixed at once.
+   */
+  for (let attempt = 0; !state.ready && isTransientHandshakeFailure(state.failure) && attempt < HANDSHAKE_BACKOFF_MS.length; attempt += 1) {
+    await sleep(HANDSHAKE_BACKOFF_MS[attempt])
+    /*
+     * Publish the new attempt on the shared slot before awaiting it, so a parallel
+     * caller that arrives during the sleep joins this attempt instead of starting
+     * a second one. That is what keeps the retry from becoming a storm.
+     */
+    bootstrapping = runBootstrap()
+    state = await bootstrapping
+  }
+
   if (state.ready) return state
   failedAt = Date.now()
   lastFailed = state

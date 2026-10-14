@@ -1,5 +1,4 @@
-import type { NeteaseFailureReason, NeteaseQuality, NeteaseStream } from '../../env'
-import type { Track } from '../../types'
+import type { NeteaseFailureReason, NeteaseQuality } from '../../env'
 
 /**
  * The online-platform contract.
@@ -26,6 +25,17 @@ import type { Track } from '../../types'
 
 /** A platform's own identifier. String, not a union, so adding one costs no edits here. */
 export type ProviderId = string
+
+/**
+ * The failure vocabulary, shared by every platform.
+ *
+ * The union is the known set, and the `string & {}` member is the escape hatch:
+ * a platform whose client invents a reason still produces a typeable value, and
+ * `failureText` falls back to a generic sentence for it. A closed union would make
+ * every such addition a cross-module edit; an open `string` would lose the
+ * exhaustiveness that makes the wording table trustworthy.
+ */
+export type OnlineFailureReason = NeteaseFailureReason | (string & {})
 
 /** Sound quality tiers, in the upstream names Aurora already uses. */
 export type QualityTier = NeteaseQuality
@@ -59,6 +69,15 @@ export interface OnlineSong {
   duration: number
   /** Upstream `fee`: 0 free, 1 vip, 4 paid album, 8 low-quality free. */
   fee: number
+  /**
+   * A platform's string identifier, when it has one.
+   *
+   * QQ identifies a track by `songmid` while the shared shape is numeric, so the
+   * string rides alongside rather than replacing `id`: everything that indexes by
+   * song id keeps working, and the platform adapter can still ask its upstream for
+   * the track it actually means.
+   */
+  mid?: string
 }
 
 export interface OnlineAlbumRef {
@@ -127,7 +146,7 @@ export interface OnlineStream {
 
 export type OnlineStreamResult =
   | { ok: true; stream: OnlineStream }
-  | { ok: false; reason: NeteaseFailureReason; message?: string }
+  | { ok: false; reason: OnlineFailureReason; message?: string }
 
 /**
  * What the user can open inside a platform's screen.
@@ -279,6 +298,17 @@ export interface OnlineMusicProvider {
   /** The user's current tier for this platform. The main process owns the value. */
   getQuality?(): Promise<QualityTier>
   setQuality?(quality: QualityTier): Promise<QualityTier>
+
+  /**
+   * The functions the shared store drives this platform with.
+   *
+   * Not part of the reference player's contract, and deliberately separate from
+   * the capability interfaces above: those describe what the *interface* may ask
+   * for, while the backend is what the shared state machine actually calls. Keeping
+   * them apart means a provider can declare a capability and still have the store
+   * refuse to drive it (see `providerHas`), instead of the two silently diverging.
+   */
+  backend?: unknown
 }
 
 /**
@@ -299,9 +329,11 @@ export function isQualityFallback(level: QualityTier | 'hires', requested: Quali
  * Whether asking again is worth anything.
  *
  * Account-side and catalogue-side refusals are final for this session; a network
- * fault, a rate limit or a backend that has not bootstrapped are not.
+ * fault, a rate limit or a backend that has not bootstrapped are not. Anything
+ * unrecognised is treated as worth one retry - the recovery is bounded by the
+ * cache's own TTL, so a wrong guess costs a request rather than a loop.
  */
-export function isTransientFailure(reason: NeteaseFailureReason): boolean {
+export function isTransientFailure(reason: OnlineFailureReason): boolean {
   return reason === 'network' || reason === 'rate-limited' || reason === 'service-unavailable'
 }
 
@@ -309,10 +341,10 @@ export function isTransientFailure(reason: NeteaseFailureReason): boolean {
  * One sentence per failure reason, platform-neutral.
  *
  * The reason taxonomy exists so that "you are not signed in", "you have no
- * membership" and "this is gone" are three different sentences. The platform's
- * own name is filled in by the caller, so the same table serves every provider.
+ * membership" and "this is gone" are three different sentences. The platform's own
+ * name is supplied by the caller, so one table serves every provider.
  */
-export function failureText(reason: NeteaseFailureReason, platform = '在线平台'): string {
+export function failureText(reason: OnlineFailureReason, platform = '在线平台'): string {
   switch (reason) {
     case 'login-required':
       return '这首歌需要登录后才能获取播放地址'

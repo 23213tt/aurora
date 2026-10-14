@@ -1,0 +1,338 @@
+/* =============================================================================
+   Online platform screens (shared by every platform)
+   Same tokens as the rest of the shell: a platform screen introduces no palette of
+   its own, so switching platforms does not look like switching applications. This
+   replaced the platform-specific stylesheet, which is why the class prefix is
+   `online` and not a platform's name - a second platform must not need a second
+   copy of these rules.
+   ========================================================================== */
+
+.online {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  min-height: 100%;
+}
+
+/* --- toolbar -------------------------------------------------------------- */
+
+/*
+ * The screen's own toolbar holds only its quality preference: searching lives in
+ * the shell's one search field, which becomes the online search on this page.
+ */
+.online__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+/*
+ * Quality is a disclosure: one small button that states the current choice, and a
+ * menu that explains each tier. It used to be four inline buttons parked in the
+ * screen corner, which read as a control strip floating away from anything it
+ * affects.
+ */
+.online__quality {
+  position: relative;
+  flex: none;
+}
+.online__quality-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 var(--s2);
+  border-radius: var(--r-control);
+  background: var(--ink-700);
+  color: var(--text-mid);
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+}
+.online__quality-btn:hover {
+  color: var(--text-hi);
+  background: var(--ink-600);
+}
+.online__quality-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 210px;
+  padding: var(--s1);
+  border-radius: var(--r-panel);
+  background: var(--ink-800);
+  border: 1px solid var(--ink-600);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+}
+.online__quality-menu button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--s2);
+  border-radius: var(--r-control);
+  text-align: left;
+}
+.online__quality-menu button:hover {
+  background: var(--ink-700);
+}
+.online__quality-menu button.is-active .online__quality-name {
+  color: var(--accent-strong);
+}
+/*
+ * A tier this song has been proven not to serve: still listed, so the ceiling is
+ * visible where the choice is made, but visibly unavailable rather than silently
+ * answered with something lower. `:disabled` alone would only grey the text.
+ */
+.online__quality-menu button.is-capped {
+  cursor: not-allowed;
+}
+.online__quality-menu button.is-capped:hover {
+  background: transparent;
+}
+.online__quality-menu button.is-capped .online__quality-name {
+  color: var(--text-low);
+}
+.online__quality-menu button.is-capped .online__quality-note {
+  color: var(--text-low);
+}
+.online__quality-name {
+  font-size: var(--fs-meta);
+  color: var(--text-hi);
+}
+.online__quality-note {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  line-height: 1.4;
+}
+
+/*
+ * A backend that cannot reach its upstream carries an action, so it lays out as a
+ * row and reuses the danger tint instead of the accent. The difference between
+ * "this build has no platform" and "the platform is unreachable right now" has to
+ * be visible at a glance, not only in the words.
+ */
+.online__warn {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-panel);
+  background: rgb(212 87 79 / 0.1);
+  border: 1px solid rgb(212 87 79 / 0.3);
+  color: var(--text-mid);
+  font-size: var(--fs-meta);
+}
+.online__warn span {
+  flex: 1;
+  min-width: 0;
+}
+
+.online__footnote {
+  margin-top: var(--s5);
+  padding-top: var(--s3);
+  border-top: var(--line-soft);
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  color: var(--text-low);
+  max-width: 72ch;
+}
+
+/* --- account -------------------------------------------------------------- */
+
+.online__account {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3);
+  border-radius: var(--r-panel);
+  background: var(--ink-850);
+  border: var(--line-soft);
+}
+
+.online__avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--ink-700);
+  color: var(--text-mid);
+}
+/* A placeholder glyph is a block-level svg, so it needs constraining before it
+   can be centred; without this it paints 24px in a 34px box and off-centre. */
+.online__avatar > svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+.online__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.online__account-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.online__account-name {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-hi);
+}
+.online__account-meta {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+  line-height: 1.35;
+}
+
+.online__hint {
+  padding: var(--s2) var(--s2);
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+}
+
+/* --- collections ---------------------------------------------------------- */
+
+/*
+ * A strip, not a sidebar.
+ *
+ * The platform's own destinations are content, so they belong in the body where
+ * everything else is. This screen used to be the only one in the app with its own
+ * 268px column, which is most of why it read as a second application inside the
+ * first.
+ */
+.online__collections {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.online__collection {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 30px;
+  padding: 0 var(--s3);
+  border-radius: var(--r-control);
+  background: var(--ink-800);
+  color: var(--text-mid);
+  font-size: var(--fs-meta);
+  white-space: nowrap;
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.online__collection:hover {
+  background: var(--ink-700);
+  color: var(--text-hi);
+}
+.online__collection.is-active {
+  background: var(--ink-700);
+  color: var(--text-hi);
+}
+.online__collection.is-active svg {
+  color: var(--accent);
+}
+.online__collection svg {
+  flex: none;
+  opacity: 0.85;
+}
+.online__collection em {
+  font-style: normal;
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+
+/* --- what the screen shows before anything is opened ---------------------- */
+
+/*
+ * Discovery, not an empty state.
+ *
+ * A large blank panel instructing the reader to go and choose something reads as a
+ * failed load and wastes two thirds of the window. This opens with content: your
+ * playlists as the same artwork cards the local album wall uses, or a sentence
+ * that says what is here.
+ */
+.online__welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.online__welcome-note {
+  font-size: var(--fs-meta);
+  color: var(--text-low);
+  max-width: 68ch;
+}
+
+/* An inline action inside the welcome sentence, styled as a link because that is
+   what it reads as. */
+.online__link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.online__link:hover {
+  color: var(--accent-strong);
+}
+
+/* --- failure banner ------------------------------------------------------- */
+
+.online__fail {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s2) var(--s2) var(--s3);
+  border-radius: var(--r-panel);
+  /* The danger token, not the accent: this is a refusal, not a highlight. */
+  background: rgb(212 87 79 / 0.1);
+  border: 1px solid rgb(212 87 79 / 0.3);
+  font-size: var(--fs-meta);
+  color: var(--text-hi);
+}
+.online__fail-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- section header ------------------------------------------------------- */
+
+.online__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  min-height: 30px;
+}
+.online__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.online__head .seg {
+  margin-left: auto;
+}
+
+/* --- track menu scrim ----------------------------------------------------- */
+
+/* Only an online screen's menu has a scrim; the library's menu closes on the next
+   pointer down anywhere, which is enough there. Here a click can land on a card
+   that would navigate, so the click is absorbed. */
+.online__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+}

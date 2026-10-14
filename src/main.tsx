@@ -8,6 +8,17 @@ import './features/player/actions'
  * transport, so neither of them has to import the other.
  */
 import './features/player/netease'
+/*
+ * Fill the online platform registry before anything renders.
+ *
+ * Imported for its side effects and nothing else: every screen that talks about
+ * platforms - the rail, the search tabs, the settings page - reads the registry, and
+ * a registry that is empty at first paint would draw a shell with no online
+ * sections at all. Doing it here rather than from a component makes the failure
+ * mode obvious (no platforms anywhere) instead of partial (one screen missing a
+ * platform the others have).
+ */
+import './features/online/register'
 import { useNetease } from './features/netease/store'
 import { setActiveStorageProfile } from './features/accounts/profile-storage'
 import { useAccounts } from './features/accounts/store'

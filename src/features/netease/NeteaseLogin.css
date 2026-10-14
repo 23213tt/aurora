@@ -1,0 +1,138 @@
+/* =============================================================================
+   网易云音乐 · 扫码登录弹窗
+   The dialog is the one piece of interface that is genuinely this platform's: it
+   has a QR code and a phone form, and another platform's flow differs. Everything
+   else about the screen is in the shared `online.css`.
+   ========================================================================== */
+
+.ne-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+}
+
+.ne-modal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(8 10 12 / 0.66);
+  backdrop-filter: blur(4px);
+}
+
+.ne-modal__panel {
+  position: relative;
+  width: min(420px, calc(100vw - 48px));
+  padding: var(--s4);
+  border-radius: var(--r-panel);
+  background: var(--ink-850);
+  border: 1px solid rgb(255 255 255 / 0.09);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.ne-modal__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+.ne-modal__title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: 600;
+}
+
+.ne-modal__tabs {
+  align-self: flex-start;
+}
+
+.ne-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  align-items: stretch;
+}
+
+.ne__qr {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 196px;
+  padding: var(--s3);
+  border-radius: var(--r-panel);
+  background: var(--ink-900);
+  border: var(--line-soft);
+}
+/* A QR code has to be scanned by a camera, so it keeps its own light plate rather
+   than inheriting the dark surface behind it. Sized as a maximum rather than a
+   fixed width: on a narrow window a 168px block overflows the panel and the
+   right-hand columns of the code are simply gone, which looks like a rendering bug
+   and cannot be scanned. */
+.ne__qr img {
+  display: block;
+  width: 100%;
+  max-width: 168px;
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: var(--r-control);
+  background: #fff;
+}
+.ne__qr-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-meta);
+  color: var(--text-mid);
+  text-align: center;
+}
+.ne__qr.is-scanned .ne__qr-hint {
+  color: var(--ok);
+}
+
+.ne-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+.ne-field span {
+  font-size: var(--fs-micro);
+  color: var(--text-low);
+}
+.ne-field input {
+  height: 32px;
+  padding: 0 var(--s3);
+  border-radius: var(--r-control);
+  background: var(--ink-800);
+  border: 1px solid transparent;
+  color: var(--text-hi);
+  transition: border-color 140ms var(--ease-out);
+}
+.ne-field input:focus {
+  outline: none;
+  border-color: rgb(var(--accent-rgb) / 0.55);
+}
+
+.ne-modal__error {
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-control);
+  background: rgb(212 87 79 / 0.12);
+  border: 1px solid rgb(212 87 79 / 0.3);
+  font-size: var(--fs-meta);
+  color: var(--text-hi);
+}
+
+.ne-modal__actions {
+  display: flex;
+  gap: var(--s2);
+}
+
+.ne-modal__note {
+  margin: 0;
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+  color: var(--text-low);
+}

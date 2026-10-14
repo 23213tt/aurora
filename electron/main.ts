@@ -14,6 +14,7 @@ import {
 import { handleMediaProtocol, registerMediaScheme } from './protocols/media-protocol'
 import { handleRemoteProtocol, registerRemoteScheme } from './protocols/remote-protocol'
 import { registerNeteaseIpc, warmUpNetease } from './netease/ipc'
+import { registerQqIpc } from './qq/ipc'
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './protocols/app-protocol'
 import { loadIndex, scanLibrary, type ScanProgress } from './library-scan'
 import { discoverMusicFolders } from './library-discovery'
@@ -731,6 +732,16 @@ if (!app.requestSingleInstanceLock()) {
      */
     registerNeteaseIpc()
     scheduleNeteaseWarmUp()
+
+    /*
+     * QQ is registered the same way and for the same reason: the handlers cost
+     * nothing until something invokes them.
+     *
+     * There is deliberately no warm-up call beside it. Netease needs one because
+     * its upstream package performs a boot handshake that would otherwise land on
+     * the first search; QQ's client is a plain HTTP wrapper with nothing to warm.
+     */
+    registerQqIpc()
 
     // One quiet check a day. It only ever reports; nothing is downloaded or
     // applied without the user going to the release page themselves.

@@ -53,12 +53,40 @@ test('a choice survives, and lands only in that profile slot', () => {
 
     setActiveStorageProfile('acc_b')
     assert.equal(readRememberedSource(), null, 'another profile must not inherit it')
-    rememberSource('online')
-    assert.equal(readRememberedSource(), 'online')
+    rememberSource('netease')
+    assert.equal(readRememberedSource(), 'netease')
 
     // And the first profile still has its own answer.
     setActiveStorageProfile('acc_a')
     assert.equal(readRememberedSource(), 'local')
+  })
+})
+
+/*
+ * The stored value used to be the two-valued `'local' | 'online'`. A profile that
+ * has one of those values on disk must keep working after sources became platform
+ * ids, or upgrading would silently reset the tab a user had chosen.
+ */
+test('the pre-platform value "online" still reads as Netease', () => {
+  withStorage((map) => {
+    setActiveStorageProfile('acc_a')
+    map.set(sourceKeyFor('acc_a'), 'online')
+    assert.equal(readRememberedSource(), 'netease')
+  })
+})
+
+/*
+ * Validated against the live registry rather than a literal list: a source naming
+ * a platform this build cannot serve must read as "nothing remembered" so the
+ * caller falls back, instead of pointing the screen at a tab that is not drawn.
+ */
+test('a source this build cannot serve is not remembered', () => {
+  withStorage((map) => {
+    setActiveStorageProfile('acc_a')
+    map.set(sourceKeyFor('acc_a'), 'qq')
+    assert.equal(readRememberedSource(['local', 'netease']), null)
+    // ...but the same value is honoured once the platform is registered.
+    assert.equal(readRememberedSource(['local', 'netease', 'qq']), 'qq')
   })
 })
 

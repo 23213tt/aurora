@@ -13,16 +13,22 @@ export type ViewId =
   | 'sources'
   | 'settings'
   /**
-   * Online source, deliberately a sibling of the library views rather than part
-   * of them: its tracks never enter the library store, so it stands alone.
+   * One route per online platform, named by the platform's own id.
+   *
+   * The screen those routes reach is shared (`features/online/PlatformView.tsx`);
+   * what differs is which provider it is handed. The values are written out rather
+   * than derived from the provider registry because a route is one of the few
+   * things that genuinely is a fixed part of the shell - the fragment in the URL,
+   * the page title and the history entry all have to be static.
    */
   | 'netease'
+  | 'qq'
   /**
    * Search, as a screen rather than a behaviour of whichever page is open.
    *
-   * It answers from either catalogue depending on the tab on the screen, which is
-   * why it is its own view: the field in the shell now means one thing everywhere,
-   * and "which source" is chosen visibly instead of being implied by the page.
+   * It answers from whichever catalogue its tabs name, which is why it is its own
+   * view: the field in the shell now means one thing everywhere, and "which
+   * source" is chosen visibly instead of being implied by the page.
    */
   | 'search'
 

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { NeteaseAccount } from '../../env'
 import { hasNeteaseBackend, netease } from './api'
 import { useNetease } from './store'
 import { Check, Close, Lock, Refresh } from '../../ui/icons'
+// The dialog's own stylesheet, imported here rather than from the shell's: it is
+// this platform's interface, and a build that never renders it never loads it.
+import './NeteaseLogin.css'
 
 interface NeteaseLoginProps {
   onClose(): void
-  /** Called with the signed-in account. The store is already updated by then. */
-  onSuccess?(account: NeteaseAccount): void
 }
 
 /** How often the QR code is polled. Two seconds matches the upstream's own QR TTL. */
@@ -35,7 +35,7 @@ type QrState =
  * looking at. Every call is also guarded by a cancelled flag: the upstream call
  * is faster than a user is, but not faster than a dialog.
  */
-export function NeteaseLogin({ onClose, onSuccess }: NeteaseLoginProps) {
+export function NeteaseLogin({ onClose }: NeteaseLoginProps) {
   const [tab, setTab] = useState<Tab>('qr')
   const [qr, setQr] = useState<QrState>({ kind: 'loading' })
   const [phone, setPhone] = useState('')
@@ -50,13 +50,13 @@ export function NeteaseLogin({ onClose, onSuccess }: NeteaseLoginProps) {
    */
   const [nonce, setNonce] = useState(0)
 
-  const finish = useCallback(
-    (account: NeteaseAccount) => {
-      useNetease.getState().loggedIn(account)
-      onSuccess?.(account)
-    },
-    [onSuccess]
-  )
+  const finish = useCallback(() => {
+    // The store closes the dialog and re-reads the account from the main process,
+    // which is the side that actually holds the cookie. Re-asking is one cheap IPC
+    // call, and it is the only way the renderer's idea of the session is verified
+    // rather than assumed from what the upstream just said.
+    useNetease.getState().loggedIn()
+  }, [])
 
   /** Create a code and poll it until it is used, expires, or the dialog closes. */
   useEffect(() => {
@@ -75,7 +75,7 @@ export function NeteaseLogin({ onClose, onSuccess }: NeteaseLoginProps) {
       if (!alive) return
 
       if (result.status === 'confirmed' && result.account) {
-        finish(result.account)
+        finish()
         return
       }
       if (result.status === 'scanned') {
@@ -126,7 +126,7 @@ export function NeteaseLogin({ onClose, onSuccess }: NeteaseLoginProps) {
     try {
       const result = await netease.loginCellphone(phone.trim(), password)
       if (result.ok && result.account) {
-        finish(result.account)
+        finish()
         return
       }
       /*

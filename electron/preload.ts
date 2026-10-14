@@ -232,6 +232,42 @@ const api = {
 
     getQuality: () => ipcRenderer.invoke('netease:getQuality'),
     setQuality: (quality: string) => ipcRenderer.invoke('netease:setQuality', quality)
+  },
+
+  /**
+   * QQ Music, through a second third-party reverse-engineered API.
+   *
+   * Same shape as `netease`, deliberately: the profile binding, the flat
+   * stream result and the quality tier vocabulary are shared, so the renderer's
+   * online-platform layer treats both platforms through one contract. What
+   * differs is QQ's own business - a track is identified by `songmid`, and a
+   * paywalled track answers with a *reason* rather than an error.
+   *
+   * Audio and cover art go through `aurora-remote:` as well: `y.gtimg.cn` sends
+   * no CORS header at all, so a cover can only be shown through the main
+   * process, and keeping the audio on the same path means the page never talks
+   * to a QQ host directly.
+   */
+  qq: {
+    setProfile: (profileId: string) => ipcRenderer.invoke('qq:setProfile', profileId) as Promise<boolean>,
+    accountFor: (profileId: string) => ipcRenderer.invoke('qq:accountFor', profileId),
+    logoutProfile: (profileId: string) =>
+      ipcRenderer.invoke('qq:logoutProfile', profileId) as Promise<boolean>,
+
+    status: () => ipcRenderer.invoke('qq:status'),
+    search: (keywords: string, type: string, limit?: number) =>
+      ipcRenderer.invoke('qq:search', { keywords, type, limit }),
+    streamUrl: (songId: string | number, quality?: string) =>
+      ipcRenderer.invoke('qq:streamUrl', { songId, quality }),
+    lyrics: (songId: string | number) => ipcRenderer.invoke('qq:lyrics', songId),
+
+    qrCreate: () => ipcRenderer.invoke('qq:qrCreate'),
+    qrCheck: (key: string) => ipcRenderer.invoke('qq:qrCheck', key),
+    loginStatus: () => ipcRenderer.invoke('qq:loginStatus'),
+    logout: () => ipcRenderer.invoke('qq:logout'),
+
+    getQuality: () => ipcRenderer.invoke('qq:getQuality'),
+    setQuality: (quality: string) => ipcRenderer.invoke('qq:setQuality', quality)
   }
 }
 

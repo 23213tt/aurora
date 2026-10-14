@@ -1,20 +1,26 @@
 import type { ReactNode } from 'react'
+import { useAvailableProviders } from '../features/online/hooks'
+import { platformView } from '../features/online/registry'
+import { useOnlineStore } from '../features/online/store'
+import type { OnlineCollectionKind, OnlineMusicProvider } from '../features/online/types'
 import type { ViewId } from '../types'
-import { useNetease } from '../features/netease/store'
 import { Album, Folder, List, Mic, Note, Refresh, Search, Settings, Sidebar, Sliders, User, Wave } from '../ui/icons'
 
 /**
- * The rail, and the reason the app stopped looking like two applications.
+ * The rail: one section per platform, with the local library as its own group.
  *
- * Local and online used to be two destinations with two layouts: a library of
- * local views on one side, and a self-contained "Netease screen" with its own
- * sidebar, its own header and its own cards on the other. Choosing what to play
- * meant choosing which app you were in.
+ * The structure follows `docs/ui-design.md` - online is the main body and local
+ * files are the supplement - but the *number* of online sections is no longer one.
+ * Each platform in the registry gets a peer entry of its own ("网易云音乐",
+ * "QQ 音乐"), which is what "本地分那么多、网易云怎么就一个" was really asking for.
  *
- * Here they are the same list. Your playlists - local and online - sit in one
- * group; picking any of them shows its songs in the main area, which never
- * needed to know where the songs came from. The online account is not a place
- * you visit, it is a section you sign into.
+ * Two rules make that work without the rail knowing any platform by name:
+ *
+ * - the platform list comes from `useAvailableProviders()`, so a build without a
+ *   given client shows no entry for it rather than a dead one;
+ * - each platform's generated collections come from its own `collections` field,
+ *   so "每日推荐 / 红心 / 云盘" appear because Netease declares them, and QQ's rail
+ *   section is short because QQ declares less. No branch here tests for a platform.
  */
 
 interface RailProps {
@@ -25,9 +31,7 @@ interface RailProps {
   counts: { albums: number; artists: number; songs: number }
   /** Name of the profile in use, shown at the foot of the rail. */
   profileLabel: string | null
-  /** Opens a local playlist's detail screen. */
   onOpenPlaylist(id: string): void
-  /** Local playlist names, for the 歌单 group. */
   localPlaylists: { id: string; name: string }[]
   activePlaylistId: string | null
 }
@@ -43,94 +47,39 @@ export function Rail({
   localPlaylists,
   activePlaylistId
 }: RailProps) {
-  const account = useNetease((s) => s.account)
-  const neteasePlaylists = useNetease((s) => s.playlists)
-  const neteaseLoading = useNetease((s) => s.playlistsLoading)
-  const category = useNetease((s) => s.category)
-  const openId = useNetease((s) => s.openId)
-
-  /** Switching into the online view and asking for something, in one gesture. */
-  const openCategory = (next: 'daily' | 'like' | 'cloud') => {
-    onView('netease')
-    if (!account) {
-      useNetease.getState().setLoginOpen(true)
-      return
-    }
-    void useNetease.getState().openCategory(next)
-  }
-
-  const openOnlinePlaylist = (id: number) => {
-    onView('netease')
-    void useNetease.getState().openPlaylist(id)
-  }
+  const providers = useAvailableProviders()
 
   return (
     <nav className="rail" aria-label="主导航">
       <div className="rail__scroll">
         {/*
           Search sits above both sources because it spans them: it answers from
-          either catalogue depending on its own tabs. Putting it inside one of the
-          two groups would say it belongs to that one.
+          whichever catalogue its tabs name. Putting it inside one section would say
+          it belongs to that one.
         */}
         <div className="rail__group">
-          <NavRow
+          <NavRow view={view} own="search" onView={onView} icon={<Search size={17} />} label="搜索" collapsed={collapsed} />
+        </div>
+
+        {/*
+          One group per platform. The heading is the platform's name, which is the
+          only place a platform is named in this file - and it comes from the
+          provider rather than from a literal.
+        */}
+        {providers.map((provider) => (
+          <PlatformSection
+            key={provider.id}
+            provider={provider}
             view={view}
-            own="search"
             onView={onView}
-            icon={<Search size={17} />}
-            label="搜索"
             collapsed={collapsed}
           />
-        </div>
+        ))}
 
         {/*
-          Online first.
-          In a streaming-era player the catalogue is the product and the local
-          files are the supplement - so the main section is the online one, and
-          "本地音乐" is a compact block below it, not a four-entry equal half.
-          The previous order had it exactly backwards, and gave the smaller half
-          the longer menu.
-        */}
-        <div className="rail__group">
-          <div className="rail__heading">在线音乐</div>
-          {account ? (
-            <>
-              <SubRow label="每日推荐" icon={<Note size={17} />} active={view === 'netease' && category === 'daily'} onClick={() => openCategory('daily')} />
-              <SubRow label="我喜欢的音乐" icon={<Note size={17} />} active={view === 'netease' && category === 'like'} onClick={() => openCategory('like')} />
-              <SubRow label="我的音乐云盘" icon={<Wave size={17} />} active={view === 'netease' && category === 'cloud'} onClick={() => openCategory('cloud')} />
-            </>
-          ) : (
-            <button className="rail__note rail__note--action" onClick={() => useNetease.getState().setLoginOpen(true)}>
-              登录后显示每日推荐、红心与云盘
-            </button>
-          )}
-          <button
-            className={`nav-item${view === 'netease' && !category ? ' is-active' : ''}`}
-            onClick={() => {
-              onView('netease')
-              if (!account) useNetease.getState().setLoginOpen(true)
-            }}
-            title={collapsed ? '搜索在线音乐' : '搜索在线音乐；在线歌单都在上面的「歌单」里'}
-          >
-            <Search size={17} />
-            <span className="nav-item__label">搜索在线音乐</span>
-          </button>
-          {account ? (
-            <button
-              className="rail__note rail__note--action"
-              onClick={() => void useNetease.getState().loadPlaylists()}
-              disabled={neteaseLoading}
-            >
-              <Refresh size={12} />
-              {neteaseLoading ? '读取中…' : '刷新在线歌单'}
-            </button>
-          ) : null}
-        </div>
-
-        {/*
-          One group, two sources of playlists. A playlist is a playlist whether
-          its songs are files or a remote collection, and the row looks the same
-          either way - which is the merge the app was missing.
+          One group, two sources of playlists. A playlist is a playlist whether its
+          songs are files or a remote collection, and the row looks the same either
+          way - which is the merge the app was missing.
         */}
         <div className="rail__group">
           <div className="rail__heading">歌单</div>
@@ -141,9 +90,7 @@ export function Rail({
           >
             <List size={17} />
             <span className="nav-item__label">播放列表</span>
-            {localPlaylists.length > 0 ? (
-              <span className="nav-item__count">{localPlaylists.length}</span>
-            ) : null}
+            {localPlaylists.length > 0 ? <span className="nav-item__count">{localPlaylists.length}</span> : null}
           </button>
 
           {localPlaylists.map((playlist) => (
@@ -159,26 +106,6 @@ export function Rail({
               <span className="nav-item__label">{playlist.name}</span>
             </button>
           ))}
-
-          {account
-            ? neteasePlaylists.map((playlist) => (
-                <button
-                  key={`ne-${playlist.id}`}
-                  className={`nav-item nav-item--sub${
-                    view === 'netease' && category === 'playlist' && openId === playlist.id ? ' is-active' : ''
-                  }`}
-                  onClick={() => openOnlinePlaylist(playlist.id)}
-                  title={collapsed ? playlist.name : `${playlist.name} · ${playlist.creator || '网易云'}`}
-                >
-                  <span className="nav-item__dot" aria-hidden="true" />
-                  <span className="nav-item__label">{playlist.name}</span>
-                </button>
-              ))
-            : null}
-
-          {account && neteaseLoading && neteasePlaylists.length === 0 ? (
-            <div className="rail__note">正在读取在线歌单…</div>
-          ) : null}
         </div>
 
         <div className="rail__group">
@@ -223,6 +150,110 @@ export function Rail({
   )
 }
 
+/**
+ * One platform's section.
+ *
+ * The named entry comes first - it is where the platform's own screen lives - and
+ * its declared collections follow as indented rows. A platform whose collections
+ * all require an account shows a single sign-in row while signed out instead of a
+ * list of doors that all lead to the same dialog.
+ */
+function PlatformSection({
+  provider,
+  view,
+  onView,
+  collapsed
+}: {
+  provider: OnlineMusicProvider
+  view: ViewId
+  onView: (view: ViewId) => void
+  collapsed: boolean
+}) {
+  const store = useOnlineStoreFor(provider)
+  const account = store.account
+  const collections = provider.collections ?? []
+
+  const openCollection = (kind: OnlineCollectionKind) => {
+    onView(platformView(provider))
+    // A collection that needs an account is still listed, because "sign in to get
+    // your daily recommendations" is information. The sign-in row below it is the
+    // action, so this one only selects what it can serve.
+    if (!account) return
+    void store.openCollection(kind)
+  }
+
+  return (
+    <div className="rail__group">
+      <div className="rail__heading">{provider.displayName}</div>
+
+      <button
+        className={`nav-item${view === platformView(provider) ? ' is-active' : ''}`}
+        onClick={() => onView(platformView(provider))}
+        aria-current={view === platformView(provider) ? 'page' : undefined}
+        title={collapsed ? provider.displayName : provider.summary}
+      >
+        <Wave size={17} />
+        <span className="nav-item__label">{provider.shortName ?? provider.displayName}</span>
+      </button>
+
+      {collections.map((collection) => (
+        <button
+          key={collection.kind}
+          className={`nav-item nav-item--sub${
+            view === platformView(provider) && store.collectionKind === collection.kind ? ' is-active' : ''
+          }`}
+          onClick={() => openCollection(collection.kind)}
+          title={collection.requiresAccount && !account ? `登录后查看${collection.label}` : collection.label}
+        >
+          <span className="nav-item__dot" aria-hidden="true" />
+          <span className="nav-item__label">{collection.label}</span>
+        </button>
+      ))}
+
+      {!account && collections.some((collection) => collection.requiresAccount) ? (
+        <div className="rail__note">登录后显示{collections.map((item) => item.label).join('、')}</div>
+      ) : null}
+
+      {account ? (
+        <button
+          className="rail__note rail__note--action"
+          onClick={() => void store.loadPlaylists()}
+          disabled={store.playlistsLoading}
+        >
+          <Refresh size={12} />
+          {store.playlistsLoading ? '读取中…' : '刷新歌单'}
+        </button>
+      ) : null}
+
+      {/* Online playlists live with the platform they belong to, so a section can
+          be read on its own without consulting another. */}
+      {account
+        ? store.playlists.map((playlist) => (
+            <button
+              key={`${provider.id}-${playlist.id}`}
+              className={`nav-item nav-item--sub${
+                view === platformView(provider) && store.openId === playlist.id ? ' is-active' : ''
+              }`}
+              onClick={() => {
+                onView(platformView(provider))
+                void store.openPlaylist(playlist.id)
+              }}
+              title={collapsed ? playlist.name : `${playlist.name} · ${playlist.creator || provider.displayName}`}
+            >
+              <span className="nav-item__dot" aria-hidden="true" />
+              <span className="nav-item__label">{playlist.name}</span>
+            </button>
+          ))
+        : null}
+    </div>
+  )
+}
+
+/** The store for a platform, subscribed so the section re-renders with it. */
+function useOnlineStoreFor(provider: OnlineMusicProvider) {
+  return useOnlineStore(provider.id)()
+}
+
 interface NavRowProps {
   view: ViewId
   own: ViewId
@@ -244,26 +275,6 @@ function NavRow({ view, own, onView, icon, label, count, collapsed }: NavRowProp
       {icon}
       <span className="nav-item__label">{label}</span>
       {count ? <span className="nav-item__count">{count}</span> : null}
-    </button>
-  )
-}
-
-/** An indented entry: a real destination, but visibly part of the section above. */
-function SubRow({
-  label,
-  icon,
-  active,
-  onClick
-}: {
-  label: string
-  icon: ReactNode
-  active: boolean
-  onClick(): void
-}) {
-  return (
-    <button className={`nav-item${active ? ' is-active' : ''}`} onClick={onClick}>
-      {icon}
-      <span className="nav-item__label">{label}</span>
     </button>
   )
 }
