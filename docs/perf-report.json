@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T11:56:16.318Z",
+  "generatedAt": "2026-10-14T14:44:40.102Z",
   "environment": {
     "node": "v24.19.0",
     "os": "Windows_NT 10.0.26200",
@@ -7,37 +7,29 @@
     "cpuModel": "Intel(R) Core(TM) i7-14650HX",
     "totalMemBytes": 16890322944,
     "git": {
-      "rev": "62adc25da290f20bc5a81e0f7cb1de1101b61786",
+      "rev": "cc7e83ad98a1c3e4b8d74914c93bdc5f2b34e385",
       "branch": "main",
-      "dirtyFiles": 32,
+      "dirtyFiles": 4,
       "dirtySample": [
-        "M electron/main.ts",
-        " M electron/preload.ts",
-        " M package.json",
-        " M src/App.tsx",
-        " M src/bridge.ts",
-        " M src/components/Bar.tsx",
-        " M src/components/PlayerBar.tsx",
-        " M src/env.d.ts",
-        " M src/library/scan.ts",
-        " M src/overlay/DesktopLyricsBridge.tsx",
-        " M src/player/driver.ts",
-        " M src/player/engine.ts"
+        "M docs/perf-baseline.md",
+        " M docs/perf-report.json",
+        " M docs/perf-report.md",
+        " M src/features/player/Bar.tsx"
       ]
     },
     "edge": "Edg/155.0.4283.45",
     "previewBundle": {
       "aurora-preview-settings.html": {
-        "bytes": 388718,
-        "sha256": "3b8e2e96fbe98127"
+        "bytes": 411058,
+        "sha256": "36513937ea0367b4"
       },
       "aurora-preview-perf.html": {
-        "bytes": 388714,
-        "sha256": "6a4fe89f3a3a26f1"
+        "bytes": 411054,
+        "sha256": "ea20ebebb2fe4509"
       },
       "aurora-preview-stage.html": {
-        "bytes": 388715,
-        "sha256": "094ff6947429f74d"
+        "bytes": 411055,
+        "sha256": "13761e89bc187b96"
       }
     }
   },
@@ -49,8 +41,8 @@
     "durationMs": 6000,
     "settleMs": 3000,
     "buildRan": true,
-    "buildMs": 3293,
-    "totalMs": 91019
+    "buildMs": 3179,
+    "totalMs": 64212
   },
   "externalCounters": null,
   "caveat": "这是浏览器预览构建的渲染进程数字，不是 Electron 整机占用；Electron 主进程、IPC 与 GPU 合成不在本口径内。",
@@ -65,8 +57,8 @@
       "url": "preview-dist/aurora-preview-null.html#null",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6013.2,
-        "pageSpanMs": 6015,
+        "wallMs": 6014.6,
+        "pageSpanMs": 6016.1,
         "visibilityState": "visible",
         "documentHidden": false
       },
@@ -75,17 +67,17 @@
         "samples": 360,
         "p50": 16.699999999999818,
         "p95": 17,
-        "p99": 17.399999999999636,
-        "max": 17.5,
-        "min": 16,
-        "mean": 16.66638888888889,
+        "p99": 17.199999999999818,
+        "max": 17.200000000000728,
+        "min": 15.799999999999272,
+        "mean": 16.666944444444443,
         "over33ms": 0,
         "over50ms": 0,
-        "fps": 60.02,
+        "fps": 60.01,
         "samplerDriven": true,
         "rafLoopRunning": true,
-        "firstFrameAt": 13.9,
-        "lastFrameAt": 6013.8
+        "firstFrameAt": 14.2,
+        "lastFrameAt": 6014.3
       },
       "longTasks": {
         "supported": true,
@@ -96,38 +88,38 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 42.9,
-        "scriptMs": 6.7,
+        "taskMs": 43,
+        "scriptMs": 7,
         "layoutMs": 0,
         "styleMs": 0,
-        "taskBusyPctOfOneCore": 0.71,
-        "scriptPctOfOneCore": 0.11,
-        "windowMs": 6013.2
+        "taskBusyPctOfOneCore": 0.72,
+        "scriptPctOfOneCore": 0.12,
+        "windowMs": 6014.6
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 55.9,
-          "renderer": 97.6,
-          "GPU": 54.2,
-          "network.mojom.NetworkService": 6,
+          "browser": 105.5,
+          "renderer": 90.7,
+          "GPU": 59.1,
+          "network.mojom.NetworkService": 20.3,
           "storage.mojom.StorageService": 0,
           "edge_collections.mojom.CollectionsDataManager": 0,
           "entity_extraction_service.mojom.Extractor": 0,
-          "winrt_app_id.mojom.WinrtAppIdService": 0.1
+          "winrt_app_id.mojom.WinrtAppIdService": 0.2
         },
-        "totalCpuMs": 213.9,
-        "pctOfAllCores": 0.148,
-        "pctOfOneCore": 3.56,
-        "rendererCpuMs": 97.6,
-        "rendererPctOfOneCore": 1.62,
-        "rendererPctOfAllCores": 0.068,
+        "totalCpuMs": 275.8,
+        "pctOfAllCores": 0.191,
+        "pctOfOneCore": 4.59,
+        "rendererCpuMs": 90.7,
+        "rendererPctOfOneCore": 1.51,
+        "rendererPctOfAllCores": 0.063,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 590392,
-        "heapUsedDeltaBytes": 23484,
+        "heapUsedAtEndBytes": 590844,
+        "heapUsedDeltaBytes": 23924,
         "heapTotalAtEndBytes": 1048676,
-        "cdpJsHeapUsedBytes": 658500,
+        "cdpJsHeapUsedBytes": 662656,
         "domNodesAtEnd": 3,
         "domNodesDelta": 0,
         "cdpNodes": 8,
@@ -185,10 +177,7 @@
         "harnessError": null,
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
       },
-      "warnings": [
-        "第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。"
-      ],
-      "retried": true
+      "warnings": []
     },
     "idle-paused": {
       "id": "idle-paused",
@@ -200,27 +189,27 @@
       "url": "preview-dist/aurora-preview-settings.html#settings",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6008.2,
-        "pageSpanMs": 6009.2,
+        "wallMs": 6004.3,
+        "pageSpanMs": 6005.2,
         "visibilityState": "visible",
         "documentHidden": false
       },
       "frames": {
-        "frames": 361,
-        "samples": 360,
+        "frames": 360,
+        "samples": 359,
         "p50": 16.699999999999818,
-        "p95": 16.900000000000546,
-        "p99": 17.199999999999818,
-        "max": 17.200000000000273,
-        "min": 16.099999999999454,
-        "mean": 16.666666666666664,
+        "p95": 17,
+        "p99": 17.400000000001455,
+        "max": 17.5,
+        "min": 15.799999999999272,
+        "mean": 16.666295264623955,
         "over33ms": 0,
         "over50ms": 0,
-        "fps": 60.07,
+        "fps": 59.95,
         "samplerDriven": true,
         "rafLoopRunning": true,
-        "firstFrameAt": 1.7,
-        "lastFrameAt": 6001.7
+        "firstFrameAt": 7.4,
+        "lastFrameAt": 5990.6
       },
       "longTasks": {
         "supported": true,
@@ -231,43 +220,43 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 50.9,
-        "scriptMs": 7.6,
+        "taskMs": 46.1,
+        "scriptMs": 7,
         "layoutMs": 0,
         "styleMs": 0,
-        "taskBusyPctOfOneCore": 0.85,
-        "scriptPctOfOneCore": 0.13,
-        "windowMs": 6008.2
+        "taskBusyPctOfOneCore": 0.77,
+        "scriptPctOfOneCore": 0.12,
+        "windowMs": 6004.3
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 218.2,
-          "renderer": 110,
-          "GPU": 62,
-          "network.mojom.NetworkService": 5.5,
+          "browser": 298.3,
+          "renderer": 94.2,
+          "GPU": 56.2,
+          "network.mojom.NetworkService": 13.8,
           "storage.mojom.StorageService": 0.3,
           "edge_collections.mojom.CollectionsDataManager": 0,
-          "entity_extraction_service.mojom.Extractor": 0,
-          "winrt_app_id.mojom.WinrtAppIdService": 0.2
+          "entity_extraction_service.mojom.Extractor": 0.1,
+          "winrt_app_id.mojom.WinrtAppIdService": 0.3
         },
-        "totalCpuMs": 396.2,
-        "pctOfAllCores": 0.275,
-        "pctOfOneCore": 6.6,
-        "rendererCpuMs": 110,
-        "rendererPctOfOneCore": 1.83,
-        "rendererPctOfAllCores": 0.076,
+        "totalCpuMs": 463,
+        "pctOfAllCores": 0.321,
+        "pctOfOneCore": 7.71,
+        "rendererCpuMs": 94.2,
+        "rendererPctOfOneCore": 1.57,
+        "rendererPctOfAllCores": 0.065,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 2891855,
-        "heapUsedDeltaBytes": 23520,
-        "heapTotalAtEndBytes": 6646411,
-        "cdpJsHeapUsedBytes": 2594652,
-        "domNodesAtEnd": 207,
+        "heapUsedAtEndBytes": 3281245,
+        "heapUsedDeltaBytes": 23544,
+        "heapTotalAtEndBytes": 5615681,
+        "cdpJsHeapUsedBytes": 2963700,
+        "domNodesAtEnd": 312,
         "domNodesDelta": 0,
-        "cdpNodes": 333,
-        "cdpLayoutCount": 6,
-        "cdpRecalcStyleCount": 27
+        "cdpNodes": 492,
+        "cdpLayoutCount": 8,
+        "cdpRecalcStyleCount": 40
       },
       "renderCounters": {
         "rootRenders": 0,
@@ -334,27 +323,27 @@
       "url": "preview-dist/aurora-preview-settings.html#settings",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6014.6,
-        "pageSpanMs": 6015.5,
+        "wallMs": 6011.4,
+        "pageSpanMs": 6012.6,
         "visibilityState": "visible",
         "documentHidden": false
       },
       "frames": {
-        "frames": 361,
-        "samples": 360,
+        "frames": 360,
+        "samples": 359,
         "p50": 16.699999999999818,
-        "p95": 16.90000000000009,
-        "p99": 17.100000000000364,
-        "max": 18.800000000000182,
-        "min": 14.5,
-        "mean": 16.666944444444447,
+        "p95": 16.900000000000546,
+        "p99": 17.300000000000182,
+        "max": 17.599999999999454,
+        "min": 16,
+        "mean": 16.666573816155985,
         "over33ms": 0,
         "over50ms": 0,
-        "fps": 60.01,
+        "fps": 59.87,
         "samplerDriven": true,
         "rafLoopRunning": true,
-        "firstFrameAt": 9.6,
-        "lastFrameAt": 6009.7
+        "firstFrameAt": 13.9,
+        "lastFrameAt": 5997.2
       },
       "longTasks": {
         "supported": true,
@@ -365,43 +354,43 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 129.2,
-        "scriptMs": 42.2,
-        "layoutMs": 5.1,
-        "styleMs": 7.7,
-        "taskBusyPctOfOneCore": 2.15,
-        "scriptPctOfOneCore": 0.7,
-        "windowMs": 6014.6
+        "taskMs": 132,
+        "scriptMs": 42.9,
+        "layoutMs": 4.3,
+        "styleMs": 7.9,
+        "taskBusyPctOfOneCore": 2.2,
+        "scriptPctOfOneCore": 0.71,
+        "windowMs": 6011.4
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 1363.9,
-          "renderer": 235.5,
-          "GPU": 227.9,
-          "network.mojom.NetworkService": 49,
-          "storage.mojom.StorageService": 37,
-          "edge_collections.mojom.CollectionsDataManager": 0.1,
-          "entity_extraction_service.mojom.Extractor": 26.9,
+          "browser": 1441.2,
+          "renderer": 227.3,
+          "GPU": 198,
+          "network.mojom.NetworkService": 47.6,
+          "storage.mojom.StorageService": 35.4,
+          "edge_collections.mojom.CollectionsDataManager": 17.7,
+          "entity_extraction_service.mojom.Extractor": 24.9,
           "winrt_app_id.mojom.WinrtAppIdService": 95
         },
-        "totalCpuMs": 2035.2,
-        "pctOfAllCores": 1.41,
-        "pctOfOneCore": 33.84,
-        "rendererCpuMs": 235.5,
-        "rendererPctOfOneCore": 3.92,
-        "rendererPctOfAllCores": 0.163,
+        "totalCpuMs": 2087.1,
+        "pctOfAllCores": 1.447,
+        "pctOfOneCore": 34.72,
+        "rendererCpuMs": 227.3,
+        "rendererPctOfOneCore": 3.78,
+        "rendererPctOfAllCores": 0.158,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 2924843,
-        "heapUsedDeltaBytes": 191064,
-        "heapTotalAtEndBytes": 5859951,
-        "cdpJsHeapUsedBytes": 2630516,
-        "domNodesAtEnd": 207,
+        "heapUsedAtEndBytes": 3332773,
+        "heapUsedDeltaBytes": 230772,
+        "heapTotalAtEndBytes": 6139941,
+        "cdpJsHeapUsedBytes": 3020752,
+        "domNodesAtEnd": 312,
         "domNodesDelta": 0,
-        "cdpNodes": 330,
-        "cdpLayoutCount": 53,
-        "cdpRecalcStyleCount": 74
+        "cdpNodes": 489,
+        "cdpLayoutCount": 55,
+        "cdpRecalcStyleCount": 86
       },
       "renderCounters": {
         "rootRenders": 0,
@@ -415,7 +404,7 @@
         "supported": true,
         "error": null,
         "total": 105,
-        "perSecond": 17.45,
+        "perSecond": 17.46,
         "breakdown": {
           "childList": 0,
           "characterData": 6,
@@ -544,8 +533,8 @@
       "url": "preview-dist/aurora-preview-perf.html#perf",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6006.7,
-        "pageSpanMs": 6008.6,
+        "wallMs": 6007.5,
+        "pageSpanMs": 6008.7,
         "visibilityState": "visible",
         "documentHidden": false
       },
@@ -553,18 +542,18 @@
         "frames": 361,
         "samples": 360,
         "p50": 16.699999999999818,
-        "p95": 17,
-        "p99": 17.199999999999818,
-        "max": 17.40000000000009,
-        "min": 15.799999999999955,
-        "mean": 16.66611111111111,
+        "p95": 16.900000000000546,
+        "p99": 17.099999999999454,
+        "max": 17.299999999999272,
+        "min": 16,
+        "mean": 16.666944444444447,
         "over33ms": 0,
         "over50ms": 0,
         "fps": 60.08,
         "samplerDriven": true,
         "rafLoopRunning": true,
-        "firstFrameAt": 7.2,
-        "lastFrameAt": 6007
+        "firstFrameAt": 7.7,
+        "lastFrameAt": 6007.8
       },
       "longTasks": {
         "supported": true,
@@ -575,43 +564,43 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 154,
-        "scriptMs": 55.9,
-        "layoutMs": 4.7,
-        "styleMs": 7.6,
-        "taskBusyPctOfOneCore": 2.56,
-        "scriptPctOfOneCore": 0.93,
-        "windowMs": 6006.7
+        "taskMs": 156.1,
+        "scriptMs": 58.3,
+        "layoutMs": 4.6,
+        "styleMs": 7.8,
+        "taskBusyPctOfOneCore": 2.6,
+        "scriptPctOfOneCore": 0.97,
+        "windowMs": 6007.5
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 1468.4,
-          "renderer": 269.5,
-          "GPU": 215.6,
-          "network.mojom.NetworkService": 49,
-          "storage.mojom.StorageService": 57.2,
-          "edge_collections.mojom.CollectionsDataManager": 17.3,
-          "entity_extraction_service.mojom.Extractor": 25.9,
-          "winrt_app_id.mojom.WinrtAppIdService": 95
+          "browser": 1507.2,
+          "renderer": 276.1,
+          "GPU": 177.7,
+          "network.mojom.NetworkService": 54.2,
+          "storage.mojom.StorageService": 58.3,
+          "edge_collections.mojom.CollectionsDataManager": 18.6,
+          "entity_extraction_service.mojom.Extractor": 26.5,
+          "winrt_app_id.mojom.WinrtAppIdService": 99.5
         },
-        "totalCpuMs": 2198,
-        "pctOfAllCores": 1.525,
-        "pctOfOneCore": 36.59,
-        "rendererCpuMs": 269.5,
-        "rendererPctOfOneCore": 4.49,
-        "rendererPctOfAllCores": 0.187,
+        "totalCpuMs": 2218.2,
+        "pctOfAllCores": 1.538,
+        "pctOfOneCore": 36.92,
+        "rendererCpuMs": 276.1,
+        "rendererPctOfOneCore": 4.6,
+        "rendererPctOfAllCores": 0.191,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 3270362,
-        "heapUsedDeltaBytes": 466979,
-        "heapTotalAtEndBytes": 6646346,
-        "cdpJsHeapUsedBytes": 2976788,
-        "domNodesAtEnd": 207,
+        "heapUsedAtEndBytes": 3704497,
+        "heapUsedDeltaBytes": 576384,
+        "heapTotalAtEndBytes": 6664213,
+        "cdpJsHeapUsedBytes": 2692664,
+        "domNodesAtEnd": 312,
         "domNodesDelta": 0,
-        "cdpNodes": 330,
+        "cdpNodes": 489,
         "cdpLayoutCount": 55,
-        "cdpRecalcStyleCount": 78
+        "cdpRecalcStyleCount": 83
       },
       "renderCounters": {
         "rootRenders": 0,
@@ -624,11 +613,11 @@
       "domMutations": {
         "supported": true,
         "error": null,
-        "total": 121,
-        "perSecond": 20.14,
+        "total": 123,
+        "perSecond": 20.47,
         "breakdown": {
           "childList": 0,
-          "characterData": 6,
+          "characterData": 8,
           "attributes": 115
         },
         "topTargets": [
@@ -642,7 +631,7 @@
           },
           {
             "target": "span.seek__time",
-            "count": 6
+            "count": 8
           },
           {
             "target": "div.bar",
@@ -754,8 +743,8 @@
       "url": "preview-dist/aurora-preview-stage.html#stage",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6005.5,
-        "pageSpanMs": 6006.6,
+        "wallMs": 6000.5,
+        "pageSpanMs": 6001.5,
         "visibilityState": "visible",
         "documentHidden": false
       },
@@ -763,18 +752,18 @@
         "frames": 360,
         "samples": 359,
         "p50": 16.699999999999818,
-        "p95": 16.899999999999636,
-        "p99": 17.099999999999454,
-        "max": 17.5,
-        "min": 15.700000000000728,
-        "mean": 16.66768802228412,
+        "p95": 16.900000000000546,
+        "p99": 17.300000000000182,
+        "max": 17.300000000000182,
+        "min": 15.899999999999636,
+        "mean": 16.66740947075209,
         "over33ms": 0,
         "over50ms": 0,
-        "fps": 59.93,
+        "fps": 59.99,
         "samplerDriven": true,
         "rafLoopRunning": true,
-        "firstFrameAt": 13.8,
-        "lastFrameAt": 5997.5
+        "firstFrameAt": 9.7,
+        "lastFrameAt": 5993.3
       },
       "longTasks": {
         "supported": true,
@@ -785,47 +774,47 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 375.2,
-        "scriptMs": 187.2,
+        "taskMs": 354.3,
+        "scriptMs": 182.5,
         "layoutMs": 12.4,
-        "styleMs": 16.8,
-        "taskBusyPctOfOneCore": 6.25,
-        "scriptPctOfOneCore": 3.12,
-        "windowMs": 6005.5
+        "styleMs": 15.4,
+        "taskBusyPctOfOneCore": 5.9,
+        "scriptPctOfOneCore": 3.04,
+        "windowMs": 6000.5
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 1523.2,
-          "renderer": 645.3,
-          "GPU": 2429.7,
-          "network.mojom.NetworkService": 53,
-          "storage.mojom.StorageService": 38.8,
-          "edge_collections.mojom.CollectionsDataManager": 0.1,
-          "entity_extraction_service.mojom.Extractor": 29.4,
-          "winrt_app_id.mojom.WinrtAppIdService": 115.4
+          "browser": 1564,
+          "renderer": 584.8,
+          "GPU": 2319.4,
+          "network.mojom.NetworkService": 67.5,
+          "storage.mojom.StorageService": 39,
+          "edge_collections.mojom.CollectionsDataManager": 18,
+          "entity_extraction_service.mojom.Extractor": 27,
+          "winrt_app_id.mojom.WinrtAppIdService": 103.9
         },
-        "totalCpuMs": 4834.8,
-        "pctOfAllCores": 3.354,
-        "pctOfOneCore": 80.51,
-        "rendererCpuMs": 645.3,
-        "rendererPctOfOneCore": 10.75,
-        "rendererPctOfAllCores": 0.448,
+        "totalCpuMs": 4723.7,
+        "pctOfAllCores": 3.28,
+        "pctOfOneCore": 78.72,
+        "rendererCpuMs": 584.8,
+        "rendererPctOfOneCore": 9.75,
+        "rendererPctOfAllCores": 0.406,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 4078233,
-        "heapUsedDeltaBytes": 190746,
-        "heapTotalAtEndBytes": 8494717,
-        "cdpJsHeapUsedBytes": 3790500,
-        "domNodesAtEnd": 291,
+        "heapUsedAtEndBytes": 3900868,
+        "heapUsedDeltaBytes": -590463,
+        "heapTotalAtEndBytes": 8511596,
+        "cdpJsHeapUsedBytes": 3594684,
+        "domNodesAtEnd": 258,
         "domNodesDelta": 0,
-        "cdpNodes": 627,
-        "cdpLayoutCount": 75,
-        "cdpRecalcStyleCount": 110
+        "cdpNodes": 403,
+        "cdpLayoutCount": 90,
+        "cdpRecalcStyleCount": 105
       },
       "renderCounters": {
         "rootRenders": 0,
-        "rootRendersSinceLoad": 3,
+        "rootRendersSinceLoad": 4,
         "rootRendersPerSecond": 0,
         "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
         "expectedPositionWrites": 360,
@@ -835,7 +824,7 @@
         "supported": true,
         "error": null,
         "total": 172,
-        "perSecond": 28.64,
+        "perSecond": 28.66,
         "breakdown": {
           "childList": 2,
           "characterData": 12,
@@ -892,6 +881,21 @@
             "text": "style"
           },
           {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
             "type": "characterData",
             "path": "span.seek__time",
             "text": "0:53"
@@ -910,21 +914,6 @@
             "type": "characterData",
             "path": "span.stage__time",
             "text": "0:53"
-          },
-          {
-            "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
           },
           {
             "type": "attributes",
@@ -968,10 +957,7 @@
         "harnessError": null,
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
       },
-      "warnings": [
-        "第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。"
-      ],
-      "retried": true
+      "warnings": []
     },
     "hidden-stage-electron": {
       "id": "hidden-stage-electron",
@@ -987,8 +973,8 @@
       "url": "preview-dist/aurora-preview-stage.html#stage",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6004.2,
-        "pageSpanMs": 6005.3,
+        "wallMs": 6011.2,
+        "pageSpanMs": 6012,
         "visibilityState": "hidden",
         "documentHidden": true
       },
@@ -1016,43 +1002,43 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 21.1,
-        "scriptMs": 15,
+        "taskMs": 11,
+        "scriptMs": 3.3,
         "layoutMs": 0,
         "styleMs": 0,
-        "taskBusyPctOfOneCore": 0.35,
-        "scriptPctOfOneCore": 0.25,
-        "windowMs": 6004.2
+        "taskBusyPctOfOneCore": 0.18,
+        "scriptPctOfOneCore": 0.05,
+        "windowMs": 6011.2
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 1567.4,
-          "renderer": 45.2,
-          "GPU": 20.8,
-          "network.mojom.NetworkService": 34.8,
-          "storage.mojom.StorageService": 3.1,
-          "edge_collections.mojom.CollectionsDataManager": 0,
-          "entity_extraction_service.mojom.Extractor": 36.2,
-          "winrt_app_id.mojom.WinrtAppIdService": 151.8
+          "browser": 1167.9,
+          "renderer": 18.7,
+          "GPU": 18.6,
+          "network.mojom.NetworkService": 37.5,
+          "storage.mojom.StorageService": 2.1,
+          "edge_collections.mojom.CollectionsDataManager": 0.1,
+          "entity_extraction_service.mojom.Extractor": 25.4,
+          "winrt_app_id.mojom.WinrtAppIdService": 92.4
         },
-        "totalCpuMs": 1859.2,
-        "pctOfAllCores": 1.29,
-        "pctOfOneCore": 30.97,
-        "rendererCpuMs": 45.2,
-        "rendererPctOfOneCore": 0.75,
-        "rendererPctOfAllCores": 0.031,
+        "totalCpuMs": 1362.6,
+        "pctOfAllCores": 0.944,
+        "pctOfOneCore": 22.67,
+        "rendererCpuMs": 18.7,
+        "rendererPctOfOneCore": 0.31,
+        "rendererPctOfAllCores": 0.013,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 3853643,
-        "heapUsedDeltaBytes": 233408,
-        "heapTotalAtEndBytes": 7446075,
-        "cdpJsHeapUsedBytes": 3519500,
-        "domNodesAtEnd": 291,
+        "heapUsedAtEndBytes": 3701374,
+        "heapUsedDeltaBytes": 85489,
+        "heapTotalAtEndBytes": 7987454,
+        "cdpJsHeapUsedBytes": 3349528,
+        "domNodesAtEnd": 258,
         "domNodesDelta": 0,
-        "cdpNodes": 628,
-        "cdpLayoutCount": 9,
-        "cdpRecalcStyleCount": 11
+        "cdpNodes": 404,
+        "cdpLayoutCount": 18,
+        "cdpRecalcStyleCount": 19
       },
       "renderCounters": {
         "rootRenders": 0,
@@ -1065,107 +1051,89 @@
       "domMutations": {
         "supported": true,
         "error": null,
-        "total": 100,
-        "perSecond": 16.65,
+        "total": 10,
+        "perSecond": 1.66,
         "breakdown": {
           "childList": 2,
-          "characterData": 12,
-          "attributes": 86
+          "characterData": 0,
+          "attributes": 8
         },
         "topTargets": [
           {
-            "target": "div.bar__fill",
-            "count": 24
-          },
-          {
-            "target": "div.bar__knob",
-            "count": 24
-          },
-          {
-            "target": "div.stage__track-fill",
-            "count": 24
-          },
-          {
-            "target": "span.seek__time",
-            "count": 6
-          },
-          {
-            "target": "span.stage__time",
-            "count": 6
-          },
-          {
-            "target": "div.bar",
-            "count": 3
-          },
-          {
-            "target": "div.stage__track",
-            "count": 3
-          },
-          {
             "target": "div.stage__lyrics",
             "count": 2
+          },
+          {
+            "target": "div.lyr.lyr--d3",
+            "count": 2
+          },
+          {
+            "target": "div.lyr.lyr--d2",
+            "count": 2
+          },
+          {
+            "target": "div.lyr.lyr--d1",
+            "count": 2
+          },
+          {
+            "target": "div.lyr.lyr--d4",
+            "count": 1
+          },
+          {
+            "target": "div.lyr.lyr--d0",
+            "count": 1
           }
         ],
         "samples": [
           {
-            "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
+            "type": "childList",
+            "path": "div.stage__lyrics",
+            "text": "0 added / 1 removed"
           },
           {
             "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
+            "path": "div.lyr.lyr--d4",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
-          },
-          {
-            "type": "characterData",
-            "path": "span.seek__time",
-            "text": "0:54"
+            "path": "div.lyr.lyr--d3",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
+            "path": "div.lyr.lyr--d2",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
-          },
-          {
-            "type": "characterData",
-            "path": "span.stage__time",
-            "text": "0:54"
+            "path": "div.lyr.lyr--d1",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
+            "path": "div.lyr.lyr--d0",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
+            "path": "div.lyr.lyr--d1",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
+            "path": "div.lyr.lyr--d2",
+            "text": "class"
           },
           {
             "type": "attributes",
-            "path": "div.bar",
-            "text": "aria-valuenow"
+            "path": "div.lyr.lyr--d3",
+            "text": "class"
           },
           {
-            "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
+            "type": "childList",
+            "path": "div.stage__lyrics",
+            "text": "1 added / 0 removed"
           }
         ]
       },
@@ -1211,8 +1179,8 @@
       "url": "preview-dist/aurora-preview-stage.html#stage",
       "browser": "Edg/155.0.4283.45",
       "window": {
-        "wallMs": 6011.5,
-        "pageSpanMs": 6012.9,
+        "wallMs": 6015.3,
+        "pageSpanMs": 6016.2,
         "visibilityState": "hidden",
         "documentHidden": true
       },
@@ -1240,48 +1208,47 @@
         "perSecond": 0
       },
       "mainThread": {
-        "taskMs": 8.6,
-        "scriptMs": 4.6,
+        "taskMs": 5,
+        "scriptMs": 1,
         "layoutMs": 0,
         "styleMs": 0,
-        "taskBusyPctOfOneCore": 0.14,
-        "scriptPctOfOneCore": 0.08,
-        "windowMs": 6011.5
+        "taskBusyPctOfOneCore": 0.08,
+        "scriptPctOfOneCore": 0.02,
+        "windowMs": 6015.3
       },
       "processCpu": {
         "byTypeMs": {
-          "browser": 1233.1,
-          "renderer": 24.3,
-          "GPU": 12.6,
-          "network.mojom.NetworkService": 24.1,
+          "browser": 1324.9,
+          "renderer": 18.3,
+          "GPU": 19.2,
+          "network.mojom.NetworkService": 37.9,
           "storage.mojom.StorageService": 0.9,
-          "edge_collections.mojom.CollectionsDataManager": 0,
-          "PooledProcess2": -41.6,
-          "entity_extraction_service.mojom.Extractor": 29,
-          "winrt_app_id.mojom.WinrtAppIdService": 114
+          "edge_collections.mojom.CollectionsDataManager": 0.1,
+          "entity_extraction_service.mojom.Extractor": 25.3,
+          "winrt_app_id.mojom.WinrtAppIdService": 93.5
         },
-        "totalCpuMs": 1396.3,
-        "pctOfAllCores": 0.968,
-        "pctOfOneCore": 23.23,
-        "rendererCpuMs": 24.3,
-        "rendererPctOfOneCore": 0.4,
-        "rendererPctOfAllCores": 0.017,
+        "totalCpuMs": 1520,
+        "pctOfAllCores": 1.053,
+        "pctOfOneCore": 25.27,
+        "rendererCpuMs": 18.3,
+        "rendererPctOfOneCore": 0.3,
+        "rendererPctOfAllCores": 0.013,
         "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
       },
       "memory": {
-        "heapUsedAtEndBytes": 3848344,
-        "heapUsedDeltaBytes": 78990,
-        "heapTotalAtEndBytes": 7183632,
-        "cdpJsHeapUsedBytes": 3516164,
-        "domNodesAtEnd": 291,
+        "heapUsedAtEndBytes": 3897654,
+        "heapUsedDeltaBytes": 14016,
+        "heapTotalAtEndBytes": 7725186,
+        "cdpJsHeapUsedBytes": 3545196,
+        "domNodesAtEnd": 258,
         "domNodesDelta": 0,
-        "cdpNodes": 625,
-        "cdpLayoutCount": 15,
-        "cdpRecalcStyleCount": 15
+        "cdpNodes": 401,
+        "cdpLayoutCount": 4,
+        "cdpRecalcStyleCount": 20
       },
       "renderCounters": {
         "rootRenders": 0,
-        "rootRendersSinceLoad": 5,
+        "rootRendersSinceLoad": 4,
         "rootRendersPerSecond": 0,
         "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
         "expectedPositionWrites": null,
@@ -1290,105 +1257,15 @@
       "domMutations": {
         "supported": true,
         "error": null,
-        "total": 24,
-        "perSecond": 3.99,
+        "total": 0,
+        "perSecond": 0,
         "breakdown": {
           "childList": 0,
-          "characterData": 4,
-          "attributes": 20
+          "characterData": 0,
+          "attributes": 0
         },
-        "topTargets": [
-          {
-            "target": "div.bar__fill",
-            "count": 6
-          },
-          {
-            "target": "div.bar__knob",
-            "count": 6
-          },
-          {
-            "target": "div.stage__track-fill",
-            "count": 6
-          },
-          {
-            "target": "span.seek__time",
-            "count": 2
-          },
-          {
-            "target": "span.stage__time",
-            "count": 2
-          },
-          {
-            "target": "div.bar",
-            "count": 1
-          },
-          {
-            "target": "div.stage__track",
-            "count": 1
-          }
-        ],
-        "samples": [
-          {
-            "type": "characterData",
-            "path": "span.seek__time",
-            "text": "0:53"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
-          },
-          {
-            "type": "characterData",
-            "path": "span.stage__time",
-            "text": "0:53"
-          },
-          {
-            "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__knob",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.stage__track-fill",
-            "text": "style"
-          },
-          {
-            "type": "attributes",
-            "path": "div.bar__fill",
-            "text": "style"
-          }
-        ]
+        "topTargets": [],
+        "samples": []
       },
       "probeCounters": {
         "storeNotifications": {
@@ -1420,10 +1297,7 @@
         "harnessError": null,
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
       },
-      "warnings": [
-        "第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。"
-      ],
-      "retried": true
+      "warnings": []
     }
   }
 }

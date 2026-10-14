@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { isWindowVisible } from './engine'
 import { usePlayer } from './store'
 
 /**
@@ -25,9 +26,22 @@ const PROGRESS_STEP_SECONDS = 1 / 8
 
 /** Playhead position, quantised to {@link PROGRESS_STEP_SECONDS}. */
 export function useProgressPosition(): number {
-  return usePlayer(
-    (state) => Math.round(state.position / PROGRESS_STEP_SECONDS) * PROGRESS_STEP_SECONDS
-  )
+  return usePlayer((state) => {
+    /*
+     * While the window is not on screen, report one fixed value.
+     *
+     * The engine already drops to a 250 ms timer when the window is hidden, but
+     * "less often" is not "never": measured, a hidden Electron window still made
+     * ~17 DOM writes a second, all of them to a seek bar nobody can see. Returning
+     * a constant means zustand's `Object.is` comparison finds no change, so the
+     * notification stops at the store instead of reaching React.
+     *
+     * Coming back needs no resync: re-showing the window publishes a visibility
+     * change, which re-renders this component, which then reads the live position.
+     */
+    if (!isWindowVisible()) return 0
+    return Math.round(state.position / PROGRESS_STEP_SECONDS) * PROGRESS_STEP_SECONDS
+  })
 }
 
 interface BarProps {

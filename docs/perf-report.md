@@ -1,6 +1,6 @@
 # Aurora 性能基线（可复现报告）
 
-生成时间：2026-10-14T11:56:16.318Z
+生成时间：2026-10-14T14:44:40.102Z
 
 本文件由 `npm run perf` 自动生成，**不要手改**。口径定义、局限与「测不出什么」写在 `docs/perf-baseline.md`，本文件只放数字与复现信息。
 
@@ -19,42 +19,34 @@ node scripts/perf-report.mjs --no-build --duration=10000 --only=playing-stage
 | --- | --- |
 | 浏览器 | Edg/155.0.4283.45（`--headless=new`） |
 | 页面 | `file:///…/preview-dist/*.html`（自包含，无服务器） |
-| git HEAD | `62adc25da290f20bc5a81e0f7cb1de1101b61786` (main) |
-| 工作区脏文件数 | 32 |
+| git HEAD | `cc7e83ad98a1c3e4b8d74914c93bdc5f2b34e385` (main) |
+| 工作区脏文件数 | 4 |
 | 采样窗口 | 6000 ms（settle 3000 ms） |
 | Node / OS | v24.19.0 / Windows_NT 10.0.26200 |
 | 逻辑核心 | 24 |
 | CPU | Intel(R) Core(TM) i7-14650HX |
-| 实测产物指纹 | settings `3b8e2e96fbe98127`，perf `6a4fe89f3a3a26f1`，stage `094ff6947429f74d` |
+| 实测产物指纹 | settings `36513937ea0367b4`，perf `ea20ebebb2fe4509`，stage `13761e89bc187b96` |
 
 > 工作区有未提交改动，这份基线锚定的是「当前工作树」而不是一个干净的提交。对比前后必须用同一批文件状态。
 
 改动文件（前 12 个）：
 
-- `M electron/main.ts`
-- ` M electron/preload.ts`
-- ` M package.json`
-- ` M src/App.tsx`
-- ` M src/bridge.ts`
-- ` M src/components/Bar.tsx`
-- ` M src/components/PlayerBar.tsx`
-- ` M src/env.d.ts`
-- ` M src/library/scan.ts`
-- ` M src/overlay/DesktopLyricsBridge.tsx`
-- ` M src/player/driver.ts`
-- ` M src/player/engine.ts`
+- `M docs/perf-baseline.md`
+- ` M docs/perf-report.json`
+- ` M docs/perf-report.md`
+- ` M src/features/player/Bar.tsx`
 
 ## 三、基线数字表
 
 | 场景 | document.hidden | rAF fps | 帧间隔 p50 / p95 / max (ms) | 主线程忙时 (ms) | 主线程忙时占单核 | 渲染进程 CPU 占单核 / 占全部核心 | 长任务数/总时长 | 根组件渲染 | DOM 变更/秒 | JS 堆增量 (KB) | DOM 节点增量 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 对照·空白页 `control-blank` | false | 60.02 | 16.70 / 17 / 17.50 | 42.9 | 0.71% | 1.62% / 0.068% | 0 / 0 ms | — | 0 | 22.9 | 0 |
-| 空闲（要求场景） `idle-paused` | false | 60.07 | 16.70 / 16.90 / 17.20 | 50.9 | 0.85% | 1.83% / 0.076% | 0 / 0 ms | 0 | 0 | 23.0 | 0 |
-| 参照·前台无 stage `playing-settings` | false | 60.01 | 16.70 / 16.90 / 18.80 | 129.2 | 2.15% | 3.92% / 0.163% | 0 / 0 ms | 0 | 17.45 | 186.6 | 0 |
-| 参照·历史基准屏 `idle-perf` | false | 60.08 | 16.70 / 17 / 17.40 | 154 | 2.56% | 4.49% / 0.187% | 0 / 0 ms | 0 | 20.14 | 456.0 | 0 |
-| 播放中（要求场景） `playing-stage` | false | 59.93 | 16.70 / 16.90 / 17.50 | 375.2 | 6.25% | 10.75% / 0.448% | 0 / 0 ms | 0 | 28.64 | 186.3 | 0 |
-| 不可见（要求场景） `hidden-stage-electron` | true | 0 | — / — / — | 21.1 | 0.35% | 0.75% / 0.031% | 0 / 0 ms | 0 | 16.65 | 227.9 | 0 |
-| 不可见·对照 `hidden-stage-browser` | true | 0 | — / — / — | 8.6 | 0.14% | 0.40% / 0.017% | 0 / 0 ms | 0 | 3.99 | 77.1 | 0 |
+| 对照·空白页 `control-blank` | false | 60.01 | 16.70 / 17 / 17.20 | 43 | 0.72% | 1.51% / 0.063% | 0 / 0 ms | — | 0 | 23.4 | 0 |
+| 空闲（要求场景） `idle-paused` | false | 59.95 | 16.70 / 17 / 17.50 | 46.1 | 0.77% | 1.57% / 0.065% | 0 / 0 ms | 0 | 0 | 23.0 | 0 |
+| 参照·前台无 stage `playing-settings` | false | 59.87 | 16.70 / 16.90 / 17.60 | 132 | 2.20% | 3.78% / 0.158% | 0 / 0 ms | 0 | 17.46 | 225.4 | 0 |
+| 参照·历史基准屏 `idle-perf` | false | 60.08 | 16.70 / 16.90 / 17.30 | 156.1 | 2.60% | 4.60% / 0.191% | 0 / 0 ms | 0 | 20.47 | 562.9 | 0 |
+| 播放中（要求场景） `playing-stage` | false | 59.99 | 16.70 / 16.90 / 17.30 | 354.3 | 5.90% | 9.75% / 0.406% | 0 / 0 ms | 0 | 28.66 | -576.6 | 0 |
+| 不可见（要求场景） `hidden-stage-electron` | true | 0 | — / — / — | 11 | 0.18% | 0.31% / 0.013% | 0 / 0 ms | 0 | 1.66 | 83.5 | 0 |
+| 不可见·对照 `hidden-stage-browser` | true | 0 | — / — / — | 5 | 0.08% | 0.30% / 0.013% | 0 / 0 ms | 0 | 0 | 13.7 | 0 |
 
 > ⚠ **rAF 帧数会高估「应用在画」**：采样器自己持有一个 `requestAnimationFrame` 回调，只要它在，渲染器就会持续产帧。所以 `fps≈60` 的含义是「帧时钟在跑」，不是「应用在动」。判断应用是否真在干活，看主线程 TaskDuration、根渲染次数和 DOM 变更三条。反过来，`fps=0` 是可信的：它说明渲染器连帧都不产了。
 
@@ -70,125 +62,120 @@ node scripts/perf-report.mjs --no-build --duration=10000 --only=playing-stage
 
 ### 减掉装置自身的开销
 
-`control-blank`（同一套参数下的 about:blank）里渲染进程也烧掉了 97.6 ms（占单核 1.62%），浏览器全部进程 213.9 ms（占单核 3.56%）——这部分是 Edge 自身服务、CDP 通道和我自己的采样器，不是 Aurora。
+`control-blank`（同一套参数下的 about:blank）里渲染进程也烧掉了 90.7 ms（占单核 1.51%），浏览器全部进程 275.8 ms（占单核 4.59%）——这部分是 Edge 自身服务、CDP 通道和我自己的采样器，不是 Aurora。
 
 读「进程 CPU」一列时请做减法：`场景渲染进程 ms − control-blank 渲染进程 ms`。主线程忙时（TaskDuration）那一列基本不受此影响，可以直读。
 
 | 场景 | 渲染进程 CPU (ms) | 减掉对照后 (ms) |
 | --- | --- | --- |
-| `idle-paused` | 110 | 12.4 |
-| `playing-settings` | 235.5 | 137.9 |
-| `idle-perf` | 269.5 | 171.9 |
-| `playing-stage` | 645.3 | 547.7 |
-| `hidden-stage-electron` | 45.2 | -52.4 |
-| `hidden-stage-browser` | 24.3 | -73.3 |
+| `idle-paused` | 94.2 | 3.5 |
+| `playing-settings` | 227.3 | 136.6 |
+| `idle-perf` | 276.1 | 185.4 |
+| `playing-stage` | 584.8 | 494.1 |
+| `hidden-stage-electron` | 18.7 | -72 |
+| `hidden-stage-browser` | 18.3 | -72.4 |
 
 ## 四、逐场景明细
 
 ### `control-blank` — 对照·空白页
 
-- 可见性：document.visibilityState = `visible`，采到 rAF 帧 361 帧 / 6015 ms
-- 帧间隔：p50 16.70，p95 17，p99 17.40，max 17.50，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 42.9 ms（占单核 0.71%），其中 Script 6.7 ms / Layout 0 ms / Style 0 ms
-- 进程 CPU：渲染进程 97.6 ms（占单核 1.62%，占全部 24 核 0.068%）；浏览器全部进程合计 213.9 ms（占单核 3.56%）
-  - 分进程：browser 55.9ms，renderer 97.6ms，GPU 54.2ms，network.mojom.NetworkService 6ms，storage.mojom.StorageService 0ms，edge_collections.mojom.CollectionsDataManager 0ms，entity_extraction_service.mojom.Extractor 0ms，winrt_app_id.mojom.WinrtAppIdService 0.1ms
+- 可见性：document.visibilityState = `visible`，采到 rAF 帧 361 帧 / 6016.1 ms
+- 帧间隔：p50 16.70，p95 17，p99 17.20，max 17.20，>33.4ms 的帧 0 个
+- 渲染进程主线程：TaskDuration 43 ms（占单核 0.72%），其中 Script 7 ms / Layout 0 ms / Style 0 ms
+- 进程 CPU：渲染进程 90.7 ms（占单核 1.51%，占全部 24 核 0.063%）；浏览器全部进程合计 275.8 ms（占单核 4.59%）
+  - 分进程：browser 105.5ms，renderer 90.7ms，GPU 59.1ms，network.mojom.NetworkService 20.3ms，storage.mojom.StorageService 0ms，edge_collections.mojom.CollectionsDataManager 0ms，entity_extraction_service.mojom.Extractor 0ms，winrt_app_id.mojom.WinrtAppIdService 0.2ms
 - 根组件渲染 未采集（—，载入以来累计 — 次）
 - DOM 变更 0 条（0 条/秒；childList 0，characterData 0，attributes 0）
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 0.56 MB（窗口内增量 22.9 KB），DOM 节点 3（增量 0）
+- 内存：JS 堆 0.56 MB（窗口内增量 23.4 KB），DOM 节点 3（增量 0）
 - 页面自检：canvas 0 个，根节点子元素 0，内置错误捕获器：无
-- ⚠ 第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。
 
 ### `idle-paused` — 空闲（要求场景）
 
-- 可见性：document.visibilityState = `visible`，采到 rAF 帧 361 帧 / 6009.2 ms
-- 帧间隔：p50 16.70，p95 16.90，p99 17.20，max 17.20，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 50.9 ms（占单核 0.85%），其中 Script 7.6 ms / Layout 0 ms / Style 0 ms
-- 进程 CPU：渲染进程 110 ms（占单核 1.83%，占全部 24 核 0.076%）；浏览器全部进程合计 396.2 ms（占单核 6.60%）
-  - 分进程：browser 218.2ms，renderer 110ms，GPU 62ms，network.mojom.NetworkService 5.5ms，storage.mojom.StorageService 0.3ms，edge_collections.mojom.CollectionsDataManager 0ms，entity_extraction_service.mojom.Extractor 0ms，winrt_app_id.mojom.WinrtAppIdService 0.2ms
+- 可见性：document.visibilityState = `visible`，采到 rAF 帧 360 帧 / 6005.2 ms
+- 帧间隔：p50 16.70，p95 17，p99 17.40，max 17.50，>33.4ms 的帧 0 个
+- 渲染进程主线程：TaskDuration 46.1 ms（占单核 0.77%），其中 Script 7 ms / Layout 0 ms / Style 0 ms
+- 进程 CPU：渲染进程 94.2 ms（占单核 1.57%，占全部 24 核 0.065%）；浏览器全部进程合计 463 ms（占单核 7.71%）
+  - 分进程：browser 298.3ms，renderer 94.2ms，GPU 56.2ms，network.mojom.NetworkService 13.8ms，storage.mojom.StorageService 0.3ms，edge_collections.mojom.CollectionsDataManager 0ms，entity_extraction_service.mojom.Extractor 0.1ms，winrt_app_id.mojom.WinrtAppIdService 0.3ms
 - 根组件渲染 0 次（0 次/秒，载入以来累计 5 次）
 - DOM 变更 0 条（0 条/秒；childList 0，characterData 0，attributes 0）
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 2.76 MB（窗口内增量 23.0 KB），DOM 节点 207（增量 0）
+- 内存：JS 堆 3.13 MB（窗口内增量 23.0 KB），DOM 节点 312（增量 0）
 - 页面自检：canvas 0 个，根节点子元素 1，内置错误捕获器：无
 - ⚠ 已点击「暂停」（点击后标签：暂停）；暂停后 DOM 变更残值 0 条/秒。
 
 ### `playing-settings` — 参照·前台无 stage
 
-- 可见性：document.visibilityState = `visible`，采到 rAF 帧 361 帧 / 6015.5 ms
-- 帧间隔：p50 16.70，p95 16.90，p99 17.10，max 18.80，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 129.2 ms（占单核 2.15%），其中 Script 42.2 ms / Layout 5.1 ms / Style 7.7 ms
-- 进程 CPU：渲染进程 235.5 ms（占单核 3.92%，占全部 24 核 0.163%）；浏览器全部进程合计 2035.2 ms（占单核 33.84%）
-  - 分进程：browser 1363.9ms，renderer 235.5ms，GPU 227.9ms，network.mojom.NetworkService 49ms，storage.mojom.StorageService 37ms，edge_collections.mojom.CollectionsDataManager 0.1ms，entity_extraction_service.mojom.Extractor 26.9ms，winrt_app_id.mojom.WinrtAppIdService 95ms
+- 可见性：document.visibilityState = `visible`，采到 rAF 帧 360 帧 / 6012.6 ms
+- 帧间隔：p50 16.70，p95 16.90，p99 17.30，max 17.60，>33.4ms 的帧 0 个
+- 渲染进程主线程：TaskDuration 132 ms（占单核 2.20%），其中 Script 42.9 ms / Layout 4.3 ms / Style 7.9 ms
+- 进程 CPU：渲染进程 227.3 ms（占单核 3.78%，占全部 24 核 0.158%）；浏览器全部进程合计 2087.1 ms（占单核 34.72%）
+  - 分进程：browser 1441.2ms，renderer 227.3ms，GPU 198ms，network.mojom.NetworkService 47.6ms，storage.mojom.StorageService 35.4ms，edge_collections.mojom.CollectionsDataManager 17.7ms，entity_extraction_service.mojom.Extractor 24.9ms，winrt_app_id.mojom.WinrtAppIdService 95ms
 - 根组件渲染 0 次（0 次/秒，载入以来累计 4 次），每次位置写入对应 0 次根渲染
-- DOM 变更 105 条（17.45 条/秒；childList 0，characterData 6，attributes 99）
+- DOM 变更 105 条（17.46 条/秒；childList 0，characterData 6，attributes 99）
   - 变更最多的节点：`div.bar__fill` 48；`div.bar__knob` 48；`span.seek__time` 6；`div.bar` 3
   - 样本：attributes@div.bar__fill(style)，attributes@div.bar__knob(style)，attributes@div.bar__fill(style)，attributes@div.bar__knob(style)
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 2.79 MB（窗口内增量 186.6 KB），DOM 节点 207（增量 0）
+- 内存：JS 堆 3.18 MB（窗口内增量 225.4 KB），DOM 节点 312（增量 0）
 - 页面自检：canvas 0 个，根节点子元素 1，内置错误捕获器：无
 
 ### `idle-perf` — 参照·历史基准屏
 
-- 可见性：document.visibilityState = `visible`，采到 rAF 帧 361 帧 / 6008.6 ms
-- 帧间隔：p50 16.70，p95 17，p99 17.20，max 17.40，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 154 ms（占单核 2.56%），其中 Script 55.9 ms / Layout 4.7 ms / Style 7.6 ms
-- 进程 CPU：渲染进程 269.5 ms（占单核 4.49%，占全部 24 核 0.187%）；浏览器全部进程合计 2198 ms（占单核 36.59%）
-  - 分进程：browser 1468.4ms，renderer 269.5ms，GPU 215.6ms，network.mojom.NetworkService 49ms，storage.mojom.StorageService 57.2ms，edge_collections.mojom.CollectionsDataManager 17.3ms，entity_extraction_service.mojom.Extractor 25.9ms，winrt_app_id.mojom.WinrtAppIdService 95ms
+- 可见性：document.visibilityState = `visible`，采到 rAF 帧 361 帧 / 6008.7 ms
+- 帧间隔：p50 16.70，p95 16.90，p99 17.10，max 17.30，>33.4ms 的帧 0 个
+- 渲染进程主线程：TaskDuration 156.1 ms（占单核 2.60%），其中 Script 58.3 ms / Layout 4.6 ms / Style 7.8 ms
+- 进程 CPU：渲染进程 276.1 ms（占单核 4.60%，占全部 24 核 0.191%）；浏览器全部进程合计 2218.2 ms（占单核 36.92%）
+  - 分进程：browser 1507.2ms，renderer 276.1ms，GPU 177.7ms，network.mojom.NetworkService 54.2ms，storage.mojom.StorageService 58.3ms，edge_collections.mojom.CollectionsDataManager 18.6ms，entity_extraction_service.mojom.Extractor 26.5ms，winrt_app_id.mojom.WinrtAppIdService 99.5ms
 - 根组件渲染 0 次（0 次/秒，载入以来累计 4 次），每次位置写入对应 0 次根渲染
-- DOM 变更 121 条（20.14 条/秒；childList 0，characterData 6，attributes 115）
-  - 变更最多的节点：`div.bar__fill` 56；`div.bar__knob` 56；`span.seek__time` 6；`div.bar` 3
+- DOM 变更 123 条（20.47 条/秒；childList 0，characterData 8，attributes 115）
+  - 变更最多的节点：`div.bar__fill` 56；`div.bar__knob` 56；`span.seek__time` 8；`div.bar` 3
   - 样本：attributes@div.bar__fill(style)，attributes@div.bar__knob(style)，attributes@div.bar__fill(style)，attributes@div.bar__knob(style)
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 3.12 MB（窗口内增量 456.0 KB），DOM 节点 207（增量 0）
+- 内存：JS 堆 3.53 MB（窗口内增量 562.9 KB），DOM 节点 312（增量 0）
 - 页面自检：canvas 0 个，根节点子元素 1，内置错误捕获器：无
 
 ### `playing-stage` — 播放中（要求场景）
 
-- 可见性：document.visibilityState = `visible`，采到 rAF 帧 360 帧 / 6006.6 ms
-- 帧间隔：p50 16.70，p95 16.90，p99 17.10，max 17.50，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 375.2 ms（占单核 6.25%），其中 Script 187.2 ms / Layout 12.4 ms / Style 16.8 ms
-- 进程 CPU：渲染进程 645.3 ms（占单核 10.75%，占全部 24 核 0.448%）；浏览器全部进程合计 4834.8 ms（占单核 80.51%）
-  - 分进程：browser 1523.2ms，renderer 645.3ms，GPU 2429.7ms，network.mojom.NetworkService 53ms，storage.mojom.StorageService 38.8ms，edge_collections.mojom.CollectionsDataManager 0.1ms，entity_extraction_service.mojom.Extractor 29.4ms，winrt_app_id.mojom.WinrtAppIdService 115.4ms
-- 根组件渲染 0 次（0 次/秒，载入以来累计 3 次），每次位置写入对应 0 次根渲染
-- DOM 变更 172 条（28.64 条/秒；childList 2，characterData 12，attributes 158）
+- 可见性：document.visibilityState = `visible`，采到 rAF 帧 360 帧 / 6001.5 ms
+- 帧间隔：p50 16.70，p95 16.90，p99 17.30，max 17.30，>33.4ms 的帧 0 个
+- 渲染进程主线程：TaskDuration 354.3 ms（占单核 5.90%），其中 Script 182.5 ms / Layout 12.4 ms / Style 15.4 ms
+- 进程 CPU：渲染进程 584.8 ms（占单核 9.75%，占全部 24 核 0.406%）；浏览器全部进程合计 4723.7 ms（占单核 78.72%）
+  - 分进程：browser 1564ms，renderer 584.8ms，GPU 2319.4ms，network.mojom.NetworkService 67.5ms，storage.mojom.StorageService 39ms，edge_collections.mojom.CollectionsDataManager 18ms，entity_extraction_service.mojom.Extractor 27ms，winrt_app_id.mojom.WinrtAppIdService 103.9ms
+- 根组件渲染 0 次（0 次/秒，载入以来累计 4 次），每次位置写入对应 0 次根渲染
+- DOM 变更 172 条（28.66 条/秒；childList 2，characterData 12，attributes 158）
   - 变更最多的节点：`div.bar__fill` 48；`div.bar__knob` 48；`div.stage__track-fill` 48；`span.seek__time` 6；`span.stage__time` 6；`div.bar` 3；`div.stage__track` 3；`div.stage__lyrics` 2
-  - 样本：attributes@div.bar__fill(style)，attributes@div.bar__knob(style)，attributes@div.stage__track-fill(style)，characterData@span.seek__time(0:53)
+  - 样本：attributes@div.bar__fill(style)，attributes@div.bar__knob(style)，attributes@div.stage__track-fill(style)，attributes@div.bar__fill(style)
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 3.89 MB（窗口内增量 186.3 KB），DOM 节点 291（增量 0）
+- 内存：JS 堆 3.72 MB（窗口内增量 -576.6 KB），DOM 节点 258（增量 0）
 - 页面自检：canvas 1 个，根节点子元素 2，内置错误捕获器：无
-- ⚠ 第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。
 
 ### `hidden-stage-electron` — 不可见（要求场景）
 
-- 可见性：document.visibilityState = `hidden`，采到 rAF 帧 0 帧 / 6005.3 ms
+- 可见性：document.visibilityState = `hidden`，采到 rAF 帧 0 帧 / 6012 ms
 - 帧间隔：p50 —，p95 —，p99 —，max —，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 21.1 ms（占单核 0.35%），其中 Script 15 ms / Layout 0 ms / Style 0 ms
-- 进程 CPU：渲染进程 45.2 ms（占单核 0.75%，占全部 24 核 0.031%）；浏览器全部进程合计 1859.2 ms（占单核 30.97%）
-  - 分进程：browser 1567.4ms，renderer 45.2ms，GPU 20.8ms，network.mojom.NetworkService 34.8ms，storage.mojom.StorageService 3.1ms，edge_collections.mojom.CollectionsDataManager 0ms，entity_extraction_service.mojom.Extractor 36.2ms，winrt_app_id.mojom.WinrtAppIdService 151.8ms
+- 渲染进程主线程：TaskDuration 11 ms（占单核 0.18%），其中 Script 3.3 ms / Layout 0 ms / Style 0 ms
+- 进程 CPU：渲染进程 18.7 ms（占单核 0.31%，占全部 24 核 0.013%）；浏览器全部进程合计 1362.6 ms（占单核 22.67%）
+  - 分进程：browser 1167.9ms，renderer 18.7ms，GPU 18.6ms，network.mojom.NetworkService 37.5ms，storage.mojom.StorageService 2.1ms，edge_collections.mojom.CollectionsDataManager 0.1ms，entity_extraction_service.mojom.Extractor 25.4ms，winrt_app_id.mojom.WinrtAppIdService 92.4ms
 - 根组件渲染 0 次（0 次/秒，载入以来累计 5 次）
-- DOM 变更 100 条（16.65 条/秒；childList 2，characterData 12，attributes 86）
-  - 变更最多的节点：`div.bar__fill` 24；`div.bar__knob` 24；`div.stage__track-fill` 24；`span.seek__time` 6；`span.stage__time` 6；`div.bar` 3；`div.stage__track` 3；`div.stage__lyrics` 2
-  - 样本：attributes@div.bar__fill(style)，attributes@div.bar__knob(style)，attributes@div.stage__track-fill(style)，characterData@span.seek__time(0:54)
+- DOM 变更 10 条（1.66 条/秒；childList 2，characterData 0，attributes 8）
+  - 变更最多的节点：`div.stage__lyrics` 2；`div.lyr.lyr--d3` 2；`div.lyr.lyr--d2` 2；`div.lyr.lyr--d1` 2；`div.lyr.lyr--d4` 1；`div.lyr.lyr--d0` 1
+  - 样本：childList@div.stage__lyrics(0 added / 1 removed)，attributes@div.lyr.lyr--d4(class)，attributes@div.lyr.lyr--d3(class)，attributes@div.lyr.lyr--d2(class)
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 3.68 MB（窗口内增量 227.9 KB），DOM 节点 291（增量 0）
+- 内存：JS 堆 3.53 MB（窗口内增量 83.5 KB），DOM 节点 258（增量 0）
 - 页面自检：canvas 1 个，根节点子元素 2，内置错误捕获器：无
 
 ### `hidden-stage-browser` — 不可见·对照
 
-- 可见性：document.visibilityState = `hidden`，采到 rAF 帧 0 帧 / 6012.9 ms
+- 可见性：document.visibilityState = `hidden`，采到 rAF 帧 0 帧 / 6016.2 ms
 - 帧间隔：p50 —，p95 —，p99 —，max —，>33.4ms 的帧 0 个
-- 渲染进程主线程：TaskDuration 8.6 ms（占单核 0.14%），其中 Script 4.6 ms / Layout 0 ms / Style 0 ms
-- 进程 CPU：渲染进程 24.3 ms（占单核 0.40%，占全部 24 核 0.017%）；浏览器全部进程合计 1396.3 ms（占单核 23.23%）
-  - 分进程：browser 1233.1ms，renderer 24.3ms，GPU 12.6ms，network.mojom.NetworkService 24.1ms，storage.mojom.StorageService 0.9ms，edge_collections.mojom.CollectionsDataManager 0ms，PooledProcess2 -41.6ms，entity_extraction_service.mojom.Extractor 29ms，winrt_app_id.mojom.WinrtAppIdService 114ms
-- 根组件渲染 0 次（0 次/秒，载入以来累计 5 次）
-- DOM 变更 24 条（3.99 条/秒；childList 0，characterData 4，attributes 20）
-  - 变更最多的节点：`div.bar__fill` 6；`div.bar__knob` 6；`div.stage__track-fill` 6；`span.seek__time` 2；`span.stage__time` 2；`div.bar` 1；`div.stage__track` 1
-  - 样本：characterData@span.seek__time(0:53)，attributes@div.bar__fill(style)，attributes@div.bar__knob(style)，characterData@span.stage__time(0:53)
+- 渲染进程主线程：TaskDuration 5 ms（占单核 0.08%），其中 Script 1 ms / Layout 0 ms / Style 0 ms
+- 进程 CPU：渲染进程 18.3 ms（占单核 0.30%，占全部 24 核 0.013%）；浏览器全部进程合计 1520 ms（占单核 25.27%）
+  - 分进程：browser 1324.9ms，renderer 18.3ms，GPU 19.2ms，network.mojom.NetworkService 37.9ms，storage.mojom.StorageService 0.9ms，edge_collections.mojom.CollectionsDataManager 0.1ms，entity_extraction_service.mojom.Extractor 25.3ms，winrt_app_id.mojom.WinrtAppIdService 93.5ms
+- 根组件渲染 0 次（0 次/秒，载入以来累计 4 次）
+- DOM 变更 0 条（0 条/秒；childList 0，characterData 0，attributes 0）
 - 探针计数：store 通知 未采集；IPC 条数 未采集
-- 内存：JS 堆 3.67 MB（窗口内增量 77.1 KB），DOM 节点 291（增量 0）
+- 内存：JS 堆 3.72 MB（窗口内增量 13.7 KB），DOM 节点 258（增量 0）
 - 页面自检：canvas 1 个，根节点子元素 2，内置错误捕获器：无
-- ⚠ 第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。
 
 ## 五、外部计数（store 通知 / IPC 条数）
 
