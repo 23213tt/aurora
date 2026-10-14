@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
+import type { NeteaseQuality } from './netease/types'
 
 export interface Settings {
   /** Folders the user has added to the library. */
@@ -19,6 +20,14 @@ export interface Settings {
    * the user turns it on rather than finding out afterwards.
    */
   onlineLyrics: boolean
+  /**
+   * Preferred quality for Netease playback.
+   *
+   * `exhigh` by default, not `lossless`: 320kbps is the best level an account
+   * without a membership actually receives, so the default is a promise the
+   * app can keep rather than one it silently downgrades.
+   */
+  neteaseQuality: NeteaseQuality
   /** Last position and size of the desktop lyric strip. */
   lyricsOverlayBounds?: { x: number; y: number; width: number; height: number }
 }
@@ -28,7 +37,8 @@ const DEFAULTS: Settings = {
   excluded: [],
   autoCheckUpdates: true,
   lastUpdateCheck: 0,
-  onlineLyrics: false
+  onlineLyrics: false,
+  neteaseQuality: 'exhigh'
 }
 
 let cache: Settings | null = null

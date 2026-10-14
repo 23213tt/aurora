@@ -176,6 +176,7 @@ const SCREENS = [
   'accounts',
   'sources',
   'settings',
+  'netease',
   'eq',
   'queue',
   'stage',

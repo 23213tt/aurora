@@ -5,6 +5,7 @@ import { AlbumGrid } from './components/AlbumGrid'
 import { ArtistList } from './components/ArtistList'
 import { EqPanel } from './components/EqPanel'
 import { FolderTree } from './components/FolderTree'
+import { NeteaseView } from './components/NeteaseView'
 import { PlayerBar } from './components/PlayerBar'
 import { PlaylistDetail } from './components/PlaylistDetail'
 import { PlaylistList } from './components/PlaylistList'
@@ -21,7 +22,7 @@ import { useLyrics, usePalette } from './library/hooks'
 import { useRoots } from './library/roots'
 import { loadInitialIndex, runScan } from './library/scan'
 import { albumKey, groupAlbums, groupArtists, scoreTrack, useLibrary } from './library/store'
-import { artworkFor } from './library/source'
+import { SOURCES, artworkFor } from './library/source'
 import { buildFolderTree, tracksUnder } from './library/tree'
 import { player } from './player/actions'
 import { driver } from './player/driver'
@@ -42,6 +43,7 @@ const VIEW_TITLES: Record<ViewId, string> = {
   playlists: '播放列表',
   accounts: '档案',
   sources: '音源',
+  netease: '网易云音乐',
   settings: '偏好设置'
 }
 
@@ -592,6 +594,10 @@ export function App() {
   const body = () => {
     if (view === 'sources') return <Sources roots={roots} onAdd={addFolders} onRemove={remove} busy={busy} />
     if (view === 'settings') return <About />
+    // The online source stands on its own: its tracks never enter the library
+    // store, so it must stay reachable with an empty local library - hence
+    // before the `tracks.length === 0` check below.
+    if (view === 'netease') return <NeteaseView />
     if (view === 'accounts') {
       return (
         <AccountsView
@@ -1033,6 +1039,23 @@ interface SourcesProps {
 function Sources({ roots, busy, onAdd, onRemove }: SourcesProps) {
   return (
     <div className="stack">
+      {/*
+       * What can actually play right now, read from the same registry the
+       * player dispatches on. The online entry says what it is in one line -
+       * a third-party reverse-engineered interface, not an official client -
+       * because that is the one consequence a user has to know before using it.
+       */}
+      <ul className="rows">
+        {SOURCES.map((source) => (
+          <li className="row" key={source.id}>
+            {source.online ? <Wave size={16} /> : <Folder size={16} />}
+            <span className="row__path" title={source.summary}>
+              {source.name}
+            </span>
+          </li>
+        ))}
+      </ul>
+
       {roots.length === 0 ? (
         <div className="notice">还没有加入任何文件夹</div>
       ) : (

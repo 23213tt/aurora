@@ -12,6 +12,11 @@ export type ViewId =
   | 'accounts'
   | 'sources'
   | 'settings'
+  /**
+   * Online source, deliberately a sibling of the library views rather than part
+   * of them: its tracks never enter the library store, so it stands alone.
+   */
+  | 'netease'
 
 export type SortKey = 'title' | 'artist' | 'album' | 'added' | 'year' | 'duration'
 

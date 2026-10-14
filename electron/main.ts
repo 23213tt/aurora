@@ -3,6 +3,8 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { isInsideRoots, loadSettings, saveSettings } from './settings'
 import { handleMediaProtocol, registerMediaScheme } from './media-protocol'
+import { handleRemoteProtocol, registerRemoteScheme } from './remote-protocol'
+import { registerNeteaseIpc, warmUpNetease } from './netease/ipc'
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol'
 import { loadIndex, scanLibrary, type ScanProgress } from './library-scan'
 import { autoCheck, checkForUpdate, openReleasePage, type UpdateResult } from './updates'
@@ -42,6 +44,10 @@ app.setAppUserModelId('com.aurora.player')
 // standard/secure and range requests and module loading will not be permitted.
 registerMediaScheme()
 registerAppScheme()
+// `aurora-remote:` is the proxy for online media (Netease audio and covers).
+// Registering it here keeps it in the same privileged position as the local
+// media scheme: range requests and CORS both depend on it.
+registerRemoteScheme()
 
 interface WinState {
   width: number
@@ -516,6 +522,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(() => {
     handleMediaProtocol()
     handleAppProtocol()
+    handleRemoteProtocol()
     initOverlay((status) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('overlay:status', status)
@@ -525,6 +532,15 @@ if (!app.requestSingleInstanceLock()) {
     createWindow()
     createTray(trayHandlers())
     registerGlobalShortcuts()
+
+    /*
+     * The Netease client needs two pieces of state in the OS temp directory
+     * before its own module can even be required (see electron/netease/client.ts).
+     * That bootstrap is slow and network-bound, so it runs after the window is
+     * up, and a failure only means the online source reports itself unavailable.
+     */
+    registerNeteaseIpc()
+    void warmUpNetease()
 
     // One quiet check a day. It only ever reports; nothing is downloaded or
     // applied without the user going to the release page themselves.

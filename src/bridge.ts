@@ -106,6 +106,33 @@ const webFallback: AuroraApi = {
       return () => undefined
     },
     onStatus: () => () => undefined
+  },
+  netease: {
+    /*
+     * The browser preview has no main process and therefore no online source.
+     * Every call answers "nothing here" rather than throwing, so the Netease
+     * view renders its signed-out empty state in the harness instead of
+     * becoming the one screen that can only be reviewed inside Electron.
+     */
+    status: async () => ({ ready: false, loggedIn: false, detail: '浏览器预览模式没有网易云后端' }),
+    search: async () => ({ songs: [], albums: [], artists: [] }),
+    streamUrl: async () => ({ ok: false, reason: 'service-unavailable' }),
+    lyrics: async () => null,
+    album: async () => null,
+    artistTopSongs: async () => [],
+    songDetail: async () => [],
+    qrCreate: async () => ({ key: 'preview', url: '', imageDataUrl: '' }),
+    qrCheck: async () => ({ status: 'waiting' }),
+    loginCellphone: async () => ({ ok: false, message: '浏览器预览模式无法登录' }),
+    loginStatus: async () => null,
+    logout: async () => true,
+    myPlaylists: async () => [],
+    playlistTracks: async () => [],
+    dailySongs: async () => [],
+    cloudSongs: async () => [],
+    likeList: async () => [],
+    getQuality: async () => 'exhigh',
+    setQuality: async () => 'exhigh'
   }
 }
 

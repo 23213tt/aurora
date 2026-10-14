@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
       `aurora-media:` is the private scheme the main process serves local audio
-      and artwork from. It must be listed explicitly or the renderer cannot load
-      any media at all.
+      and artwork from, and `aurora-remote:` is its sibling for proxied online
+      media (Netease audio and covers). Both must be listed explicitly or the
+      renderer cannot load them at all.
+
+      The online audio deliberately does NOT reach music.126.net directly: a
+      cross-origin <audio> routed through Web Audio plays silence, so the main
+      process proxies every stream over `aurora-remote:` with CORS headers.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file: aurora-media:; media-src 'self' file: blob: aurora-media:; font-src 'self' data:; connect-src 'self' aurora-media: ws://127.0.0.1:5173 http://127.0.0.1:5173"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file: aurora-media: aurora-remote:; media-src 'self' file: blob: aurora-media: aurora-remote:; font-src 'self' data:; connect-src 'self' aurora-media: aurora-remote: ws://127.0.0.1:5173 http://127.0.0.1:5173"
     />
     <title>Aurora</title>
   </head>

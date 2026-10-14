@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ViewId } from '../types'
-import { Album, Folder, List, Mic, Note, Settings, Sidebar, Sliders, User } from './icons'
+import { Album, Folder, List, Mic, Note, Settings, Sidebar, Sliders, User, Wave } from './icons'
 
 interface RailProps {
   view: ViewId
@@ -34,7 +34,14 @@ export function Rail({
         { id: 'albums', label: '专辑', icon: <Album size={17} />, count: counts.albums },
         { id: 'artists', label: '艺术家', icon: <Mic size={17} />, count: counts.artists },
         { id: 'songs', label: '歌曲', icon: <Note size={17} />, count: counts.songs },
-        { id: 'folders', label: '文件夹', icon: <Folder size={17} /> }
+        { id: 'folders', label: '文件夹', icon: <Folder size={17} /> },
+        /*
+         * The online source sits inside 曲库 rather than under 设置: it is
+         * somewhere you listen from, not something you configure. It carries no
+         * count on purpose - a remote catalogue has no meaningful total, and a
+         * number that is always zero or always stale is worse than none.
+         */
+        { id: 'netease', label: '网易云音乐', icon: <Wave size={17} /> }
       ]
     },
     {

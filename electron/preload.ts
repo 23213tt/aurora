@@ -102,8 +102,7 @@ const api = {
    * Shared by both windows: the player window opens and feeds the overlay, the
    * overlay window consumes the state and reports lock changes.
    */
-  overlay: {
-    toggle: (enabled?: boolean) =>
+  overlay: {    toggle: (enabled?: boolean) =>
       ipcRenderer.invoke('overlay:toggle', enabled) as Promise<OverlayStatus>,
     getStatus: () => ipcRenderer.invoke('overlay:status') as Promise<OverlayStatus>,
     setLocked: (locked: boolean) =>
@@ -126,6 +125,43 @@ const api = {
         ipcRenderer.removeListener('overlay:status', listener)
       }
     }
+  },
+
+  /**
+   * Netease Cloud Music, through a third-party reverse-engineered API.
+   *
+   * Every call is a plain invoke: the main process owns the upstream client, the
+   * cookie jar and the bootstrapped device credentials, so no credential and no
+   * raw upstream URL ever reaches page code. Audio and artwork are proxied
+   * through the `aurora-remote:` scheme for the same reason.
+   */
+  netease: {
+    status: () => ipcRenderer.invoke('netease:status'),
+    search: (keywords: string, type: string, limit?: number) =>
+      ipcRenderer.invoke('netease:search', { keywords, type, limit }),
+    streamUrl: (songId: number, quality?: string) =>
+      ipcRenderer.invoke('netease:streamUrl', { songId, quality }),
+    lyrics: (songId: number) => ipcRenderer.invoke('netease:lyrics', songId),
+    album: (id: number) => ipcRenderer.invoke('netease:album', id),
+    artistTopSongs: (id: number, limit?: number) =>
+      ipcRenderer.invoke('netease:artistTopSongs', { id, limit }),
+    songDetail: (ids: number[]) => ipcRenderer.invoke('netease:songDetail', ids),
+
+    qrCreate: () => ipcRenderer.invoke('netease:qrCreate'),
+    qrCheck: (key: string) => ipcRenderer.invoke('netease:qrCheck', key),
+    loginCellphone: (phone: string, password: string) =>
+      ipcRenderer.invoke('netease:loginCellphone', { phone, password }),
+    loginStatus: () => ipcRenderer.invoke('netease:loginStatus'),
+    logout: () => ipcRenderer.invoke('netease:logout'),
+
+    myPlaylists: () => ipcRenderer.invoke('netease:myPlaylists'),
+    playlistTracks: (id: number) => ipcRenderer.invoke('netease:playlistTracks', id),
+    dailySongs: () => ipcRenderer.invoke('netease:dailySongs'),
+    cloudSongs: () => ipcRenderer.invoke('netease:cloudSongs'),
+    likeList: () => ipcRenderer.invoke('netease:likeList'),
+
+    getQuality: () => ipcRenderer.invoke('netease:getQuality'),
+    setQuality: (quality: string) => ipcRenderer.invoke('netease:setQuality', quality)
   }
 }
 

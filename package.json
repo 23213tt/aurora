@@ -2,7 +2,7 @@
   "name": "aurora-player",
   "private": true,
   "version": "0.1.0",
-  "description": "Aurora - a local-first desktop music player",
+  "description": "本地优先的 Windows 音乐播放器：沉浸歌词舞台、封面主色驱动配色、可选接入网易云在线音源",
   "author": "Aurora contributors",
   "license": "MIT",
   "repository": {
@@ -70,6 +70,7 @@
     }
   },
   "dependencies": {
+    "@neteasecloudmusicapienhanced/api": "^4.41.1",
     "music-metadata": "^11.9.0"
   },
   "devDependencies": {
