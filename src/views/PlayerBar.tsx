@@ -1,6 +1,7 @@
 import { artworkFor } from '../features/library/source'
 import type { RepeatMode, Track } from '../types'
-import { Bar, formatTime, useProgressPosition } from '../ui/Bar'
+import { Bar, useProgressPosition } from '../features/player/Bar'
+import { formatTime } from '../ui/format'
 import { Artwork } from '../ui/Artwork'
 import {
   DesktopLyrics,

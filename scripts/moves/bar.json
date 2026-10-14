@@ -1,0 +1,6 @@
+[
+  {
+    "from": "src/ui/Bar.tsx",
+    "to": "src/features/player/Bar.tsx"
+  }
+]

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { formatTime } from './Bar'
+import { formatTime } from './format'
 import { Note } from './icons'
 import type { Track } from '../types'
 

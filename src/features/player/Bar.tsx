@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { usePlayer } from '../features/player/store'
+import { usePlayer } from './store'
 
 /**
  * Resolution at which the transport chrome reads the playhead.
@@ -118,14 +118,4 @@ export function Bar({ value, onChange, ariaLabel, disabled, className }: BarProp
       </div>
     </div>
   )
-}
-
-export function formatTime(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
-  const total = Math.floor(seconds)
-  const h = Math.floor(total / 3600)
-  const m = Math.floor((total % 3600) / 60)
-  const s = total % 60
-  const pad = (n: number) => n.toString().padStart(2, '0')
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`
 }
