@@ -149,7 +149,7 @@ node_gyp_binary_mirror=https://npmmirror.com/mirrors/node-gyp/
 
 ### 关于测试
 
-`npm test` 跑的是 211 个针对**不依赖 Electron 的纯逻辑**的用例：LRC 解析、
+`npm test` 跑的是 229 个针对**不依赖 Electron 的纯逻辑**的用例：LRC 解析、
 m3u 编解码与路径解析、播放队列的随机/循环推进与「下一首播放」的插入、
 文件夹树构建、版本比较、档案存储的键推导与真实 store 的隔离行为、
 以及私有协议那条路径的目录穿越防护。
