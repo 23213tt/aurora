@@ -1,4 +1,4 @@
-import type { Album, Artist, Track } from '../types'
+import type { Album, Artist, Track } from '../../types'
 import { create } from 'zustand'
 
 /**

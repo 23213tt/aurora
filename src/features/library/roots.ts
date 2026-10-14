@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { bridge } from '../bridge'
+import { bridge } from '../../bridge'
 
 /**
  * Library roots: the folders Aurora is allowed to index and serve files from.

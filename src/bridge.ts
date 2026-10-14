@@ -1,5 +1,5 @@
 import type { AppSettings, AuroraApi, UpdatePrefs } from './env'
-import { demoLibrary } from './library/demo'
+import { demoLibrary } from './features/library/demo'
 
 /**
  * Single access point for the preload bridge.

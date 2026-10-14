@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { providerOf } from '../accounts/providers'
-import type { Account } from '../accounts/store'
+import { providerOf } from '../features/accounts/providers'
+import type { Account } from '../features/accounts/store'
 import { isNative } from '../bridge'
 import type { NeteaseAccount } from '../env'
-import { netease } from '../netease/api'
+import { netease } from '../features/netease/api'
 import { Check, Pencil, Plus, Trash } from './icons'
 
 interface AccountsViewProps {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ViewId } from '../types'
-import { useNetease } from '../netease/store'
+import { useNetease } from '../features/netease/store'
 import { Album, Folder, List, Mic, Note, Refresh, Search, Settings, Sidebar, Sliders, User, Wave } from './icons'
 
 /**

@@ -1,6 +1,6 @@
 import { setMissingStreamHandler } from '../library/source'
 import { setNeteaseResume, useNetease } from '../netease/store'
-import type { Track } from '../types'
+import type { Track } from '../../types'
 import { driver } from './driver'
 import { usePlayer } from './store'
 

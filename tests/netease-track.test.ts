@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { toTrack } from '../src/netease/track.ts'
+import { toTrack } from '../src/features/netease/track.ts'
 import type { NeteaseSong, NeteaseStream } from '../src/env'
 
 /*

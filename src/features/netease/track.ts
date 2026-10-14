@@ -1,5 +1,5 @@
-import type { NeteaseSong, NeteaseStream } from '../env'
-import type { Track } from '../types'
+import type { NeteaseSong, NeteaseStream } from '../../env'
+import type { Track } from '../../types'
 
 /**
  * Song -> `Track`, and the cover address that goes with it.

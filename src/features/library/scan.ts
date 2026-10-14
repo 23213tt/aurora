@@ -1,5 +1,5 @@
-import { bridge, isNative } from '../bridge'
-import type { ScanProgress } from '../env'
+import { bridge, isNative } from '../../bridge'
+import type { ScanProgress } from '../../env'
 import { useLibrary } from './store'
 
 /**

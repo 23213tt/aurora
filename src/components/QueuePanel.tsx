@@ -1,4 +1,4 @@
-import { usePlayer } from '../player/store'
+import { usePlayer } from '../features/player/store'
 import { formatTime } from './Bar'
 import { Close, List, Trash } from './icons'
 

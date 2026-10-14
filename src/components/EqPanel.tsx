@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { EQ_BANDS } from '../player/store'
+import { EQ_BANDS } from '../features/player/store'
 import { Close, Wave } from './icons'
 
 const MIN_DB = -12

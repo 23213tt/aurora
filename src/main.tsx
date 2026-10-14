@@ -1,16 +1,16 @@
 import { createRoot } from 'react-dom/client'
 import './styles/app.css'
 import { App } from './App'
-import './player/actions'
+import './features/player/actions'
 /*
  * Playback wiring for the online source. Imported for its side effects, exactly
  * like `player/actions`: it is the module that connects the source to the
  * transport, so neither of them has to import the other.
  */
-import './player/netease'
-import { useNetease } from './netease/store'
-import { setActiveStorageProfile } from './accounts/profile-storage'
-import { useAccounts } from './accounts/store'
+import './features/player/netease'
+import { useNetease } from './features/netease/store'
+import { setActiveStorageProfile } from './features/accounts/profile-storage'
+import { useAccounts } from './features/accounts/store'
 
 /*
  * Establish the profile before anything renders.

@@ -1,6 +1,6 @@
-import { bridge, isNative } from '../bridge'
+import { bridge, isNative } from '../../bridge'
 import { sourceFor } from '../library/source'
-import type { Track } from '../types'
+import type { Track } from '../../types'
 import { EQ_BANDS, usePlayer } from './store'
 
 const FADE_IN_MS = 220

@@ -6,7 +6,7 @@ import {
   profileScopedKey,
   setActiveStorageProfile,
   shouldAdoptLegacy
-} from '../src/accounts/profile-storage.ts'
+} from '../src/features/accounts/profile-storage.ts'
 
 const BASE = 'aurora.playlists'
 

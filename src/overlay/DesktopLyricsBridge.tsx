@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { bridge, isNative } from '../bridge'
 import { activeLineAt, type Lyrics } from '../lyrics/lrc'
-import { usePlayer } from '../player/store'
+import { usePlayer } from '../features/player/store'
 import type { Track } from '../types'
 
 interface DesktopLyricsBridgeProps {

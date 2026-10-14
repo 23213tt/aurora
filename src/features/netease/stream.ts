@@ -1,4 +1,4 @@
-import type { NeteaseFailureReason, NeteaseQuality, NeteaseStream } from '../env'
+import type { NeteaseFailureReason, NeteaseQuality, NeteaseStream } from '../../env'
 
 /**
  * Quality arithmetic and failure wording: pure, no store, no network.

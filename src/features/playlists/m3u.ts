@@ -1,4 +1,4 @@
-import type { Track } from '../types'
+import type { Track } from '../../types'
 
 /**
  * M3U read and write.

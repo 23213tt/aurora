@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { identityOrder, reconcile, shuffledOrder, step } from '../src/player/queue.ts'
+import { identityOrder, reconcile, shuffledOrder, step } from '../src/features/player/queue.ts'
 
 test('identityOrder is the natural order', () => {
   assert.deepEqual(identityOrder(3), [0, 1, 2])

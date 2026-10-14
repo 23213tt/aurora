@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { NeteaseAccount } from '../env'
-import { hasNeteaseBackend, netease } from '../netease/api'
-import { useNetease } from '../netease/store'
-import { Check, Close, Lock, Refresh } from './icons'
+import type { NeteaseAccount } from '../../env'
+import { hasNeteaseBackend, netease } from './api'
+import { useNetease } from './store'
+import { Check, Close, Lock, Refresh } from '../../components/icons'
 
 interface NeteaseLoginProps {
   onClose(): void

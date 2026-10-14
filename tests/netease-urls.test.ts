@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { REMOTE_SCHEME, remoteImageUrl, remoteStreamUrl } from '../src/player/urls.ts'
+import { REMOTE_SCHEME, remoteImageUrl, remoteStreamUrl } from '../src/features/player/urls.ts'
 
 /*
  * The online source has to hand the audio element and the <img> tag a

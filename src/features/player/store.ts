@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { RepeatMode, Track } from '../types'
+import type { RepeatMode, Track } from '../../types'
 /*
  * Explicit `.ts` extension: tests import this module directly and run under Node,
  * whose ESM resolver does not guess extensions the way Vite does. See

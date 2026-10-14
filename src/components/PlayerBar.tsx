@@ -1,4 +1,4 @@
-import { artworkFor } from '../library/source'
+import { artworkFor } from '../features/library/source'
 import type { RepeatMode, Track } from '../types'
 import { Bar, formatTime, useProgressPosition } from './Bar'
 import { Artwork } from './Artwork'

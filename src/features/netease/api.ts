@@ -1,5 +1,5 @@
-import { bridge, isNative } from '../bridge'
-import type { NeteaseApi } from '../env'
+import { bridge, isNative } from '../../bridge'
+import type { NeteaseApi } from '../../env'
 import { remoteImageUrl } from '../player/urls'
 
 /**

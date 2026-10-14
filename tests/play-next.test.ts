@@ -13,7 +13,7 @@ const store = new Map<string, string>()
   removeItem: (key: string) => void store.delete(key)
 }
 
-const { usePlayer } = await import('../src/player/store.ts')
+const { usePlayer } = await import('../src/features/player/store.ts')
 
 function track(id: string): Track {
   return {

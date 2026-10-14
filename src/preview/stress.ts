@@ -1,4 +1,4 @@
-import { useLibrary } from '../library/store'
+import { useLibrary } from '../features/library/store'
 import type { Track } from '../types'
 
 /**

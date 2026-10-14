@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import type { NeteaseSong } from '../env'
+import type { NeteaseSong } from '../../env'
 import { rememberNeteaseCover } from '../library/source'
 import { streamOf } from './store'
 import { neteaseSongId, toTrack } from './track'
-import type { Track } from '../types'
+import type { Track } from '../../types'
 
 /**
  * Song -> Track, for the view layer.

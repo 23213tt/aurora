@@ -1,4 +1,4 @@
-import { artworkFor } from '../library/source'
+import { artworkFor } from '../features/library/source'
 import type { Album, Track } from '../types'
 import { Artwork } from './Artwork'
 import { TrackList, type TrackMenuRequest } from './TrackList'

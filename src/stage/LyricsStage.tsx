@@ -1,9 +1,9 @@
 import { activeLineAt, type Lyrics } from '../lyrics/lrc'
-import type { Palette } from '../library/palette'
+import type { Palette } from '../features/library/palette'
 import type { Track } from '../types'
 import { formatTime, useProgressPosition } from '../components/Bar'
 import { ChevronLeft, Pause, Play } from '../components/icons'
-import { usePlayer } from '../player/store'
+import { usePlayer } from '../features/player/store'
 import { Visualizer } from './Visualizer'
 
 /** Lines shown above and below the active one. Fixed, so centring is exact. */

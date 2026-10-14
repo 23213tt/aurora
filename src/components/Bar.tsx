@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { usePlayer } from '../player/store'
+import { usePlayer } from '../features/player/store'
 
 /**
  * Resolution at which the transport chrome reads the playhead.

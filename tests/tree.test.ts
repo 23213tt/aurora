@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { ancestorPaths, buildFolderTree, tracksUnder } from '../src/library/tree.ts'
+import { ancestorPaths, buildFolderTree, tracksUnder } from '../src/features/library/tree.ts'
 import { makeTrack } from './fixtures.ts'
 
 test('builds a nested tree from track paths', () => {

@@ -1,4 +1,4 @@
-import type { Track } from '../types'
+import type { Track } from '../../types'
 import { engineHooks } from './engine'
 import { driver } from './driver'
 import { step } from './queue'

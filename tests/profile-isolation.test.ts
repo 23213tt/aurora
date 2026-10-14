@@ -23,7 +23,7 @@ const store = new Map<string, string>()
   removeItem: (key: string) => void store.delete(key)
 }
 
-const { loadProfilePlaylists, usePlaylists } = await import('../src/playlists/store.ts')
+const { loadProfilePlaylists, usePlaylists } = await import('../src/features/playlists/store.ts')
 
 const names = (): string[] => usePlaylists.getState().playlists.map((p) => p.name)
 

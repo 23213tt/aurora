@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { Palette } from '../library/palette'
+import type { Palette } from '../features/library/palette'
 import { useWindowVisibility } from '../visibility'
 import { buildColorTable, type ColorTable } from './colors'
 import { createLevelReader } from './levels'

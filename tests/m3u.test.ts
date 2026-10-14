@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Track } from '../src/types.ts'
-import { buildM3u, normalisePath, parseM3u, resolveEntries } from '../src/playlists/m3u.ts'
+import { buildM3u, normalisePath, parseM3u, resolveEntries } from '../src/features/playlists/m3u.ts'
 
 function track(id: string, path: string, title = id, artist = '某人'): Track {
   return {

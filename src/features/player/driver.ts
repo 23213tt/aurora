@@ -1,5 +1,5 @@
-import type { Track } from '../types'
-import { isNative } from '../bridge'
+import type { Track } from '../../types'
+import { isNative } from '../../bridge'
 import {
   engine,
   engineHooks,

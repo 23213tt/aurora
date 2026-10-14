@@ -3,7 +3,7 @@ import http from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { after, test } from 'node:test'
 import { REMOTE_SCHEME, handleRemoteRequest, isPrivateAddress } from '../electron/remote-protocol.ts'
-import { remoteImageUrl, remoteStreamUrl } from '../src/player/urls.ts'
+import { remoteImageUrl, remoteStreamUrl } from '../src/features/player/urls.ts'
 
 /*
  * The proxy is the one place where the renderer can name an address and the

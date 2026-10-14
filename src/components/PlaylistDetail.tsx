@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Playlist } from '../playlists/store'
+import type { Playlist } from '../features/playlists/store'
 import type { Track } from '../types'
 import { formatTime } from './Bar'
 import { Play, Trash, Wave } from './icons'

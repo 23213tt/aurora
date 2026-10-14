@@ -1,0 +1,35 @@
+[
+  { "from": "src/accounts/profile-storage.ts", "to": "src/features/accounts/profile-storage.ts" },
+  { "from": "src/accounts/providers.ts", "to": "src/features/accounts/providers.ts" },
+  { "from": "src/accounts/store.ts", "to": "src/features/accounts/store.ts" },
+
+  { "from": "src/library/cover.ts", "to": "src/features/library/cover.ts" },
+  { "from": "src/library/demo.ts", "to": "src/features/library/demo.ts" },
+  { "from": "src/library/hooks.ts", "to": "src/features/library/hooks.ts" },
+  { "from": "src/library/palette.ts", "to": "src/features/library/palette.ts" },
+  { "from": "src/library/roots.ts", "to": "src/features/library/roots.ts" },
+  { "from": "src/library/scan.ts", "to": "src/features/library/scan.ts" },
+  { "from": "src/library/source.ts", "to": "src/features/library/source.ts" },
+  { "from": "src/library/store.ts", "to": "src/features/library/store.ts" },
+  { "from": "src/library/tree.ts", "to": "src/features/library/tree.ts" },
+
+  { "from": "src/netease/api.ts", "to": "src/features/netease/api.ts" },
+  { "from": "src/netease/hooks.ts", "to": "src/features/netease/hooks.ts" },
+  { "from": "src/netease/lrc.ts", "to": "src/features/netease/lrc.ts" },
+  { "from": "src/netease/store.ts", "to": "src/features/netease/store.ts" },
+  { "from": "src/netease/stream.ts", "to": "src/features/netease/stream.ts" },
+  { "from": "src/netease/track.ts", "to": "src/features/netease/track.ts" },
+  { "from": "src/components/NeteaseLogin.tsx", "to": "src/features/netease/NeteaseLogin.tsx" },
+  { "from": "src/components/NeteaseView.tsx", "to": "src/features/netease/NeteaseView.tsx" },
+
+  { "from": "src/player/actions.ts", "to": "src/features/player/actions.ts" },
+  { "from": "src/player/driver.ts", "to": "src/features/player/driver.ts" },
+  { "from": "src/player/engine.ts", "to": "src/features/player/engine.ts" },
+  { "from": "src/player/netease.ts", "to": "src/features/player/netease.ts" },
+  { "from": "src/player/queue.ts", "to": "src/features/player/queue.ts" },
+  { "from": "src/player/store.ts", "to": "src/features/player/store.ts" },
+  { "from": "src/player/urls.ts", "to": "src/features/player/urls.ts" },
+
+  { "from": "src/playlists/m3u.ts", "to": "src/features/playlists/m3u.ts" },
+  { "from": "src/playlists/store.ts", "to": "src/features/playlists/store.ts" }
+]

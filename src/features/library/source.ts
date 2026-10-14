@@ -1,10 +1,10 @@
-import { isNative } from '../bridge'
+import { isNative } from '../../bridge'
 import { mergeTranslation } from '../netease/lrc'
 import { netease, hasNeteaseBackend } from '../netease/api'
 import { streamOf } from '../netease/store'
 import { neteaseSongId } from '../netease/track'
 import { artUrl, mediaUrl, remoteImageUrl, remoteStreamUrl } from '../player/urls'
-import type { Track } from '../types'
+import type { Track } from '../../types'
 import { demoCoverFor, demoLyricsFor } from './demo'
 
 /**

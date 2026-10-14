@@ -1,4 +1,4 @@
-import type { RepeatMode, Track } from '../types'
+import type { RepeatMode, Track } from '../../types'
 
 /**
  * Play-order maths, kept separate from both the store and the audio engine so

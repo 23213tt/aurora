@@ -1,4 +1,4 @@
-import type { Track } from '../types'
+import type { Track } from '../../types'
 
 /**
  * Folder hierarchy for the "by directory" view.

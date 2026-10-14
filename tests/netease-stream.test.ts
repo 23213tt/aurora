@@ -9,7 +9,7 @@ import {
   qualityRank,
   shortDuration,
   streamSummary
-} from '../src/netease/stream.ts'
+} from '../src/features/netease/stream.ts'
 import type { NeteaseFailureReason, NeteaseQuality, NeteaseStream } from '../src/env'
 
 /*

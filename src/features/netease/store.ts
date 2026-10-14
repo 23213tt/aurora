@@ -6,9 +6,9 @@ import type {
   NeteaseQuality,
   NeteaseSong,
   NeteaseStream
-} from '../env'
+} from '../../env'
 import { player } from '../player/actions'
-import type { Track } from '../types'
+import type { Track } from '../../types'
 import { useAccounts } from '../accounts/store'
 import { hasNeteaseBackend, netease } from './api'
 import { isTransient, streamSummary } from './stream'

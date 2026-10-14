@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { bridge, isNative } from '../bridge'
 import type { NeteaseQuality, UpdateResult } from '../env'
-import { usePlayer } from '../player/store'
+import { usePlayer } from '../features/player/store'
 import { UpdatePanel } from '../components/UpdatePanel'
 import { Refresh } from '../components/icons'
 import { formatBytes, formatCheckedAt, useSettingsPage } from './store'

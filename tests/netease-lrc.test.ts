@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { mergeTranslation } from '../src/netease/lrc.ts'
+import { mergeTranslation } from '../src/features/netease/lrc.ts'
 
 /*
  * The upstream returns the lyric and its machine translation as two separate
