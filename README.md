@@ -46,7 +46,7 @@
 | **可选在线音源** | 搜索并播放网易云的音乐，用你自己的账号看歌单、每日推荐与云盘；也可以完全不碰它 |
 
 不想读长篇的话，`npm run dev` 就能起来；打包好的安装包在
-[Releases](https://github.com/23213tt/aurora/releases) 里。
+[Releases](https://github.com/LN334/aurora/releases) 里。
 
 **这份文档接下来讲什么：** [设计取向](#设计取向)（为什么长这样）·
 [功能现状](#功能现状)（哪些能用、哪些没做）· [快速开始](#快速开始)（怎么跑起来）·
@@ -534,7 +534,7 @@ npm run dist
 | `latest.yml` | 自动安装读的版本清单（`electron-updater` 不看 GitHub API）。**只有开启自动安装的用户需要它，但每次发版都要传** |
 | `win-unpacked/` | 免安装目录，自己测试用，**不要分发**，和 `win-unpacked` 一起发会让人以为是安装包 |
 
-已发布的版本可以从 [Releases](https://github.com/23213tt/aurora/releases) 看。
+已发布的版本可以从 [Releases](https://github.com/LN334/aurora/releases) 看。
 
 安装程序是 NSIS：非静默安装、可以让用户选安装目录、自动创建桌面与开始菜单快捷方式、
 卸载时保留用户数据（曲库索引和设置不会被删）。
@@ -542,7 +542,7 @@ npm run dist
 ### 发布到 GitHub Releases
 
 这个仓库已经配置好了：提交署名、远端地址、以及 `package.json` 里的仓库信息和 LICENSE
-版权行都已填成 `23213tt/aurora`。第一次推送只需要：
+版权行都已填成 `LN334/aurora`。第一次推送只需要：
 
 ```bash
 git push -u origin main

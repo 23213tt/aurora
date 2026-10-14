@@ -99,12 +99,17 @@ const webFallback: AuroraApi = {
     export: async () => true
   },
   updates: {
-    // Nothing to check against in a browser preview, and saying so is more
-    // useful than pretending to be current.
+    /*
+     * A browser preview has no main process, so there is nothing to check
+     * against. The message says *that*, rather than reusing the packaged
+     * build's "这个构建还没有配置发布仓库" - which is what a real packaging bug
+     * looked like for every shipped version, and made a preview screenshot
+     * indistinguishable from a broken install.
+     */
     check: async () => ({
       state: 'unconfigured',
       current: '0.1.0-web',
-      message: '浏览器预览模式没有更新检查'
+      message: '浏览器预览模式没有主进程，因此没有更新检查'
     }),
     open: async () => false,
     getAutoCheck: async () => false,

@@ -22,11 +22,11 @@ test('the packaged package.json yields a target from repository.url', () => {
     description: 'x',
     author: 'Aurora contributors',
     license: 'MIT',
-    repository: { type: 'git', url: 'https://github.com/23213tt/aurora.git' },
+    repository: { type: 'git', url: 'https://github.com/LN334/aurora.git' },
     main: 'dist-electron/main.js',
     dependencies: {}
   }
-  assert.deepEqual(repositoryTarget(packaged), { owner: '23213tt', repo: 'aurora' })
+  assert.deepEqual(repositoryTarget(packaged), { owner: 'LN334', repo: 'aurora' })
 })
 
 test('the source package.json still works through build.publish', () => {
