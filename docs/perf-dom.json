@@ -1,0 +1,11 @@
+{
+  "tracks": 5000,
+  "rows": 5000,
+  "domNodes": 55209,
+  "jsHeapMB": 29,
+  "scrollP50ms": 16.7,
+  "scrollP95ms": 17,
+  "scrollMaxMs": 19.5,
+  "framesOver33ms": 0,
+  "frameSamples": 144
+}

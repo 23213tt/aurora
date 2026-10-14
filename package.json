@@ -16,6 +16,7 @@
     "build": "npm run build:electron && vite build",
     "preview": "vite build --config vite.preview.config.ts && vite build --config vite.preview-overlay.config.ts && node scripts/inline-preview.mjs",
     "perf": "node scripts/perf-report.mjs",
+    "perf:dom": "node scripts/measure-dom.mjs",
     "icons": "node scripts/make-icons.mjs",
     "asar": "node scripts/asar-probe.mjs",
     "scan": "node scripts/scan-probe.mjs",
