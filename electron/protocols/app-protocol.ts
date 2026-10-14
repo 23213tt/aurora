@@ -4,6 +4,7 @@ import type { ReadableStream as WebReadableStream } from 'node:stream/web'
 import fs from 'node:fs'
 import path from 'node:path'
 import { resolveAppAsset } from '../pure/app-paths'
+import { write } from '../startup-log'
 
 /**
  * Serves the built renderer over a private scheme instead of `file://`.
@@ -70,7 +71,18 @@ export function handleAppProtocol(): void {
       return new Response('bad url', { status: 400 })
     }
 
-    if (url.host !== 'app') return new Response('not found', { status: 404 })
+    /*
+     * Logged before any decision, so the log shows what the renderer actually asked
+     * for even when the answer was wrong. A packaged build once showed a blank
+     * window and the only trace was a 404 body; without this line there was no way to
+     * tell which request produced it.
+     */
+    write(`app-protocol ${request.method} host=${url.host} path=${url.pathname}`)
+
+    if (url.host !== 'app') {
+      write(`  -> 404 host is not "app"`)
+      return new Response('not found', { status: 404 })
+    }
 
     const root = distRoot()
     /*
@@ -80,7 +92,12 @@ export function handleAppProtocol(): void {
      * them.
      */
     const target = resolveAppAsset(root, url.pathname)
-    if (!target) return new Response('forbidden', { status: 403 })
+    if (!target) {
+      write(`  -> 403 resolveAppAsset refused  root=${root}`)
+      return new Response('forbidden', { status: 403 })
+    }
+    write(`  root=${root}`)
+    write(`  target=${target}`)
 
     /*
      * Read first, ask questions later.
@@ -99,7 +116,10 @@ export function handleAppProtocol(): void {
     let size = 0
     try {
       const stat = fs.statSync(target)
-      if (!stat.isFile()) return new Response('not found', { status: 404 })
+      if (!stat.isFile()) {
+        write(`  -> 404 not a file`)
+        return new Response('not found', { status: 404 })
+      }
       size = stat.size
     } catch (error) {
       /*
@@ -108,7 +128,9 @@ export function handleAppProtocol(): void {
        * bug worth seeing. The body is shown in the window, so this is the difference
        * between "blank page" and a sentence naming the file and the reason.
        */
-      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+      const code = (error as NodeJS.ErrnoException)?.code
+      write(`  -> 404 stat failed code=${code} message=${(error as Error)?.message}`)
+      if (code === 'ENOENT') {
         return new Response('not found', { status: 404 })
       }
       return new Response(`cannot stat ${url.pathname}: ${(error as Error)?.message ?? error}`, { status: 404 })
@@ -119,8 +141,10 @@ export function handleAppProtocol(): void {
     try {
       stream = fs.createReadStream(target)
     } catch (error) {
+      write(`  -> 404 createReadStream threw: ${(error as Error)?.message}`)
       return new Response(`cannot read ${url.pathname}: ${(error as Error)?.message ?? error}`, { status: 404 })
     }
+    write(`  -> 200 ${type} ${size} bytes`)
 
     const headers: Record<string, string> = {
       'content-type': type,

@@ -15,6 +15,7 @@ import { handleMediaProtocol, registerMediaScheme } from './protocols/media-prot
 import { handleRemoteProtocol, registerRemoteScheme } from './protocols/remote-protocol'
 import { registerNeteaseIpc, warmUpNetease } from './netease/ipc'
 import { registerQqIpc } from './qq/ipc'
+import { closeStartupLog, openStartupLog, startupLogPath, write } from './startup-log'
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './protocols/app-protocol'
 import { loadIndex, scanLibrary, type ScanProgress } from './library-scan'
 import { discoverMusicFolders } from './library-discovery'
@@ -376,7 +377,11 @@ function createWindow(): void {
    * "it is blank" into a sentence naming the step that failed.
    */
   const reportLoadFailure = (reason: string): void => {
-    const text = `Aurora 无法加载界面（${reason}）。这是程序错误，请把这句话连同下面的地址一起反馈。\n\n地址：${APP_ORIGIN}/index.html`
+    const log = startupLogPath()
+    const text =
+      `Aurora 无法加载界面（${reason}）。这是程序错误，请把下面这句话连同日志文件一起反馈。\n\n` +
+      `地址：${APP_ORIGIN}/index.html\n` +
+      (log ? `日志：${log}\n` : '')
     void mainWindow?.webContents
       .executeJavaScript(
         `document.body.innerHTML = '<pre style="font:13px/1.6 ui-monospace,Consolas,monospace;color:#e6e6e6;background:#141414;padding:24px;white-space:pre-wrap;margin:0">' +
@@ -387,8 +392,25 @@ function createWindow(): void {
   }
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
     console.error('[aurora] renderer load failed', errorCode, errorDescription, validatedURL)
+    write(`did-fail-load code=${errorCode} desc=${errorDescription} url=${validatedURL}`)
     reportLoadFailure(`${errorDescription || errorCode} ← ${validatedURL}`)
   })
+
+  /*
+   * Everything the renderer says before it dies, and the outcome of each load step.
+   * The renderer is the only place that knows whether the bundle executed, and when
+   * it does not run at all this is the only remaining witness.
+   */
+  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    write(`renderer[${level}] ${message} (${sourceId}:${line})`)
+  })
+  mainWindow.webContents.on('did-finish-load', () => write('did-finish-load'))
+  mainWindow.webContents.on('did-stop-loading', () => write('did-stop-loading'))
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    write(`render-process-gone reason=${details.reason} exitCode=${details.exitCode}`)
+  })
+
+  write(`loading ${isDev ? DEV_URL : `${APP_ORIGIN}/index.html`}`)
 
   if (isDev) {
     void mainWindow.loadURL(DEV_URL)
@@ -708,6 +730,18 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(() => {
+    /*
+     * Opened first, so everything after it can be recorded.
+     *
+     * A packaged build once opened as a blank window with no way to find out why -
+     * the renderer never runs in that state, so it cannot report anything. This log
+     * is what makes the next such failure answerable: it holds the requests the
+     * renderer made and what the main process answered.
+     */
+    openStartupLog(app.getPath('userData'), app.getVersion(), app.isPackaged)
+    write(`userData=${app.getPath('userData')}`)
+    write(`appPath=${app.getAppPath()}`)
+    write(`argv=${process.argv.slice(1).join(' ')}`)
     // Window geometry is read here, off `createWindow`'s synchronous path.
     void preloadWinState()
     // Scan progress is coalesced in its own module so the throttle is testable;
@@ -785,6 +819,9 @@ if (!app.requestSingleInstanceLock()) {
     globalShortcut.unregisterAll()
     destroyOverlay()
     destroyTray()
+    // Flush the startup log, so a crash during shutdown still leaves what happened.
+    write('before-quit')
+    closeStartupLog()
   })
 
   app.on('window-all-closed', () => {
