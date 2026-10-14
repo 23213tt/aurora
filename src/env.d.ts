@@ -26,6 +26,14 @@ export interface LibraryIndex {
 
 export interface LibraryApi {
   getRoots(): Promise<string[]>
+  /**
+   * One-time search for music already on this machine.
+   *
+   * Returns what it added, which is empty when the pass has already run or the
+   * library is already configured - an intentionally removed folder must stay
+   * removed.
+   */
+  autoDiscover(): Promise<{ added: string[]; roots: string[] }>
   addRoots(): Promise<string[]>
   removeRoot(root: string): Promise<string[]>
   /** Raw LRC text from a sidecar file next to the audio, or null. */

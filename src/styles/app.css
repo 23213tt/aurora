@@ -847,6 +847,30 @@ input::placeholder {
 
 /* --- key/value spec list ------------------------------------------------- */
 
+/*
+ * The AI-made / experimental disclosure.
+ *
+ * Left-aligned and readable rather than a centred banner: it is information, not
+ * an announcement, and it sits with the version numbers because that is where
+ * someone looks to find out what they are running.
+ */
+.settings__notice {
+  margin: 0 0 var(--s4);
+  padding: var(--s3);
+  border: var(--line-soft);
+  border-left: 2px solid var(--ink-500);
+  border-radius: 0 var(--r-panel) var(--r-panel) 0;
+  background: var(--ink-850);
+  font-size: var(--fs-meta);
+  line-height: 1.7;
+  color: var(--text-mid);
+  max-width: 76ch;
+}
+.settings__notice strong {
+  color: var(--text-hi);
+  font-weight: 600;
+}
+
 .specs {
   display: grid;
   grid-template-columns: max-content 1fr;

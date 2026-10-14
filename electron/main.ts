@@ -16,6 +16,7 @@ import { handleRemoteProtocol, registerRemoteScheme } from './remote-protocol'
 import { registerNeteaseIpc, warmUpNetease } from './netease/ipc'
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol'
 import { loadIndex, scanLibrary, type ScanProgress } from './library-scan'
+import { discoverMusicFolders } from './library-discovery'
 import {
   configureProgressTransport,
   mainWindowVisibility,
@@ -407,6 +408,24 @@ function registerIpc(): void {
   }))
 
   ipcMain.handle('library:getRoots', () => loadSettings().roots)
+
+  /**
+   * Folders already on this machine, added once.
+   *
+   * Only ever runs for a profile that has no folders *and* no record of having
+   * had any: `library:getRoots` returning `[]` is also what a user sees after
+   * deliberately removing every folder, and re-adding them on the next launch
+   * would make the remove button look broken. The flag makes this a first-run
+   * action rather than a recurring opinion.
+   */
+  ipcMain.handle('library:autoDiscover', () => {
+    const settings = loadSettings()
+    if (settings.roots.length > 0 || settings.rootsDiscovered) return { added: [] as string[], roots: settings.roots }
+
+    const found = discoverMusicFolders()
+    saveSettings({ roots: found, rootsDiscovered: true })
+    return { added: found, roots: found }
+  })
 
   ipcMain.handle('library:addRoots', async () => {
     const current = loadSettings().roots

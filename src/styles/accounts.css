@@ -15,11 +15,16 @@
   gap: var(--s2);
 }
 
+/*
+ * Follows `.rail__heading`, the app's existing section label: 11px, medium,
+ * low-contrast, sentence case. An earlier version of this file used a tracked-out
+ * ALL-CAPS eyebrow here - which is the one treatment the rest of the type system
+ * never uses, and the commonest tell of a generated interface. The app already
+ * has a way to label a section; this uses it.
+ */
 .accounts__heading {
   font-size: var(--fs-micro);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 500;
   color: var(--text-low);
 }
 

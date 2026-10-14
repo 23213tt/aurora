@@ -45,6 +45,8 @@ const api = {
 
   library: {
     getRoots: () => ipcRenderer.invoke('library:getRoots') as Promise<string[]>,
+    autoDiscover: () =>
+      ipcRenderer.invoke('library:autoDiscover') as Promise<{ added: string[]; roots: string[] }>,
     addRoots: () => ipcRenderer.invoke('library:addRoots') as Promise<string[]>,
     removeRoot: (root: string) => ipcRenderer.invoke('library:removeRoot', root) as Promise<string[]>,
 

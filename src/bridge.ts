@@ -60,6 +60,8 @@ const webFallback: AuroraApi = {
   }),
   library: {
     getRoots: async () => demoRoots,
+    // A browser preview has no file system to search.
+    autoDiscover: async () => ({ added: [], roots: [] }),
     addRoots: async () => demoRoots,
     removeRoot: async () => demoRoots,
     // The preview has no filesystem; demo lyrics come from the demo dataset.

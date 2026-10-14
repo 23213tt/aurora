@@ -358,9 +358,22 @@ function About() {
   }, [])
 
   return (
-    <dl className="specs">
-      <dt>应用版本</dt>
-      <dd>{info?.version ?? '—'}</dd>
+    <>
+      {/*
+        Said here, plainly, rather than hidden in the README.
+        A generated application that presents itself as an ordinary product is
+        misleading about what the reader is running and about how much testing
+        stands behind it, so the app states it where someone looks for version
+        information.
+      */}
+      <p className="settings__notice">
+        Aurora 是 AI 制作、以试验为目的的作品，不是成熟产品：代码与文案全部由 AI 生成，
+        功能与界面可能随时改动。自动化测试只覆盖不依赖 Electron 的纯逻辑，
+        <strong>真实窗口从未端到端跑过</strong>。请勿用于重要数据。
+      </p>
+      <dl className="specs">
+        <dt>应用版本</dt>
+        <dd>{info?.version ?? '—'}</dd>
       <dt>运行环境</dt>
       <dd>{isNative ? 'Electron 桌面版' : '浏览器预览模式'}</dd>
       <dt>Electron</dt>
@@ -381,6 +394,7 @@ function About() {
           </dd>
         </>
       ) : null}
-    </dl>
+      </dl>
+    </>
   )
 }

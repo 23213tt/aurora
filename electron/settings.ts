@@ -36,6 +36,14 @@ export const LYRIC_SIZE_MAX = 64
 export interface Settings {
   /** Folders the user has added to the library. */
   roots: string[]
+  /**
+   * Whether the one-time "find the music already on this machine" pass has run.
+   *
+   * Persisted so that a user who removes every folder keeps them removed: an
+   * empty `roots` list on the next launch must mean "no folders", not "never
+   * looked".
+   */
+  rootsDiscovered: boolean
   /** Explicitly excluded paths (a `.auroraignore`-style list, kept simple). */
   excluded: string[]
   /** Check GitHub Releases for a newer version at most once a day. */
@@ -83,6 +91,7 @@ export interface Settings {
 
 const DEFAULTS: Settings = {
   roots: [],
+  rootsDiscovered: false,
   excluded: [],
   autoCheckUpdates: true,
   updateInterval: 'daily',
@@ -108,6 +117,7 @@ export function loadSettings(): Settings {
       ...raw,
       // Arrays are the only fields where a corrupt value would crash callers.
       roots: Array.isArray(raw.roots) ? raw.roots : [],
+      rootsDiscovered: raw.rootsDiscovered === true,
       excluded: Array.isArray(raw.excluded) ? raw.excluded : [],
       // Enums and numbers come from a hand-editable JSON file, so they are
       // validated rather than trusted: an unknown interval would silently stop

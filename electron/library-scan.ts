@@ -58,22 +58,17 @@ export interface ScanProgress {
 
 const INDEX_VERSION = 1
 
-const AUDIO_EXTENSIONS = new Set([
-  '.mp3',
-  '.flac',
-  '.m4a',
-  '.mp4',
-  '.aac',
-  '.ogg',
-  '.oga',
-  '.opus',
-  '.wav',
-  '.wv',
-  '.ape',
-  '.aif',
-  '.aiff',
-  '.wma'
-])
+import { AUDIO_EXTENSIONS } from './library-discovery-rules'
+
+/**
+ * Every extension the indexer will read.
+ *
+ * The list itself lives in `library-discovery-rules.ts`, which has no Electron
+ * dependency and is therefore testable; auto-discovery needs the same list to
+ * decide whether a folder holds music at all. Re-exported here so callers that
+ * only know about the scanner keep working.
+ */
+export { AUDIO_EXTENSIONS }
 
 const FOLDER_ART_NAMES = [
   'cover.jpg',
