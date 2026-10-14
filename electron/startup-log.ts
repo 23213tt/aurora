@@ -14,19 +14,20 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 let logPath: string | null = null
-let logStream: fs.WriteStream | null = null
+let usable = false
 
 /** Where the log lives, for the "it is broken, send me this" message. */
 export function startupLogPath(): string | null {
   return logPath
 }
 
-export function openStartupLog(appDataDir: string, appVersion: string, packaged: boolean): void {
+export function openStartupLog(logDir: string, appVersion: string, packaged: boolean): void {
   try {
-    fs.mkdirSync(appDataDir, { recursive: true })
-    logPath = path.join(appDataDir, 'startup.log')
+    fs.mkdirSync(logDir, { recursive: true })
+    logPath = path.join(logDir, 'startup.log')
     // Truncate each run: this is about the run that failed, not history.
-    logStream = fs.createWriteStream(logPath, { flags: 'w' })
+    fs.writeFileSync(logPath, '', 'utf-8')
+    usable = true
     write('aurora startup log')
     write(`version=${appVersion} packaged=${packaged}`)
     write(`node=${process.versions.node} electron=${process.versions.electron} chrome=${process.versions.chrome}`)
@@ -34,24 +35,30 @@ export function openStartupLog(appDataDir: string, appVersion: string, packaged:
     write(`platform=${process.platform} arch=${process.arch}`)
   } catch {
     // A log that cannot be written must not stop the app from starting.
-    logStream = null
+    usable = false
   }
 }
 
+/**
+ * Appends one line, synchronously.
+ *
+ * Not a `WriteStream`: that buffers, and the first version of this file proved the
+ * point by leaving a zero-byte `startup.log` behind after a run that never flushed.
+ * The whole purpose here is to survive a crash, so each line has to be on disk by
+ * the time the call returns - the cost of a synchronous append on a handful of lines
+ * is nothing next to losing the only evidence.
+ */
 export function write(line: string): void {
-  if (!logStream) return
+  if (!usable || !logPath) return
   try {
-    logStream.write(`${new Date().toISOString()}  ${line}\n`)
+    fs.appendFileSync(logPath, `${new Date().toISOString()}  ${line}\n`, 'utf-8')
   } catch {
     // ignore
   }
 }
 
 export function closeStartupLog(): void {
-  try {
-    logStream?.end()
-  } catch {
-    // ignore
-  }
-  logStream = null
+  // Nothing to flush: every line is already on disk. Kept for the call sites that
+  // expect a symmetry with `openStartupLog`.
+  usable = false
 }
