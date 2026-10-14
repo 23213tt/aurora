@@ -26,9 +26,20 @@ import { write } from '../startup-log'
  const APP_SCHEME = 'aurora-app'
 export const APP_ORIGIN = `${APP_SCHEME}://app`
 
-/** Where the built renderer lives, inside the asar when packaged. */
-const distRoot = (): string => path.resolve(__dirname, '..', 'dist')
-
+/**
+ * Where the built renderer lives, inside the asar when packaged.
+ *
+ * Two levels up, not one: this file compiles to `dist-electron/protocols/`, so a
+ * single `..` lands on `dist-electron/` and the renderer root is computed as
+ * `dist-electron/dist`. That is precisely the bug that shipped in 0.3.0 through
+ * 0.3.3 - the file was moved from `electron/` into `electron/protocols/` during a
+ * refactor and this relative path was not updated with it, so every request for the
+ * renderer answered 404 and the window came up empty.
+ *
+ * The log line in `handleAppProtocol` is the countermeasure: `root=… exists=false`
+ * states this failure outright, where three releases were spent inferring it.
+ */
+const distRoot = (): string => path.resolve(__dirname, '..', '..', 'dist')
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -86,6 +97,17 @@ export function handleAppProtocol(): void {
 
     const root = distRoot()
     /*
+     * The paths themselves, not just the outcome.
+     *
+     * A log line that said only "404" left the reason ambiguous twice over; printing
+     * where the handler thinks it is (`__dirname`), what it therefore computes as the
+     * renderer root, and whether that root exists turns the next report into an
+     * answer rather than another round of guessing.
+     */
+    write(`  __dirname=${__dirname}`)
+    write(`  module=${__filename}`)
+    write(`  root=${root} exists=${fs.existsSync(root)}`)
+    /*
      * Containment is decided on the resolved path, not the raw string: `..`
      * segments, encoded traversal and absolute paths (including a Windows drive
      * letter) all have to be caught, and only the resolved form catches all of
@@ -96,7 +118,6 @@ export function handleAppProtocol(): void {
       write(`  -> 403 resolveAppAsset refused  root=${root}`)
       return new Response('forbidden', { status: 403 })
     }
-    write(`  root=${root}`)
     write(`  target=${target}`)
 
     /*

@@ -1,7 +1,7 @@
 {
   "name": "aurora-player",
   "private": true,
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "AI 制作、以试验为目的的本地音乐播放器：歌词舞台由封面主色驱动，曲库自动扫描本机音乐，可选接入网易云在线音源",
   "author": "Aurora contributors",
   "license": "MIT",
@@ -12,7 +12,8 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "npm run build:electron && concurrently -k -n vite,electron -c cyan,magenta \"vite\" \"wait-on tcp:127.0.0.1:5173 && electron . --dev\"",
-    "build:electron": "tsc -p tsconfig.electron.json",
+    "clean:electron": "node scripts/clean-electron.mjs",
+    "build:electron": "npm run clean:electron && tsc -p tsconfig.electron.json",
     "build": "npm run build:electron && vite build",
     "preview": "vite build --config vite.preview.config.ts && vite build --config vite.preview-overlay.config.ts && node scripts/inline-preview.mjs",
     "perf": "node scripts/perf-report.mjs",
