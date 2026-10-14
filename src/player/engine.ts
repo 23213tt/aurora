@@ -1,3 +1,4 @@
+import { bridge, isNative } from '../bridge'
 import { sourceFor } from '../library/source'
 import type { Track } from '../types'
 import { EQ_BANDS, usePlayer } from './store'
@@ -5,6 +6,68 @@ import { EQ_BANDS, usePlayer } from './store'
 const FADE_IN_MS = 220
 const FADE_OUT_MS = 150
 const SWAP_MS = 380
+
+/**
+ * How often the playhead is published while the player window is off screen.
+ *
+ * A quarter of a second, i.e. 4 Hz instead of 60. Only two things read the
+ * playhead when nothing is being drawn: the desktop lyric window, whose
+ * highlight is `activeLineAt(position)`, and the transport chrome, which is
+ * already quantised to an eighth of a second (see components/Bar.tsx). Lyric
+ * lines change every few seconds, so sampling the clock four times a second
+ * cannot show the wrong line or skip one - it can only delay a switch by less
+ * than a quarter second, which is a fraction of the time it takes to read the
+ * line. Lower would start to matter (a 1 s step is visible while the overlay is
+ * being watched); higher would leave sixty wake-ups a second in place, and with
+ * `backgroundThrottling: false` those wake-ups are the whole background cost.
+ */
+export const HIDDEN_POSITION_MS = 250
+
+/*
+ * Window visibility, as a subscription rather than a hook.
+ *
+ * `useWindowVisibility()` (src/visibility.ts) is the component-facing version of
+ * this and cannot be used here, because the ticker is a singleton that lives
+ * outside React. The rule is the same one the main process enforces: inside
+ * Electron only `isVisible()`/`isMinimized()` decide, so a merely unfocused or
+ * partly covered window stays visible and is never slowed down. In a browser
+ * there is no tray and no second window, so `document.hidden` is accurate there.
+ */
+let windowVisible = true
+let visibilityBound = false
+const visibilityListeners = new Set<(visible: boolean) => void>()
+
+function publishVisibility(next: boolean): void {
+  if (next === windowVisible) return
+  windowVisible = next
+  for (const listener of visibilityListeners) listener(next)
+}
+
+function bindVisibility(): void {
+  if (visibilityBound) return
+  visibilityBound = true
+  if (!isNative) {
+    const sync = () => publishVisibility(!document.hidden)
+    sync()
+    document.addEventListener('visibilitychange', sync)
+    return
+  }
+  void bridge.app.getVisibility().then((state) => publishVisibility(state.visible))
+  bridge.app.onVisibility((state) => publishVisibility(state.visible))
+}
+
+/** The current answer from Electron (or from Chromium in a browser tab). */
+export function isWindowVisible(): boolean {
+  bindVisibility()
+  return windowVisible
+}
+
+/** Notifies on every change and returns an unsubscribe. */
+export function onWindowVisibility(listener: (visible: boolean) => void): () => void {
+  bindVisibility()
+  visibilityListeners.add(listener)
+  return () => visibilityListeners.delete(listener)
+}
 
 /**
  * The engine needs to advance the queue on its own (a track ending, or an
@@ -34,6 +97,11 @@ class AudioEngine {
   // Inferred as Uint8Array<ArrayBuffer>, which is what the analyser API wants.
   private spectrum = new Uint8Array(0)
   private raf = 0
+  /** Set while the playhead is being published from a timer instead of rAF. */
+  private hiddenTimer = 0
+  /** True between play() and pause()/ended: the ticker should be clocking. */
+  private tickerActive = false
+  private unbindVisibility: (() => void) | null = null
   private loadedPath: string | null = null
   /** Invalidates in-flight fades when the user interrupts one. */
   private fadeToken = 0
@@ -264,20 +332,58 @@ class AudioEngine {
   // --- position reporting --------------------------------------------------
 
   private startTicker(): void {
-    if (this.raf) return
-    const tick = () => {
-      const el = this.el
-      if (!el) return
-      usePlayer.getState().setPosition(el.currentTime)
+    this.tickerActive = true
+    if (!this.unbindVisibility) this.unbindVisibility = onWindowVisibility(() => this.armTicker())
+    this.armTicker()
+  }
+
+  /**
+   * Arms whichever clock matches the current visibility. Always disarms first, so
+   * a visibility change cannot leave a timer and an animation frame both running.
+   */
+  private armTicker(): void {
+    this.disarmTicker()
+    if (!this.tickerActive) return
+    const el = this.el
+    if (!el) return
+
+    if (isWindowVisible()) {
+      const tick = () => {
+        usePlayer.getState().setPosition(el.currentTime)
+        this.raf = requestAnimationFrame(tick)
+      }
       this.raf = requestAnimationFrame(tick)
+      return
     }
-    this.raf = requestAnimationFrame(tick)
+
+    /*
+     * Off screen: a timer, not a throttled animation frame. Skipping the write
+     * while still being called every frame would keep the renderer waking up
+     * sixty times a second, which is the cost worth removing here.
+     */
+    const tick = () => usePlayer.getState().setPosition(el.currentTime)
+    // Publish once immediately so the desktop lyric window is not a quarter
+    // second stale for the whole first interval after the window is hidden.
+    tick()
+    this.hiddenTimer = window.setInterval(tick, HIDDEN_POSITION_MS)
+  }
+
+  private disarmTicker(): void {
+    if (this.raf) {
+      cancelAnimationFrame(this.raf)
+      this.raf = 0
+    }
+    if (this.hiddenTimer) {
+      window.clearInterval(this.hiddenTimer)
+      this.hiddenTimer = 0
+    }
   }
 
   private stopTicker(): void {
-    if (!this.raf) return
-    cancelAnimationFrame(this.raf)
-    this.raf = 0
+    this.tickerActive = false
+    this.disarmTicker()
+    this.unbindVisibility?.()
+    this.unbindVisibility = null
   }
 
   // --- OS integration ------------------------------------------------------

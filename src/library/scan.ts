@@ -1,4 +1,5 @@
 import { bridge, isNative } from '../bridge'
+import type { ScanProgress } from '../env'
 import { useLibrary } from './store'
 
 /**
@@ -24,6 +25,43 @@ export async function loadInitialIndex(): Promise<void> {
   }
 }
 
+/*
+ * Two fields, two update rates.
+ *
+ * The main process already coalesces `library:progress` to 10 Hz
+ * (electron/scan-progress.ts), which is the rate limit that matters. What is left
+ * here is the cost of a report that carries no new information: the store is
+ * subscribed at the App root (src/App.tsx), so *any* write re-renders the whole
+ * library view, and a coalesced report can arrive while the file name and the
+ * rounded percentage are both unchanged.
+ *
+ * `currentScan` is the one that changes fastest - it is the status line - so it is
+ * written whenever the file changes and never rate limited further. `progress` is
+ * only ever drawn rounded to a whole percent (src/App.tsx), so a write that
+ * cannot change a displayed digit is pure re-render and is skipped. Comparing the
+ * rounded value is safe precisely because the number is a fraction: any change
+ * that would move the visible digit moves the rounded value too.
+ */
+let lastProgressFile: string | null = null
+let lastProgressPercent = -1
+
+function applyProgress(progress: ScanProgress): void {
+  const total = Math.max(1, progress.found)
+  // Progress is measured in files read, not files found, so a mostly cached
+  // rescan still shows meaningful movement.
+  const ratio = Math.min(1, (progress.scanned + progress.cached) / total)
+  const percent = Math.round(ratio * 100)
+
+  if (progress.current !== lastProgressFile) {
+    lastProgressFile = progress.current
+    useLibrary.getState().setCurrentScan(progress.current)
+  }
+  if (percent !== lastProgressPercent) {
+    lastProgressPercent = percent
+    useLibrary.getState().setProgress(ratio)
+  }
+}
+
 export async function runScan(): Promise<void> {
   if (!isNative) return
 
@@ -34,15 +72,12 @@ export async function runScan(): Promise<void> {
   store.setError(null)
 
   if (!unsubscribeProgress) {
-    unsubscribeProgress = bridge.library.onProgress((progress) => {
-      const state = useLibrary.getState()
-      state.setCurrentScan(progress.current)
-      // Progress is measured in files read, not files found, so a mostly
-      // cached rescan still shows meaningful movement.
-      const total = Math.max(1, progress.found)
-      state.setProgress(Math.min(1, (progress.scanned + progress.cached) / total))
-    })
+    unsubscribeProgress = bridge.library.onProgress(applyProgress)
   }
+  // A rescan starts from zero, so the previous run's "already reported" values
+  // must not suppress the first report of this one.
+  lastProgressFile = null
+  lastProgressPercent = -1
 
   try {
     const index = await bridge.library.scan()

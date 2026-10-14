@@ -1,13 +1,36 @@
 import { app, BrowserWindow, dialog, globalShortcut, ipcMain, shell } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
-import { isInsideRoots, loadSettings, saveSettings } from './settings'
+import {
+  appSettings,
+  clearCache,
+  isInsideRoots,
+  loadSettings,
+  LYRIC_SIZE_MAX,
+  LYRIC_SIZE_MIN,
+  saveSettings,
+  storageUsage
+} from './settings'
 import { handleMediaProtocol, registerMediaScheme } from './media-protocol'
 import { handleRemoteProtocol, registerRemoteScheme } from './remote-protocol'
 import { registerNeteaseIpc, warmUpNetease } from './netease/ipc'
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol'
 import { loadIndex, scanLibrary, type ScanProgress } from './library-scan'
-import { autoCheck, checkForUpdate, openReleasePage, type UpdateResult } from './updates'
+import {
+  configureProgressTransport,
+  mainWindowVisibility,
+  sendProgress,
+  type WindowVisibilityState
+} from './scan-progress'
+import {
+  autoCheck,
+  checkForUpdate,
+  installPendingUpdate,
+  onUpdateStatus,
+  openReleasePage,
+  updatePrefs,
+  type UpdateResult
+} from './updates'
 import { lookupLyrics, type LyricsQuery } from './lyrics'
 import {
   createTray,
@@ -24,6 +47,7 @@ import {
   isLocked as isOverlayLocked,
   pushOverlayState,
   setLocked as setOverlayLocked,
+  setLyricSize,
   status as overlayStatus,
   toggleOverlay,
   type OverlayState
@@ -96,6 +120,32 @@ function toggleWindow(): void {
   refreshTrayMenu(trayHandlers())
 }
 
+/**
+ * Tell the renderer when the player window stops (or resumes) being on screen.
+ *
+ * The renderer needs this because `document.hidden` can be stale in Electron -
+ * a window hidden to the tray may still report itself visible, and with
+ * `backgroundThrottling: false` the page keeps running at full rate either way.
+ * Only changes are announced; the renderer reads the initial state once at
+ * startup through `app:visibility`.
+ */
+let lastVisibility: WindowVisibilityState | null = null
+
+function notifyVisibility(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  const next = mainWindowVisibility(mainWindow)
+  if (
+    lastVisibility &&
+    lastVisibility.visible === next.visible &&
+    lastVisibility.minimized === next.minimized &&
+    lastVisibility.hidden === next.hidden
+  ) {
+    return
+  }
+  lastVisibility = next
+  mainWindow.webContents.send('app:visibility', next)
+}
+
 const trayHandlers = (): TrayHandlers => ({
   toggleWindow,
   isWindowVisible: () => Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible()),
@@ -142,14 +192,28 @@ function registerGlobalShortcuts(): void {
 
 const stateFile = (): string => path.join(app.getPath('userData'), 'window-state.json')
 
-function loadWinState(): WinState {
+/**
+ * Window geometry, read once off the startup path.
+ *
+ * `createWindow` needs these synchronously, so the read cannot be moved into
+ * it - but it also must not block the app from reaching its first frame for the
+ * sake of a few hundred bytes. So it is read once, asynchronously, while the
+ * window is being built; if it is not ready yet the defaults are used and the
+ * saved size simply does not apply on that one launch.
+ */
+let winStateCache: WinState | null = null
+
+async function preloadWinState(): Promise<void> {
   try {
-    const raw = JSON.parse(fs.readFileSync(stateFile(), 'utf8')) as WinState
-    if (typeof raw.width === 'number' && typeof raw.height === 'number') return raw
+    const raw = JSON.parse(await fs.promises.readFile(stateFile(), 'utf8')) as WinState
+    if (typeof raw.width === 'number' && typeof raw.height === 'number') winStateCache = raw
   } catch {
     /* first run, or a corrupt file we simply ignore */
   }
-  return { width: 1360, height: 860 }
+}
+
+function loadWinState(): WinState {
+  return winStateCache ?? { width: 1360, height: 860 }
 }
 
 function saveWinState(): void {
@@ -162,12 +226,18 @@ function saveWinState(): void {
     y: bounds.y,
     maximized: mainWindow.isMaximized()
   }
-  try {
-    fs.mkdirSync(path.dirname(stateFile()), { recursive: true })
-    fs.writeFileSync(stateFile(), JSON.stringify(next))
-  } catch {
-    /* losing window geometry is never worth crashing over */
-  }
+  winStateCache = next
+  // Asynchronous on purpose: this runs on resize/move (already debounced) and on
+  // close, and a synchronous write of a few hundred bytes still parks the main
+  // process - which is the one place the docs tell you never to block.
+  void (async () => {
+    try {
+      await fs.promises.mkdir(path.dirname(stateFile()), { recursive: true })
+      await fs.promises.writeFile(stateFile(), JSON.stringify(next))
+    } catch {
+      /* losing window geometry is never worth crashing over */
+    }
+  })()
 }
 
 function debounce<T extends (...args: never[]) => void>(fn: T, ms: number): T {
@@ -197,6 +267,24 @@ function decodeText(buffer: Buffer): string {
       return body.toString('utf8')
     }
   }
+}
+
+/**
+ * Warm the online source up, but only once nothing else needs the main process.
+ *
+ * `setTimeout` rather than `requestIdleCallback` because the cost being deferred
+ * is module loading and disk I/O, not a layout-sensitive task; the delay is what
+ * keeps it off the first-frame path, and the guard keeps it to one scheduling
+ * even if `whenReady` runs again for a window that was closed and reopened.
+ */
+let neteaseWarmUpScheduled = false
+
+function scheduleNeteaseWarmUp(): void {
+  if (neteaseWarmUpScheduled) return
+  neteaseWarmUpScheduled = true
+  setTimeout(() => {
+    void warmUpNetease()
+  }, 3000)
 }
 
 function createWindow(): void {
@@ -254,8 +342,18 @@ function createWindow(): void {
     refreshTrayMenu(trayHandlers())
   })
 
-  mainWindow.on('show', () => refreshTrayMenu(trayHandlers()))
-  mainWindow.on('hide', () => refreshTrayMenu(trayHandlers()))
+  mainWindow.on('show', () => {
+    refreshTrayMenu(trayHandlers())
+    notifyVisibility()
+  })
+  mainWindow.on('hide', () => {
+    refreshTrayMenu(trayHandlers())
+    notifyVisibility()
+  })
+  // Minimise and restore are visibility changes too, and they are the states
+  // `document.hidden` reports least reliably inside Electron.
+  mainWindow.on('minimize', notifyVisibility)
+  mainWindow.on('restore', notifyVisibility)
 
   mainWindow.on('resize', debounce(saveWinState, 400))
   mainWindow.on('move', debounce(saveWinState, 400))
@@ -414,12 +512,10 @@ function registerIpc(): void {
     try {
       return await scanLibrary({
         cancelled: () => controller.cancelled,
-        onProgress: (progress: ScanProgress) => {
-          // Progress is advisory; a closed window must not fail the scan.
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('library:progress', progress)
-          }
-        }
+        // Progress is advisory; a closed window must not fail the scan. It is
+        // coalesced in `scan-progress` because one message per file would wake
+        // the whole renderer for every file in the library.
+        onProgress: (progress: ScanProgress) => sendProgress(progress)
       })
     } finally {
       if (activeScan === controller) activeScan = null
@@ -455,6 +551,12 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('updates:check', () => checkForUpdate())
+
+  /*
+   * Whether the player window is actually on screen. The renderer asks once at
+   * startup and then follows `app:visibility`; see notifyVisibility().
+   */
+  ipcMain.handle('app:visibility', () => mainWindowVisibility(mainWindow))
 
   ipcMain.handle('lyrics:isOnlineEnabled', () => loadSettings().onlineLyrics)
 
@@ -506,6 +608,48 @@ function registerIpc(): void {
     if (activeScan) activeScan.cancelled = true
     return true
   })
+
+  // --- settings -----------------------------------------------------------
+
+  /*
+   * One narrow setter per field, deliberately. A generic `settings:set(key,
+   * value)` would make the renderer able to write any key into the main
+   * process's config, including ones it has no business touching.
+   */
+  ipcMain.handle('settings:getAll', () => appSettings())
+
+  ipcMain.handle('settings:setOnlineLyrics', (_event, enabled: unknown) => {
+    saveSettings({ onlineLyrics: Boolean(enabled) })
+    return appSettings()
+  })
+
+  ipcMain.handle('settings:setDesktopLyricsSize', (_event, size: unknown) => {
+    const value = typeof size === 'number' && Number.isFinite(size) ? size : LYRIC_SIZE_MIN
+    setLyricSize(Math.min(LYRIC_SIZE_MAX, Math.max(LYRIC_SIZE_MIN, value)))
+    return appSettings()
+  })
+
+  ipcMain.handle('settings:storage', () => storageUsage())
+
+  ipcMain.handle('settings:clearCache', () => clearCache())
+
+  // --- updates ------------------------------------------------------------
+
+  ipcMain.handle('updates:getPrefs', () => updatePrefs())
+
+  ipcMain.handle('updates:setInterval', (_event, interval: unknown) => {
+    const next =
+      interval === 'manual' || interval === 'daily' || interval === 'weekly' ? interval : 'daily'
+    saveSettings({ updateInterval: next })
+    return updatePrefs()
+  })
+
+  ipcMain.handle('updates:setAutoInstall', (_event, enabled: unknown) => {
+    saveSettings({ autoInstallUpdates: Boolean(enabled) })
+    return updatePrefs()
+  })
+
+  ipcMain.handle('updates:install', () => installPendingUpdate())
 }
 
 // Single instance: a second launch focuses the running player instead of
@@ -520,12 +664,30 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(() => {
+    // Window geometry is read here, off `createWindow`'s synchronous path.
+    void preloadWinState()
+    // Scan progress is coalesced in its own module so the throttle is testable;
+    // the actual delivery stays here, where the windows are known.
+    configureProgressTransport({
+      send: (progress) => {
+        for (const window of BrowserWindow.getAllWindows()) {
+          if (!window.isDestroyed()) window.webContents.send('library:progress', progress)
+        }
+      }
+    })
     handleMediaProtocol()
     handleAppProtocol()
     handleRemoteProtocol()
     initOverlay((status) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('overlay:status', status)
+      }
+    })
+    // Update transitions (download progress, readiness) are pushed to whichever
+    // window is open; the settings page subscribes to them.
+    onUpdateStatus((result) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('updates:status', result)
       }
     })
     registerIpc()
@@ -536,11 +698,20 @@ if (!app.requestSingleInstanceLock()) {
     /*
      * The Netease client needs two pieces of state in the OS temp directory
      * before its own module can even be required (see electron/netease/client.ts).
-     * That bootstrap is slow and network-bound, so it runs after the window is
-     * up, and a failure only means the online source reports itself unavailable.
+     * That bootstrap is slow and memory-hungry: measured at ~1.5 s and ~29 MB
+     * resident, because the upstream package eagerly requires all 449 of its
+     * endpoint modules (and jsdom with them) whether or not Aurora uses them.
+     *
+     * It is therefore deferred until the machine is idle *after* the window has
+     * been shown, rather than fired the moment the app is ready. A user who only
+     * plays local files never pays it at all; a user who opens the online tab
+     * gets a bootstrap that is already warm.
+     *
+     * IPC handlers are registered first regardless: they are what makes the
+     * bootstrap reachable on demand, and they cost ~1.5 ms on their own.
      */
     registerNeteaseIpc()
-    void warmUpNetease()
+    scheduleNeteaseWarmUp()
 
     // One quiet check a day. It only ever reports; nothing is downloaded or
     // applied without the user going to the release page themselves.

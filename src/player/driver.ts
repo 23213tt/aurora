@@ -1,6 +1,12 @@
 import type { Track } from '../types'
 import { isNative } from '../bridge'
-import { engine, engineHooks } from './engine'
+import {
+  engine,
+  engineHooks,
+  HIDDEN_POSITION_MS,
+  isWindowVisible,
+  onWindowVisibility
+} from './engine'
 import { usePlayer } from './store'
 
 /**
@@ -53,20 +59,20 @@ function createSyntheticDriver(): AudioDriver {
   let duration = 0
   let playing = false
   let frame = 0
+  let hiddenTimer = 0
+  let unbindVisibility: (() => void) | null = null
   let last = performance.now()
 
   const bands = 256
   const spectrum = new Uint8Array(bands)
   const phases = Float32Array.from({ length: bands }, (_, i) => (i * 0.7) % (Math.PI * 2))
 
-  const tick = () => {
+  /** Advances the synthetic clock by the real elapsed time. */
+  const advance = () => {
     const now = performance.now()
     const dt = Math.min(0.25, (now - last) / 1000)
     last = now
-    if (!playing) {
-      frame = 0
-      return
-    }
+    if (!playing) return
 
     position += dt
     if (duration > 0 && position >= duration) {
@@ -75,19 +81,47 @@ function createSyntheticDriver(): AudioDriver {
       engineHooks.next(true)
     }
     store.getState().setPosition(position)
-    frame = requestAnimationFrame(tick)
+  }
+
+  /*
+   * The same visibility policy the real engine applies, so the preview exercises
+   * it too: animation frames while the window is on screen, a 250 ms timer while
+   * it is not. Time is still measured, not counted, so the playhead never drifts
+   * - only how often it is published changes.
+   */
+  const armClock = () => {
+    disarmClock()
+    if (!playing) return
+    if (isWindowVisible()) {
+      const tick = () => {
+        advance()
+        frame = requestAnimationFrame(tick)
+      }
+      frame = requestAnimationFrame(tick)
+      return
+    }
+    hiddenTimer = window.setInterval(advance, HIDDEN_POSITION_MS)
+  }
+
+  const disarmClock = () => {
+    if (frame) {
+      cancelAnimationFrame(frame)
+      frame = 0
+    }
+    if (hiddenTimer) {
+      window.clearInterval(hiddenTimer)
+      hiddenTimer = 0
+    }
   }
 
   const startClock = () => {
-    if (frame) return
+    if (!unbindVisibility) unbindVisibility = onWindowVisibility(armClock)
     last = performance.now()
-    frame = requestAnimationFrame(tick)
+    armClock()
   }
 
   const stopClock = () => {
-    if (!frame) return
-    cancelAnimationFrame(frame)
-    frame = 0
+    disarmClock()
   }
 
   const sample = () => {

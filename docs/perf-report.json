@@ -1,0 +1,1429 @@
+{
+  "generatedAt": "2026-10-14T11:56:16.318Z",
+  "environment": {
+    "node": "v24.19.0",
+    "os": "Windows_NT 10.0.26200",
+    "cores": 24,
+    "cpuModel": "Intel(R) Core(TM) i7-14650HX",
+    "totalMemBytes": 16890322944,
+    "git": {
+      "rev": "62adc25da290f20bc5a81e0f7cb1de1101b61786",
+      "branch": "main",
+      "dirtyFiles": 32,
+      "dirtySample": [
+        "M electron/main.ts",
+        " M electron/preload.ts",
+        " M package.json",
+        " M src/App.tsx",
+        " M src/bridge.ts",
+        " M src/components/Bar.tsx",
+        " M src/components/PlayerBar.tsx",
+        " M src/env.d.ts",
+        " M src/library/scan.ts",
+        " M src/overlay/DesktopLyricsBridge.tsx",
+        " M src/player/driver.ts",
+        " M src/player/engine.ts"
+      ]
+    },
+    "edge": "Edg/155.0.4283.45",
+    "previewBundle": {
+      "aurora-preview-settings.html": {
+        "bytes": 388718,
+        "sha256": "3b8e2e96fbe98127"
+      },
+      "aurora-preview-perf.html": {
+        "bytes": 388714,
+        "sha256": "6a4fe89f3a3a26f1"
+      },
+      "aurora-preview-stage.html": {
+        "bytes": 388715,
+        "sha256": "094ff6947429f74d"
+      }
+    }
+  },
+  "rig": {
+    "kind": "browser-preview + headless Edge over CDP",
+    "browserPath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    "headless": "--headless=new",
+    "transport": "file:// self-contained preview pages (no static server)",
+    "durationMs": 6000,
+    "settleMs": 3000,
+    "buildRan": true,
+    "buildMs": 3293,
+    "totalMs": 91019
+  },
+  "externalCounters": null,
+  "caveat": "这是浏览器预览构建的渲染进程数字，不是 Electron 整机占用；Electron 主进程、IPC 与 GPU 合成不在本口径内。",
+  "scenarios": {
+    "control-blank": {
+      "id": "control-blank",
+      "group": "对照·空白页",
+      "hash": null,
+      "what": "同一套启动参数下的 about:blank。用来量「这个装置自己」的开销：Edge 的 browser/GPU/utility 服务、CDP 通道、我自己的 rAF 采样器。从其它场景的进程 CPU 里减掉它，才是应用自己的成本。",
+      "hidden": false,
+      "extraFlags": [],
+      "url": "preview-dist/aurora-preview-null.html#null",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6013.2,
+        "pageSpanMs": 6015,
+        "visibilityState": "visible",
+        "documentHidden": false
+      },
+      "frames": {
+        "frames": 361,
+        "samples": 360,
+        "p50": 16.699999999999818,
+        "p95": 17,
+        "p99": 17.399999999999636,
+        "max": 17.5,
+        "min": 16,
+        "mean": 16.66638888888889,
+        "over33ms": 0,
+        "over50ms": 0,
+        "fps": 60.02,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": 13.9,
+        "lastFrameAt": 6013.8
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 42.9,
+        "scriptMs": 6.7,
+        "layoutMs": 0,
+        "styleMs": 0,
+        "taskBusyPctOfOneCore": 0.71,
+        "scriptPctOfOneCore": 0.11,
+        "windowMs": 6013.2
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 55.9,
+          "renderer": 97.6,
+          "GPU": 54.2,
+          "network.mojom.NetworkService": 6,
+          "storage.mojom.StorageService": 0,
+          "edge_collections.mojom.CollectionsDataManager": 0,
+          "entity_extraction_service.mojom.Extractor": 0,
+          "winrt_app_id.mojom.WinrtAppIdService": 0.1
+        },
+        "totalCpuMs": 213.9,
+        "pctOfAllCores": 0.148,
+        "pctOfOneCore": 3.56,
+        "rendererCpuMs": 97.6,
+        "rendererPctOfOneCore": 1.62,
+        "rendererPctOfAllCores": 0.068,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 590392,
+        "heapUsedDeltaBytes": 23484,
+        "heapTotalAtEndBytes": 1048676,
+        "cdpJsHeapUsedBytes": 658500,
+        "domNodesAtEnd": 3,
+        "domNodesDelta": 0,
+        "cdpNodes": 8,
+        "cdpLayoutCount": 0,
+        "cdpRecalcStyleCount": 0
+      },
+      "renderCounters": {
+        "rootRenders": null,
+        "rootRendersSinceLoad": null,
+        "rootRendersPerSecond": null,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": null,
+        "rendersPerPositionWrite": null
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 0,
+        "perSecond": 0,
+        "breakdown": {
+          "childList": 0,
+          "characterData": 0,
+          "attributes": 0
+        },
+        "topTargets": [],
+        "samples": []
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 0,
+        "rootChildren": 0,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": [
+        "第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。"
+      ],
+      "retried": true
+    },
+    "idle-paused": {
+      "id": "idle-paused",
+      "group": "空闲（要求场景）",
+      "hash": "settings",
+      "what": "设置页 + 用 UI 上的暂停按钮停掉播放。无 stage、无 60Hz 位置流、界面静止。这是本装置能给出的最接近「真正空闲」的一档。",
+      "hidden": false,
+      "extraFlags": [],
+      "url": "preview-dist/aurora-preview-settings.html#settings",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6008.2,
+        "pageSpanMs": 6009.2,
+        "visibilityState": "visible",
+        "documentHidden": false
+      },
+      "frames": {
+        "frames": 361,
+        "samples": 360,
+        "p50": 16.699999999999818,
+        "p95": 16.900000000000546,
+        "p99": 17.199999999999818,
+        "max": 17.200000000000273,
+        "min": 16.099999999999454,
+        "mean": 16.666666666666664,
+        "over33ms": 0,
+        "over50ms": 0,
+        "fps": 60.07,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": 1.7,
+        "lastFrameAt": 6001.7
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 50.9,
+        "scriptMs": 7.6,
+        "layoutMs": 0,
+        "styleMs": 0,
+        "taskBusyPctOfOneCore": 0.85,
+        "scriptPctOfOneCore": 0.13,
+        "windowMs": 6008.2
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 218.2,
+          "renderer": 110,
+          "GPU": 62,
+          "network.mojom.NetworkService": 5.5,
+          "storage.mojom.StorageService": 0.3,
+          "edge_collections.mojom.CollectionsDataManager": 0,
+          "entity_extraction_service.mojom.Extractor": 0,
+          "winrt_app_id.mojom.WinrtAppIdService": 0.2
+        },
+        "totalCpuMs": 396.2,
+        "pctOfAllCores": 0.275,
+        "pctOfOneCore": 6.6,
+        "rendererCpuMs": 110,
+        "rendererPctOfOneCore": 1.83,
+        "rendererPctOfAllCores": 0.076,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 2891855,
+        "heapUsedDeltaBytes": 23520,
+        "heapTotalAtEndBytes": 6646411,
+        "cdpJsHeapUsedBytes": 2594652,
+        "domNodesAtEnd": 207,
+        "domNodesDelta": 0,
+        "cdpNodes": 333,
+        "cdpLayoutCount": 6,
+        "cdpRecalcStyleCount": 27
+      },
+      "renderCounters": {
+        "rootRenders": 0,
+        "rootRendersSinceLoad": 5,
+        "rootRendersPerSecond": 0,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": null,
+        "rendersPerPositionWrite": null
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 0,
+        "perSecond": 0,
+        "breakdown": {
+          "childList": 0,
+          "characterData": 0,
+          "attributes": 0
+        },
+        "topTargets": [],
+        "samples": []
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 0,
+        "rootChildren": 1,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": [
+        "已点击「暂停」（点击后标签：暂停）；暂停后 DOM 变更残值 0 条/秒。"
+      ]
+    },
+    "playing-settings": {
+      "id": "playing-settings",
+      "group": "参照·前台无 stage",
+      "hash": "settings",
+      "what": "同一个设置页但不暂停。预览的合成音频驱动每帧向 store 写一次播放位置，用来单独量「60Hz 位置写入 → 进度条重渲染」这一条路径的成本。",
+      "hidden": false,
+      "extraFlags": [],
+      "url": "preview-dist/aurora-preview-settings.html#settings",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6014.6,
+        "pageSpanMs": 6015.5,
+        "visibilityState": "visible",
+        "documentHidden": false
+      },
+      "frames": {
+        "frames": 361,
+        "samples": 360,
+        "p50": 16.699999999999818,
+        "p95": 16.90000000000009,
+        "p99": 17.100000000000364,
+        "max": 18.800000000000182,
+        "min": 14.5,
+        "mean": 16.666944444444447,
+        "over33ms": 0,
+        "over50ms": 0,
+        "fps": 60.01,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": 9.6,
+        "lastFrameAt": 6009.7
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 129.2,
+        "scriptMs": 42.2,
+        "layoutMs": 5.1,
+        "styleMs": 7.7,
+        "taskBusyPctOfOneCore": 2.15,
+        "scriptPctOfOneCore": 0.7,
+        "windowMs": 6014.6
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 1363.9,
+          "renderer": 235.5,
+          "GPU": 227.9,
+          "network.mojom.NetworkService": 49,
+          "storage.mojom.StorageService": 37,
+          "edge_collections.mojom.CollectionsDataManager": 0.1,
+          "entity_extraction_service.mojom.Extractor": 26.9,
+          "winrt_app_id.mojom.WinrtAppIdService": 95
+        },
+        "totalCpuMs": 2035.2,
+        "pctOfAllCores": 1.41,
+        "pctOfOneCore": 33.84,
+        "rendererCpuMs": 235.5,
+        "rendererPctOfOneCore": 3.92,
+        "rendererPctOfAllCores": 0.163,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 2924843,
+        "heapUsedDeltaBytes": 191064,
+        "heapTotalAtEndBytes": 5859951,
+        "cdpJsHeapUsedBytes": 2630516,
+        "domNodesAtEnd": 207,
+        "domNodesDelta": 0,
+        "cdpNodes": 330,
+        "cdpLayoutCount": 53,
+        "cdpRecalcStyleCount": 74
+      },
+      "renderCounters": {
+        "rootRenders": 0,
+        "rootRendersSinceLoad": 4,
+        "rootRendersPerSecond": 0,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": 361,
+        "rendersPerPositionWrite": 0
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 105,
+        "perSecond": 17.45,
+        "breakdown": {
+          "childList": 0,
+          "characterData": 6,
+          "attributes": 99
+        },
+        "topTargets": [
+          {
+            "target": "div.bar__fill",
+            "count": 48
+          },
+          {
+            "target": "div.bar__knob",
+            "count": 48
+          },
+          {
+            "target": "span.seek__time",
+            "count": 6
+          },
+          {
+            "target": "div.bar",
+            "count": 3
+          }
+        ],
+        "samples": [
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.seek__time",
+            "text": "0:53"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          }
+        ]
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 0,
+        "rootChildren": 1,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": []
+    },
+    "idle-perf": {
+      "id": "idle-perf",
+      "group": "参照·历史基准屏",
+      "hash": "perf",
+      "what": "历史基准屏 #perf：stage 未挂载，setInterval(1000/60) 与合成驱动各写一次位置，合计约 120 次/秒。根组件渲染次数的历史口径就是这一屏。",
+      "hidden": false,
+      "extraFlags": [],
+      "url": "preview-dist/aurora-preview-perf.html#perf",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6006.7,
+        "pageSpanMs": 6008.6,
+        "visibilityState": "visible",
+        "documentHidden": false
+      },
+      "frames": {
+        "frames": 361,
+        "samples": 360,
+        "p50": 16.699999999999818,
+        "p95": 17,
+        "p99": 17.199999999999818,
+        "max": 17.40000000000009,
+        "min": 15.799999999999955,
+        "mean": 16.66611111111111,
+        "over33ms": 0,
+        "over50ms": 0,
+        "fps": 60.08,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": 7.2,
+        "lastFrameAt": 6007
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 154,
+        "scriptMs": 55.9,
+        "layoutMs": 4.7,
+        "styleMs": 7.6,
+        "taskBusyPctOfOneCore": 2.56,
+        "scriptPctOfOneCore": 0.93,
+        "windowMs": 6006.7
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 1468.4,
+          "renderer": 269.5,
+          "GPU": 215.6,
+          "network.mojom.NetworkService": 49,
+          "storage.mojom.StorageService": 57.2,
+          "edge_collections.mojom.CollectionsDataManager": 17.3,
+          "entity_extraction_service.mojom.Extractor": 25.9,
+          "winrt_app_id.mojom.WinrtAppIdService": 95
+        },
+        "totalCpuMs": 2198,
+        "pctOfAllCores": 1.525,
+        "pctOfOneCore": 36.59,
+        "rendererCpuMs": 269.5,
+        "rendererPctOfOneCore": 4.49,
+        "rendererPctOfAllCores": 0.187,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 3270362,
+        "heapUsedDeltaBytes": 466979,
+        "heapTotalAtEndBytes": 6646346,
+        "cdpJsHeapUsedBytes": 2976788,
+        "domNodesAtEnd": 207,
+        "domNodesDelta": 0,
+        "cdpNodes": 330,
+        "cdpLayoutCount": 55,
+        "cdpRecalcStyleCount": 78
+      },
+      "renderCounters": {
+        "rootRenders": 0,
+        "rootRendersSinceLoad": 4,
+        "rootRendersPerSecond": 0,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": 721,
+        "rendersPerPositionWrite": 0
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 121,
+        "perSecond": 20.14,
+        "breakdown": {
+          "childList": 0,
+          "characterData": 6,
+          "attributes": 115
+        },
+        "topTargets": [
+          {
+            "target": "div.bar__fill",
+            "count": 56
+          },
+          {
+            "target": "div.bar__knob",
+            "count": 56
+          },
+          {
+            "target": "span.seek__time",
+            "count": 6
+          },
+          {
+            "target": "div.bar",
+            "count": 3
+          }
+        ],
+        "samples": [
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.seek__time",
+            "text": "0:53"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          }
+        ]
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 0,
+        "rootChildren": 1,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": []
+    },
+    "playing-stage": {
+      "id": "playing-stage",
+      "group": "播放中（要求场景）",
+      "hash": "stage",
+      "what": "沉浸舞台：极光 ribbon + 340 粒子 canvas 每帧重绘，合成驱动 60Hz 写播放位置。",
+      "hidden": false,
+      "extraFlags": [],
+      "url": "preview-dist/aurora-preview-stage.html#stage",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6005.5,
+        "pageSpanMs": 6006.6,
+        "visibilityState": "visible",
+        "documentHidden": false
+      },
+      "frames": {
+        "frames": 360,
+        "samples": 359,
+        "p50": 16.699999999999818,
+        "p95": 16.899999999999636,
+        "p99": 17.099999999999454,
+        "max": 17.5,
+        "min": 15.700000000000728,
+        "mean": 16.66768802228412,
+        "over33ms": 0,
+        "over50ms": 0,
+        "fps": 59.93,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": 13.8,
+        "lastFrameAt": 5997.5
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 375.2,
+        "scriptMs": 187.2,
+        "layoutMs": 12.4,
+        "styleMs": 16.8,
+        "taskBusyPctOfOneCore": 6.25,
+        "scriptPctOfOneCore": 3.12,
+        "windowMs": 6005.5
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 1523.2,
+          "renderer": 645.3,
+          "GPU": 2429.7,
+          "network.mojom.NetworkService": 53,
+          "storage.mojom.StorageService": 38.8,
+          "edge_collections.mojom.CollectionsDataManager": 0.1,
+          "entity_extraction_service.mojom.Extractor": 29.4,
+          "winrt_app_id.mojom.WinrtAppIdService": 115.4
+        },
+        "totalCpuMs": 4834.8,
+        "pctOfAllCores": 3.354,
+        "pctOfOneCore": 80.51,
+        "rendererCpuMs": 645.3,
+        "rendererPctOfOneCore": 10.75,
+        "rendererPctOfAllCores": 0.448,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 4078233,
+        "heapUsedDeltaBytes": 190746,
+        "heapTotalAtEndBytes": 8494717,
+        "cdpJsHeapUsedBytes": 3790500,
+        "domNodesAtEnd": 291,
+        "domNodesDelta": 0,
+        "cdpNodes": 627,
+        "cdpLayoutCount": 75,
+        "cdpRecalcStyleCount": 110
+      },
+      "renderCounters": {
+        "rootRenders": 0,
+        "rootRendersSinceLoad": 3,
+        "rootRendersPerSecond": 0,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": 360,
+        "rendersPerPositionWrite": 0
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 172,
+        "perSecond": 28.64,
+        "breakdown": {
+          "childList": 2,
+          "characterData": 12,
+          "attributes": 158
+        },
+        "topTargets": [
+          {
+            "target": "div.bar__fill",
+            "count": 48
+          },
+          {
+            "target": "div.bar__knob",
+            "count": 48
+          },
+          {
+            "target": "div.stage__track-fill",
+            "count": 48
+          },
+          {
+            "target": "span.seek__time",
+            "count": 6
+          },
+          {
+            "target": "span.stage__time",
+            "count": 6
+          },
+          {
+            "target": "div.bar",
+            "count": 3
+          },
+          {
+            "target": "div.stage__track",
+            "count": 3
+          },
+          {
+            "target": "div.stage__lyrics",
+            "count": 2
+          }
+        ],
+        "samples": [
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.seek__time",
+            "text": "0:53"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.stage__time",
+            "text": "0:53"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          }
+        ]
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 1,
+        "rootChildren": 2,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": [
+        "第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。"
+      ],
+      "retried": true
+    },
+    "hidden-stage-electron": {
+      "id": "hidden-stage-electron",
+      "group": "不可见（要求场景）",
+      "hash": "stage",
+      "what": "先在前台播放，再切到另一个标签页（document.hidden=true）。带 Electron backgroundThrottling:false 的三条等效开关。",
+      "hidden": true,
+      "extraFlags": [
+        "--disable-background-timer-throttling",
+        "--disable-renderer-backgrounding",
+        "--disable-backgrounding-occluded-windows"
+      ],
+      "url": "preview-dist/aurora-preview-stage.html#stage",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6004.2,
+        "pageSpanMs": 6005.3,
+        "visibilityState": "hidden",
+        "documentHidden": true
+      },
+      "frames": {
+        "frames": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "min": null,
+        "mean": null,
+        "over33": 0,
+        "fps": 0,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": null,
+        "lastFrameAt": null
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 21.1,
+        "scriptMs": 15,
+        "layoutMs": 0,
+        "styleMs": 0,
+        "taskBusyPctOfOneCore": 0.35,
+        "scriptPctOfOneCore": 0.25,
+        "windowMs": 6004.2
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 1567.4,
+          "renderer": 45.2,
+          "GPU": 20.8,
+          "network.mojom.NetworkService": 34.8,
+          "storage.mojom.StorageService": 3.1,
+          "edge_collections.mojom.CollectionsDataManager": 0,
+          "entity_extraction_service.mojom.Extractor": 36.2,
+          "winrt_app_id.mojom.WinrtAppIdService": 151.8
+        },
+        "totalCpuMs": 1859.2,
+        "pctOfAllCores": 1.29,
+        "pctOfOneCore": 30.97,
+        "rendererCpuMs": 45.2,
+        "rendererPctOfOneCore": 0.75,
+        "rendererPctOfAllCores": 0.031,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 3853643,
+        "heapUsedDeltaBytes": 233408,
+        "heapTotalAtEndBytes": 7446075,
+        "cdpJsHeapUsedBytes": 3519500,
+        "domNodesAtEnd": 291,
+        "domNodesDelta": 0,
+        "cdpNodes": 628,
+        "cdpLayoutCount": 9,
+        "cdpRecalcStyleCount": 11
+      },
+      "renderCounters": {
+        "rootRenders": 0,
+        "rootRendersSinceLoad": 5,
+        "rootRendersPerSecond": 0,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": null,
+        "rendersPerPositionWrite": null
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 100,
+        "perSecond": 16.65,
+        "breakdown": {
+          "childList": 2,
+          "characterData": 12,
+          "attributes": 86
+        },
+        "topTargets": [
+          {
+            "target": "div.bar__fill",
+            "count": 24
+          },
+          {
+            "target": "div.bar__knob",
+            "count": 24
+          },
+          {
+            "target": "div.stage__track-fill",
+            "count": 24
+          },
+          {
+            "target": "span.seek__time",
+            "count": 6
+          },
+          {
+            "target": "span.stage__time",
+            "count": 6
+          },
+          {
+            "target": "div.bar",
+            "count": 3
+          },
+          {
+            "target": "div.stage__track",
+            "count": 3
+          },
+          {
+            "target": "div.stage__lyrics",
+            "count": 2
+          }
+        ],
+        "samples": [
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.seek__time",
+            "text": "0:54"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.stage__time",
+            "text": "0:54"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar",
+            "text": "aria-valuenow"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          }
+        ]
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 1,
+        "rootChildren": 2,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": []
+    },
+    "hidden-stage-browser": {
+      "id": "hidden-stage-browser",
+      "group": "不可见·对照",
+      "hash": "stage",
+      "what": "同上，但不给任何反节流开关，即浏览器默认行为。用来看「停渲染」是否真的发生。",
+      "hidden": true,
+      "extraFlags": [],
+      "url": "preview-dist/aurora-preview-stage.html#stage",
+      "browser": "Edg/155.0.4283.45",
+      "window": {
+        "wallMs": 6011.5,
+        "pageSpanMs": 6012.9,
+        "visibilityState": "hidden",
+        "documentHidden": true
+      },
+      "frames": {
+        "frames": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "min": null,
+        "mean": null,
+        "over33": 0,
+        "fps": 0,
+        "samplerDriven": true,
+        "rafLoopRunning": true,
+        "firstFrameAt": null,
+        "lastFrameAt": null
+      },
+      "longTasks": {
+        "supported": true,
+        "error": null,
+        "count": 0,
+        "totalMs": 0,
+        "maxMs": null,
+        "perSecond": 0
+      },
+      "mainThread": {
+        "taskMs": 8.6,
+        "scriptMs": 4.6,
+        "layoutMs": 0,
+        "styleMs": 0,
+        "taskBusyPctOfOneCore": 0.14,
+        "scriptPctOfOneCore": 0.08,
+        "windowMs": 6011.5
+      },
+      "processCpu": {
+        "byTypeMs": {
+          "browser": 1233.1,
+          "renderer": 24.3,
+          "GPU": 12.6,
+          "network.mojom.NetworkService": 24.1,
+          "storage.mojom.StorageService": 0.9,
+          "edge_collections.mojom.CollectionsDataManager": 0,
+          "PooledProcess2": -41.6,
+          "entity_extraction_service.mojom.Extractor": 29,
+          "winrt_app_id.mojom.WinrtAppIdService": 114
+        },
+        "totalCpuMs": 1396.3,
+        "pctOfAllCores": 0.968,
+        "pctOfOneCore": 23.23,
+        "rendererCpuMs": 24.3,
+        "rendererPctOfOneCore": 0.4,
+        "rendererPctOfAllCores": 0.017,
+        "roles": "browser / renderer / GPU / utility，来自浏览器级 SystemInfo.getProcessInfo。除 renderer 外都混有 Edge 自身服务开销，必须减掉 control-blank 场景再解读。"
+      },
+      "memory": {
+        "heapUsedAtEndBytes": 3848344,
+        "heapUsedDeltaBytes": 78990,
+        "heapTotalAtEndBytes": 7183632,
+        "cdpJsHeapUsedBytes": 3516164,
+        "domNodesAtEnd": 291,
+        "domNodesDelta": 0,
+        "cdpNodes": 625,
+        "cdpLayoutCount": 15,
+        "cdpRecalcStyleCount": 15
+      },
+      "renderCounters": {
+        "rootRenders": 0,
+        "rootRendersSinceLoad": 5,
+        "rootRendersPerSecond": 0,
+        "counterSource": "__auroraRenders（App.tsx 里已有的 preview-only 计数器）",
+        "expectedPositionWrites": null,
+        "rendersPerPositionWrite": null
+      },
+      "domMutations": {
+        "supported": true,
+        "error": null,
+        "total": 24,
+        "perSecond": 3.99,
+        "breakdown": {
+          "childList": 0,
+          "characterData": 4,
+          "attributes": 20
+        },
+        "topTargets": [
+          {
+            "target": "div.bar__fill",
+            "count": 6
+          },
+          {
+            "target": "div.bar__knob",
+            "count": 6
+          },
+          {
+            "target": "div.stage__track-fill",
+            "count": 6
+          },
+          {
+            "target": "span.seek__time",
+            "count": 2
+          },
+          {
+            "target": "span.stage__time",
+            "count": 2
+          },
+          {
+            "target": "div.bar",
+            "count": 1
+          },
+          {
+            "target": "div.stage__track",
+            "count": 1
+          }
+        ],
+        "samples": [
+          {
+            "type": "characterData",
+            "path": "span.seek__time",
+            "text": "0:53"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "characterData",
+            "path": "span.stage__time",
+            "text": "0:53"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__knob",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.stage__track-fill",
+            "text": "style"
+          },
+          {
+            "type": "attributes",
+            "path": "div.bar__fill",
+            "text": "style"
+          }
+        ]
+      },
+      "probeCounters": {
+        "storeNotifications": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "ipcMessages": {
+          "available": false,
+          "count": null,
+          "delta": null
+        },
+        "storeProbeGlobal": "window.__auroraPerfStore",
+        "ipcProbeGlobal": "window.__auroraPerfIpc",
+        "raw": {
+          "store": null,
+          "storeAtMark": null,
+          "ipc": null,
+          "ipcAtMark": null
+        }
+      },
+      "unavailable": {
+        "storeNotifications": "未采集：zustand store 在模块作用域内，浏览器预览无法从页面侧订阅。需要 window.__auroraPerfStore 探针（方案见 docs/perf-baseline.md 的《缺口与探针方案》一节）。",
+        "ipcMessages": "未采集：浏览器预览没有 preload/ipcRenderer，主进程→渲染层 IPC 完全不经过这条通道；需要 Electron 运行时 + window.__auroraPerfIpc 探针（或 --counters 文件）。"
+      },
+      "page": {
+        "canvases": 1,
+        "rootChildren": 2,
+        "harnessError": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+      },
+      "warnings": [
+        "第一次尝试失败（websocket closed; cannot send Runtime.evaluate），本次是重试结果。"
+      ],
+      "retried": true
+    }
+  }
+}

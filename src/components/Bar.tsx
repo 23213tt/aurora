@@ -1,4 +1,34 @@
 import { useCallback, useRef } from 'react'
+import { usePlayer } from '../player/store'
+
+/**
+ * Resolution at which the transport chrome reads the playhead.
+ *
+ * One eighth of a second. The reason is geometric: a seek bar is a few hundred
+ * pixels wide, so an eighth of a second moves it by far less than a pixel on
+ * anything longer than half a minute (a 200 s track on a 600 px bar moves 0.4 px
+ * per step; a 30 s track, the worst realistic case, moves 2.5 px at 8 Hz while
+ * the knob itself travels 20 px/s, which still reads as motion, not as stepping).
+ *
+ * Why it matters: zustand compares the selector result with `Object.is`, so
+ * quantising here collapses sixty store notifications per second into one
+ * re-render per *visible* change. The bar, its knob and the elapsed-time text
+ * are then written ~8 times a second instead of ~60, and every one of those
+ * writes is sub-pixel.
+ *
+ * What deliberately does *not* use this: the lyric highlight. A line has to
+ * appear within a frame of its timestamp, so `LyricColumn` keeps reading the raw
+ * position; that subscription costs nothing because its selector returns a line
+ * index and therefore only re-renders at line boundaries.
+ */
+const PROGRESS_STEP_SECONDS = 1 / 8
+
+/** Playhead position, quantised to {@link PROGRESS_STEP_SECONDS}. */
+export function useProgressPosition(): number {
+  return usePlayer(
+    (state) => Math.round(state.position / PROGRESS_STEP_SECONDS) * PROGRESS_STEP_SECONDS
+  )
+}
 
 interface BarProps {
   /** Playhead position, 0..1. */

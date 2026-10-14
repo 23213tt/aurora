@@ -34,6 +34,33 @@ export function createLevelReader(bandCount = 112) {
   const minLog = Math.log10(20)
   const maxLog = Math.log10(18000)
   const ratio = (maxLog - minLog) / bandCount
+  const nyquist = 22050
+
+  /*
+   * Which FFT bins each band averages, resolved once per spectrum length.
+   *
+   * The band edges are fixed by the band index and the bin width, so they do not
+   * change between frames; only the analysis size can, and only when the
+   * AnalyserNode is reconfigured. Computing them every frame cost 224 `Math.pow`
+   * calls per frame (two per band) for numbers that never move - small next to
+   * the canvas work, but free to remove, and the arithmetic is the same
+   * expression evaluated once so the bin indices are unchanged.
+   */
+  const fromBin = new Int32Array(bandCount)
+  const toBin = new Int32Array(bandCount)
+  let resolvedFor = -1
+  const resolveBands = (bins: number) => {
+    if (bins === resolvedFor) return
+    resolvedFor = bins
+    const binHz = nyquist / bins
+    for (let i = 0; i < bandCount; i += 1) {
+      const low = Math.pow(10, minLog + ratio * i)
+      const high = Math.pow(10, minLog + ratio * (i + 1))
+      const from = Math.max(0, Math.min(bins - 1, Math.floor(low / binHz)))
+      fromBin[i] = from
+      toBin[i] = Math.max(from + 1, Math.min(bins, Math.ceil(high / binHz)))
+    }
+  }
 
   /** One-pole filter with asymmetric rise/fall. */
   const follow = (current: number, target: number, attackScale = 1) => {
@@ -52,14 +79,11 @@ export function createLevelReader(bandCount = 112) {
     }
 
     const bins = spectrum.length
-    const nyquist = 22050
-    const binHz = nyquist / bins
+    resolveBands(bins)
 
     for (let i = 0; i < bandCount; i += 1) {
-      const low = Math.pow(10, minLog + ratio * i)
-      const high = Math.pow(10, minLog + ratio * (i + 1))
-      const from = Math.max(0, Math.min(bins - 1, Math.floor(low / binHz)))
-      const to = Math.max(from + 1, Math.min(bins, Math.ceil(high / binHz)))
+      const from = fromBin[i]
+      const to = toBin[i]
 
       let sum = 0
       for (let b = from; b < to; b += 1) sum += spectrum[b]

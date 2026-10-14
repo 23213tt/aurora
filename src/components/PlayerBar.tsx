@@ -1,7 +1,6 @@
 import { artworkFor } from '../library/source'
-import { usePosition } from '../player/hooks'
 import type { RepeatMode, Track } from '../types'
-import { Bar, formatTime } from './Bar'
+import { Bar, formatTime, useProgressPosition } from './Bar'
 import { Artwork } from './Artwork'
 import {
   DesktopLyrics,
@@ -23,10 +22,16 @@ import {
 /**
  * The seek row owns the playhead subscription.
  *
- * Isolating it here is the point: this subtree re-renders on every animation
- * frame, and everything else in the app does not. Measured with the preview
+ * Isolating it here is the point: this subtree re-renders whenever the playhead
+ * moves, and everything else in the app does not. Measured with the preview
  * render counter, moving the subscription from the app root to this component
  * takes full-tree renders out of the playback path entirely.
+ *
+ * `useProgressPosition` rather than `usePosition` is the second half of that:
+ * the position it returns only changes once the playhead has advanced an eighth
+ * of a second, which is under a pixel of travel on this bar, so the inline style
+ * that draws the fill and the knob is written roughly eight times a second
+ * instead of on every animation frame.
  */
 function SeekRow({
   duration,
@@ -37,7 +42,7 @@ function SeekRow({
   disabled: boolean
   onSeekRatio(ratio: number): void
 }) {
-  const position = usePosition()
+  const position = useProgressPosition()
   const ratio = duration > 0 ? Math.min(1, position / duration) : 0
 
   return (

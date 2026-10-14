@@ -1,10 +1,9 @@
 import { activeLineAt, type Lyrics } from '../lyrics/lrc'
 import type { Palette } from '../library/palette'
 import type { Track } from '../types'
-import { formatTime } from '../components/Bar'
+import { formatTime, useProgressPosition } from '../components/Bar'
 import { ChevronLeft, Pause, Play } from '../components/icons'
 import { usePlayer } from '../player/store'
-import { usePosition } from '../player/hooks'
 import { Visualizer } from './Visualizer'
 
 /** Lines shown above and below the active one. Fixed, so centring is exact. */
@@ -74,7 +73,13 @@ function LyricColumn({ lyrics, onSeek }: LyricColumnProps) {
   )
 }
 
-/** Small enough that a per-frame re-render costs nothing. */
+/**
+ * Small enough that a per-frame re-render costs nothing - and it no longer gets
+ * one. The position comes back quantised to an eighth of a second (see
+ * `useProgressPosition`), which is a fifth of a pixel of travel on this line,
+ * so the fill is written ~8 times a second instead of ~60 while still moving
+ * smoothly.
+ */
 function StageProgress({
   duration,
   onSeekRatio
@@ -82,7 +87,7 @@ function StageProgress({
   duration: number
   onSeekRatio(ratio: number): void
 }) {
-  const position = usePosition()
+  const position = useProgressPosition()
   const ratio = duration > 0 ? Math.min(1, position / duration) : 0
 
   return (
