@@ -26,7 +26,6 @@ import { buildFolderTree, tracksUnder } from './features/library/tree'
 import { player } from './features/player/actions'
 import { driver } from './features/player/driver'
 import { usePlayer } from './features/player/store'
-import { buildM3u, parseM3u, resolveEntries } from './features/playlists/m3u'
 import { loadProfilePlaylists, usePlaylists } from './features/playlists/store'
 import { useAccounts } from './features/accounts/store'
 import { useNetease } from './features/netease/store'
@@ -38,6 +37,7 @@ import type { OverlayStatus } from './env'
 import type { Track } from './types'
 import { LIBRARY_VIEWS, VIEW_TITLES, initialRoute, type Route } from './app/routing'
 import { MENU_TEST_MODE, PERF_MODE, SCROLL_TEST_MODE, SCROLL_TEST_START, STRESS_TRACKS } from './app/preview'
+import { usePlaylistFiles } from './features/playlists/io'
 import { EmptyLibrary } from './views/EmptyLibrary'
 import { Sources } from './views/Sources'
 
@@ -516,40 +516,13 @@ export function App() {  if (!isNative) {
     [navigate]
   )
 
-  const importPlaylist = useCallback(async () => {
-    const file = await bridge.playlists.import()
-    if (!file) return
-    const entries = parseM3u(file.text)
-    const { ids, missing } = resolveEntries(entries, tracks, file.dir)
-    const created = usePlaylists.getState().create(file.name, ids)
-    // Navigate first: navigation clears any previous flash.
-    navigate({ view: 'playlists', playlistId: created.id })
-    setFlash(
-      missing > 0
-        ? `从「${file.name}.m3u」导入 ${ids.length} 首，另有 ${missing} 个条目在曲库里找不到`
-        : `从「${file.name}.m3u」导入 ${ids.length} 首`
-    )
-  }, [tracks, navigate])
-
-  const exportPlaylist = useCallback(async () => {
-    if (!activePlaylist) return
-    const ok = await bridge.playlists.export(
-      activePlaylist.name,
-      buildM3u(playlistTracks.tracks)
-    )
-    setFlash(ok ? `已导出「${activePlaylist.name}.m3u」` : '已取消导出')
-  }, [activePlaylist, playlistTracks.tracks])
-
-  /**
-   * Harness only: drive the m3u import so its parsing, path resolution and
-   * missing-entry reporting can be inspected without a file dialog.
-   */
-  useEffect(() => {
-    if (isNative) return
-    if (window.location.hash.replace(/^#/, '') !== 'import') return
-    void importPlaylist()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const { importPlaylist, exportPlaylist } = usePlaylistFiles({
+    tracks,
+    activePlaylist,
+    playlistTracks: playlistTracks.tracks,
+    navigate,
+    onMessage: setFlash
+  })
 
   /** Adding folders is only useful once they are indexed, so scan right after. */
   const addFolders = useCallback(async () => {
