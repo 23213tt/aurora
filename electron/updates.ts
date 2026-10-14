@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { appSettings, loadSettings, saveSettings, type UpdateInterval } from './settings'
 import { isNewer } from './version'
+import { repositoryTarget } from './release-target'
 
 // `UpdateInterval` is declared alongside the settings that store it; re-exported
 // so callers of this module do not need to know where it lives.
@@ -96,27 +97,17 @@ export type UpdateResult =
 
 const REQUEST_TIMEOUT_MS = 9000
 
-interface PublishConfig {
-  provider?: string
-  owner?: string
-  repo?: string
-}
-
-const PLACEHOLDER = /REPLACE-WITH-YOUR-USERNAME/i
-
 /**
- * The repository this build came from, read from the packaged package.json.
- * Returns null while the publish config still holds placeholders, which is the
- * honest state for a fresh clone rather than a fabricated "up to date".
+ * The repository this build came from, read from the packaged `package.json`.
+ *
+ * The decision itself lives in `release-target.ts`, which is pure and tested:
+ * the packaged file has no `build` block (electron-builder strips it), so the
+ * target has to come from `repository.url`.
  */
 function publishTarget(): { owner: string; repo: string } | null {
   try {
     const raw = fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf8')
-    const pkg = JSON.parse(raw) as { build?: { publish?: PublishConfig } }
-    const publish = pkg.build?.publish
-    if (!publish?.owner || !publish?.repo) return null
-    if (PLACEHOLDER.test(publish.owner) || PLACEHOLDER.test(publish.repo)) return null
-    return { owner: publish.owner, repo: publish.repo }
+    return repositoryTarget(JSON.parse(raw))
   } catch {
     return null
   }
