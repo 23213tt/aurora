@@ -1,8 +1,8 @@
-import { activeLineAt, type Lyrics } from '../lyrics/lrc'
+import { activeLineAt, type Lyrics } from '../features/lyrics/lrc'
 import type { Palette } from '../features/library/palette'
 import type { Track } from '../types'
-import { formatTime, useProgressPosition } from '../components/Bar'
-import { ChevronLeft, Pause, Play } from '../components/icons'
+import { formatTime, useProgressPosition } from '../ui/Bar'
+import { ChevronLeft, Pause, Play } from '../ui/icons'
 import { usePlayer } from '../features/player/store'
 import { Visualizer } from './Visualizer'
 

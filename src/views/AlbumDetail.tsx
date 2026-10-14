@@ -1,8 +1,8 @@
 import { artworkFor } from '../features/library/source'
 import type { Album, Track } from '../types'
-import { Artwork } from './Artwork'
-import { TrackList, type TrackMenuRequest } from './TrackList'
-import { Note, Play } from './icons'
+import { Artwork } from '../ui/Artwork'
+import { TrackList, type TrackMenuRequest } from '../ui/TrackList'
+import { Note, Play } from '../ui/icons'
 
 interface AlbumDetailProps {
   album: Album

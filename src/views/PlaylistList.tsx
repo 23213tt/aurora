@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Playlist } from '../features/playlists/store'
-import { List, Plus, Trash } from './icons'
+import { List, Plus, Trash } from '../ui/icons'
 
 interface PlaylistListProps {
   playlists: Playlist[]

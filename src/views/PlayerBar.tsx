@@ -1,7 +1,7 @@
 import { artworkFor } from '../features/library/source'
 import type { RepeatMode, Track } from '../types'
-import { Bar, formatTime, useProgressPosition } from './Bar'
-import { Artwork } from './Artwork'
+import { Bar, formatTime, useProgressPosition } from '../ui/Bar'
+import { Artwork } from '../ui/Artwork'
 import {
   DesktopLyrics,
   Lyrics,
@@ -17,7 +17,7 @@ import {
   Sliders,
   Volume,
   VolumeMute
-} from './icons'
+} from '../ui/icons'
 
 /**
  * The seek row owns the playhead subscription.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { repositoryTarget } from '../electron/release-target.ts'
+import { repositoryTarget } from '../electron/pure/release-target.ts'
 
 /**
  * "Which repository does this build check for updates?" was answered wrongly for

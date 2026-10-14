@@ -3,7 +3,7 @@ import { Readable } from 'node:stream'
 import type { ReadableStream as WebReadableStream } from 'node:stream/web'
 import fs from 'node:fs'
 import path from 'node:path'
-import { resolveAppAsset } from './app-paths'
+import { resolveAppAsset } from '../pure/app-paths'
 
 /**
  * Serves the built renderer over a private scheme instead of `file://`.

@@ -1,6 +1,6 @@
 import { artworkFor } from '../features/library/source'
 import type { Album, Track } from '../types'
-import { ArtCard } from './ArtCard'
+import { ArtCard } from '../ui/ArtCard'
 
 interface AlbumGridProps {
   albums: Album[]

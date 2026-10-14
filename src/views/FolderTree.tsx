@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FolderNode } from '../features/library/tree'
-import { ChevronRight, Folder, Note, Play } from './icons'
+import { ChevronRight, Folder, Note, Play } from '../ui/icons'
 
 interface FolderTreeProps {
   nodes: FolderNode[]

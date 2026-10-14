@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import path from 'node:path'
-import { pickMusicRoots } from './library-discovery-rules'
+import { pickMusicRoots } from './pure/library-discovery-rules'
 
 /**
  * Where to look for music already on this machine.

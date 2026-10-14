@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { isNewer, parseVersion } from '../electron/version.ts'
+import { isNewer, parseVersion } from '../electron/pure/version.ts'
 
 test('parses tags with and without a v prefix', () => {
   assert.deepEqual(parseVersion('v1.2.3'), [1, 2, 3])

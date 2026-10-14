@@ -1,5 +1,24 @@
-﻿import type { BrowserWindow } from 'electron'
-import type { ScanProgress } from './library-scan'
+import type { BrowserWindow } from 'electron'
+
+/**
+ * What a running scan reports.
+ *
+ * Defined here rather than alongside the scanner so that this module has no
+ * import of `library-scan` at all: `library-scan` pulls in `settings`, which
+ * pulls in Electron, and a type-only import is still a dependency direction that
+ * makes "pure" mean nothing. `library-scan` re-exports it, so the scanner remains
+ * the name most callers use.
+ */
+export interface ScanProgress {
+  phase: 'walking' | 'reading' | 'done'
+  /** Files discovered so far. */
+  found: number
+  /** Files with tags read so far. */
+  scanned: number
+  /** Reused from cache without re-parsing. */
+  cached: number
+  current: string
+}
 
 /**
  * Coalesced scan-progress delivery.
@@ -18,7 +37,7 @@ import type { ScanProgress } from './library-scan'
  *
  * This module deliberately does not import `electron` at runtime - the transport
  * is injected (see `configureProgressTransport`). That is the same shape as
- * `electron/app-paths.ts`, and it is what lets the throttle be unit-tested under
+ * `electron/pure/app-paths.ts`, and it is what lets the throttle be unit-tested under
  * bare Node, where an ESM named import of `electron` fails outright.
  */
 

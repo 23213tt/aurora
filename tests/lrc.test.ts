@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { activeLineAt, emptyLyrics, parseLrc } from '../src/lyrics/lrc.ts'
+import { activeLineAt, emptyLyrics, parseLrc } from '../src/features/lyrics/lrc.ts'
 
 test('parses plain timestamps', () => {
   const lyrics = parseLrc('[00:12.40]第一行\n[00:18.60]第二行')

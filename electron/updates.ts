@@ -2,8 +2,8 @@ import { app, net, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { appSettings, loadSettings, saveSettings, type UpdateInterval } from './settings'
-import { isNewer } from './version'
-import { repositoryTarget } from './release-target'
+import { isNewer } from './pure/version'
+import { repositoryTarget } from './pure/release-target'
 
 // `UpdateInterval` is declared alongside the settings that store it; re-exported
 // so callers of this module do not need to know where it lives.

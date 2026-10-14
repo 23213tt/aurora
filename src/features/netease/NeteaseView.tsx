@@ -5,11 +5,11 @@ import { paymentLabel, useNeteaseTracks } from './hooks'
 import { QUALITY_LABEL, QUALITY_ORDER, failureText, isTransient } from './stream'
 import { useNetease } from './store'
 import { usePlayer } from '../player/store'
-import { Artwork } from '../../components/Artwork'
-import { ArtCard } from '../../components/ArtCard'
+import { Artwork } from '../../ui/Artwork'
+import { ArtCard } from '../../ui/ArtCard'
 import { NeteaseLogin } from './NeteaseLogin'
-import { ChevronDown, Refresh, Search, User } from '../../components/icons'
-import { TrackList, type TrackMenuRequest } from '../../components/TrackList'
+import { ChevronDown, Refresh, Search, User } from '../../ui/icons'
+import { TrackList, type TrackMenuRequest } from '../../ui/TrackList'
 
 /**
  * 网易云音乐 - the online source's own screen.

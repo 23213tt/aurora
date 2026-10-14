@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
-import { countAudio, isAudioFile, pickMusicRoots } from '../electron/library-discovery-rules.ts'
+import { countAudio, isAudioFile, pickMusicRoots } from '../electron/pure/library-discovery-rules.ts'
 
 /**
  * Auto-discovery decides which folders become the library on first run, so a

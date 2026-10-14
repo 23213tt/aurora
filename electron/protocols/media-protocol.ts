@@ -3,8 +3,8 @@ import { Readable } from 'node:stream'
 import type { ReadableStream as WebReadableStream } from 'node:stream/web'
 import fs from 'node:fs'
 import path from 'node:path'
-import { isInsideRoots } from './settings'
-import { readEmbeddedArt, readFolderArt } from './library-scan'
+import { isInsideRoots } from '../settings'
+import { readEmbeddedArt, readFolderArt } from '../library-scan'
 
 export const MEDIA_SCHEME = 'aurora-media'
 

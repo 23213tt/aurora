@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Mark, Search } from './icons'
+import { ChevronLeft, ChevronRight, Mark, Search } from '../ui/icons'
 
 interface TitleBarProps {
   query: string

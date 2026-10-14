@@ -1,7 +1,7 @@
 import { artworkFor } from '../features/library/source'
 import type { Album, Artist, Track } from '../types'
-import { Artwork } from './Artwork'
-import { Play } from './icons'
+import { Artwork } from '../ui/Artwork'
+import { Play } from '../ui/icons'
 
 interface ArtistListProps {
   artists: Artist[]

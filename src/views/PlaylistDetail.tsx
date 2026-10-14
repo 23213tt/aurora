@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { Playlist } from '../features/playlists/store'
 import type { Track } from '../types'
-import { formatTime } from './Bar'
-import { Play, Trash, Wave } from './icons'
+import { formatTime } from '../ui/Bar'
+import { Play, Trash, Wave } from '../ui/icons'
 
 interface PlaylistDetailProps {
   playlist: Playlist

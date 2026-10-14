@@ -29,7 +29,7 @@ export async function loadInitialIndex(): Promise<void> {
  * Two fields, two update rates.
  *
  * The main process already coalesces `library:progress` to 10 Hz
- * (electron/scan-progress.ts), which is the rate limit that matters. What is left
+ * (electron/pure/scan-progress.ts), which is the rate limit that matters. What is left
  * here is the cost of a report that carries no new information: the store is
  * subscribed at the App root (src/App.tsx), so *any* write re-renders the whole
  * library view, and a coalesced report can arrive while the file name and the

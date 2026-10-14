@@ -1,6 +1,6 @@
 import { BrowserWindow, screen, type Rectangle } from 'electron'
 import path from 'node:path'
-import { APP_ORIGIN } from './app-protocol'
+import { APP_ORIGIN } from './protocols/app-protocol'
 import {
   LYRIC_SIZE_MAX,
   LYRIC_SIZE_MIN,

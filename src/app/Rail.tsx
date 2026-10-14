@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { ViewId } from '../types'
 import { useNetease } from '../features/netease/store'
-import { Album, Folder, List, Mic, Note, Refresh, Search, Settings, Sidebar, Sliders, User, Wave } from './icons'
+import { Album, Folder, List, Mic, Note, Refresh, Search, Settings, Sidebar, Sliders, User, Wave } from '../ui/icons'
 
 /**
  * The rail, and the reason the app stopped looking like two applications.

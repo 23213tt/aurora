@@ -83,8 +83,8 @@ const CHAIN_ORDER = [
 ]
 
 const AURORA_MODULES = [
-  { id: 'electron/version.ts', startup: 'yes', deferrable: '否（0 依赖，本身就是最省的）' },
-  { id: 'electron/app-paths.ts', startup: 'yes', deferrable: '否（只依赖 node:path）' },
+  { id: 'electron/pure/version.ts', startup: 'yes', deferrable: '否（0 依赖，本身就是最省的）' },
+  { id: 'electron/pure/app-paths.ts', startup: 'yes', deferrable: '否（只依赖 node:path）' },
   { id: 'electron/netease/reasons.ts', startup: 'yes', deferrable: '否（纯数据/纯函数）' },
   { id: 'electron/netease/types.ts', startup: 'yes', deferrable: '否（纯类型守卫）' },
   { id: 'electron/remote-protocol.ts', startup: 'yes', deferrable: '否（纯 node，首窗口要用）' },

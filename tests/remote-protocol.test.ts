@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import http from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { after, test } from 'node:test'
-import { REMOTE_SCHEME, handleRemoteRequest, isPrivateAddress } from '../electron/remote-protocol.ts'
+import { REMOTE_SCHEME, handleRemoteRequest, isPrivateAddress } from '../electron/protocols/remote-protocol.ts'
 import { remoteImageUrl, remoteStreamUrl } from '../src/features/player/urls.ts'
 
 /*

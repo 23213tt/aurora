@@ -5,7 +5,7 @@ import type { UpdateInterval, UpdatePrefs, UpdateResult } from './updates'
 import type { LyricsHit, LyricsQuery } from './lyrics'
 import type { OverlayState, OverlayStatus } from './lyrics-overlay'
 import type { MediaCommand } from './tray'
-import type { WindowVisibilityState } from './scan-progress'
+import type { WindowVisibilityState } from './pure/scan-progress'
 
 /**
  * The only surface the renderer gets. Everything crossing this bridge is an

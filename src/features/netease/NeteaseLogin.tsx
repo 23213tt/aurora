@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { NeteaseAccount } from '../../env'
 import { hasNeteaseBackend, netease } from './api'
 import { useNetease } from './store'
-import { Check, Close, Lock, Refresh } from '../../components/icons'
+import { Check, Close, Lock, Refresh } from '../../ui/icons'
 
 interface NeteaseLoginProps {
   onClose(): void

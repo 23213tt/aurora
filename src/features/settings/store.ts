@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { bridge, isNative } from '../bridge'
+import { bridge, isNative } from '../../bridge'
 import type {
   AppSettings,
   StorageUsage,
   UpdateInterval,
   UpdatePrefs,
   UpdateResult
-} from '../env'
+} from '../../env'
 
 /**
  * The settings page's state.

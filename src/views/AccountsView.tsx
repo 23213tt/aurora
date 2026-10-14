@@ -4,7 +4,7 @@ import type { Account } from '../features/accounts/store'
 import { isNative } from '../bridge'
 import type { NeteaseAccount } from '../env'
 import { netease } from '../features/netease/api'
-import { Check, Pencil, Plus, Trash } from './icons'
+import { Check, Pencil, Plus, Trash } from '../ui/icons'
 
 interface AccountsViewProps {
   accounts: Account[]

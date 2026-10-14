@@ -1,6 +1,6 @@
 import { usePlayer } from '../features/player/store'
-import { formatTime } from './Bar'
-import { Close, List, Trash } from './icons'
+import { formatTime } from '../ui/Bar'
+import { Close, List, Trash } from '../ui/icons'
 
 interface QueuePanelProps {
   open: boolean

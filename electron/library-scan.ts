@@ -3,6 +3,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { IAudioMetadata } from 'music-metadata'
 import { loadSettings } from './settings'
+import { AUDIO_EXTENSIONS } from './pure/library-discovery-rules'
+import type { ScanProgress } from './pure/scan-progress'
 
 /**
  * Library scanning and tag reading.
@@ -45,20 +47,16 @@ export interface LibraryIndex {
   tracks: ScannedTrack[]
 }
 
-export interface ScanProgress {
-  phase: 'walking' | 'reading' | 'done'
-  /** Files discovered so far. */
-  found: number
-  /** Files with tags read so far. */
-  scanned: number
-  /** Reused from cache without re-parsing. */
-  cached: number
-  current: string
-}
+/**
+ * What a running scan reports.
+ *
+ * The definition lives in `pure/scan-progress.ts` - the module that decides how
+ * often progress is delivered, and the one that must not depend on this file.
+ * Re-exported so callers keep importing it from the scanner.
+ */
+export type { ScanProgress } from './pure/scan-progress'
 
 const INDEX_VERSION = 1
-
-import { AUDIO_EXTENSIONS } from './library-discovery-rules'
 
 /**
  * Every extension the indexer will read.

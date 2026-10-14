@@ -1,0 +1,29 @@
+[
+  { "from": "src/components/ArtCard.tsx", "to": "src/ui/ArtCard.tsx" },
+  { "from": "src/components/Artwork.tsx", "to": "src/ui/Artwork.tsx" },
+  { "from": "src/components/icons.tsx", "to": "src/ui/icons.tsx" },
+  { "from": "src/components/Bar.tsx", "to": "src/ui/Bar.tsx" },
+  { "from": "src/components/TrackList.tsx", "to": "src/ui/TrackList.tsx" },
+  { "from": "src/components/UpdatePanel.tsx", "to": "src/ui/UpdatePanel.tsx" },
+
+  { "from": "src/components/TitleBar.tsx", "to": "src/app/TitleBar.tsx" },
+  { "from": "src/components/Rail.tsx", "to": "src/app/Rail.tsx" },
+
+  { "from": "src/components/AccountsView.tsx", "to": "src/views/AccountsView.tsx" },
+  { "from": "src/components/AlbumDetail.tsx", "to": "src/views/AlbumDetail.tsx" },
+  { "from": "src/components/AlbumGrid.tsx", "to": "src/views/AlbumGrid.tsx" },
+  { "from": "src/components/ArtistList.tsx", "to": "src/views/ArtistList.tsx" },
+  { "from": "src/components/FolderTree.tsx", "to": "src/views/FolderTree.tsx" },
+  { "from": "src/components/PlaylistDetail.tsx", "to": "src/views/PlaylistDetail.tsx" },
+  { "from": "src/components/PlaylistList.tsx", "to": "src/views/PlaylistList.tsx" },
+  { "from": "src/components/QueuePanel.tsx", "to": "src/views/QueuePanel.tsx" },
+  { "from": "src/components/EqPanel.tsx", "to": "src/views/EqPanel.tsx" },
+  { "from": "src/components/TrackMenu.tsx", "to": "src/views/TrackMenu.tsx" },
+  { "from": "src/components/PlayerBar.tsx", "to": "src/views/PlayerBar.tsx" },
+
+  { "from": "src/settings/SettingsView.tsx", "to": "src/views/settings/SettingsView.tsx" },
+  { "from": "src/settings/settings.css", "to": "src/views/settings/settings.css" },
+  { "from": "src/settings/store.ts", "to": "src/features/settings/store.ts" },
+
+  { "from": "src/lyrics/lrc.ts", "to": "src/features/lyrics/lrc.ts" }
+]

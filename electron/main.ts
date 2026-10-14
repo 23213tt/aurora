@@ -11,10 +11,10 @@ import {
   saveSettings,
   storageUsage
 } from './settings'
-import { handleMediaProtocol, registerMediaScheme } from './media-protocol'
-import { handleRemoteProtocol, registerRemoteScheme } from './remote-protocol'
+import { handleMediaProtocol, registerMediaScheme } from './protocols/media-protocol'
+import { handleRemoteProtocol, registerRemoteScheme } from './protocols/remote-protocol'
 import { registerNeteaseIpc, warmUpNetease } from './netease/ipc'
-import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol'
+import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './protocols/app-protocol'
 import { loadIndex, scanLibrary, type ScanProgress } from './library-scan'
 import { discoverMusicFolders } from './library-discovery'
 import {
@@ -22,7 +22,7 @@ import {
   mainWindowVisibility,
   sendProgress,
   type WindowVisibilityState
-} from './scan-progress'
+} from './pure/scan-progress'
 import {
   autoCheck,
   checkForUpdate,

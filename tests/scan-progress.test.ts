@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import type { ScanProgress } from '../electron/library-scan.ts'
+import type { ScanProgress } from '../electron/pure/scan-progress.ts'
 
 /*
  * The scan-progress throttle is the one place where a mistake is invisible in
@@ -12,7 +12,7 @@ import type { ScanProgress } from '../electron/library-scan.ts'
  * `electron` - which under bare Node cannot be imported with named ESM exports.
  */
 const { sendProgress, resetProgressThrottle, configureProgressTransport, mainWindowVisibility } =
-  await import('../electron/scan-progress.ts')
+  await import('../electron/pure/scan-progress.ts')
 
 function progress(patch: Partial<ScanProgress> = {}): ScanProgress {
   return { phase: 'reading', found: 0, scanned: 0, cached: 0, current: '', ...patch }

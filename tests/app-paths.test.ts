@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import path from 'node:path'
 import { test } from 'node:test'
-import { resolveAppAsset } from '../electron/app-paths.ts'
+import { resolveAppAsset } from '../electron/pure/app-paths.ts'
 
 /*
  * Every case here is an attempt to read something outside the renderer bundle.

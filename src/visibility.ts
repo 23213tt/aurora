@@ -11,7 +11,7 @@ import { bridge, isNative } from './bridge'
  *    with `hide()` may still report itself visible, and because Aurora runs with
  *    `backgroundThrottling: false` nothing else will throttle the page either.
  *    The main process answers with Electron's own `isVisible()`/`isMinimized()`
- *    instead and pushes every change (see electron/scan-progress.ts).
+ *    instead and pushes every change (see electron/pure/scan-progress.ts).
  *  - **A hidden player window is not the same as "stop everything".** The desktop
  *    lyric strip is a second window that stays on screen when the player is in
  *    the tray, and it is fed by the player renderer. So this hook answers whether

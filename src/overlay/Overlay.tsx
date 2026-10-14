@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Close, Lock, Minus, Plus, Unlock } from '../components/icons'
+import { Close, Lock, Minus, Plus, Unlock } from '../ui/icons'
 import { bridge } from '../bridge'
 import type { OverlayState } from '../env'
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { isNative } from '../../bridge'
-import { emptyLyrics, parseLrc, type Lyrics } from '../../lyrics/lrc'
+import { emptyLyrics, parseLrc, type Lyrics } from '../lyrics/lrc'
 import type { Track } from '../../types'
 import { extractPalette, IDLE_PALETTE, type Palette } from './palette'
 import { artworkFor, sourceFor } from './source'

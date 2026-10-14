@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { EQ_BANDS } from '../features/player/store'
-import { Close, Wave } from './icons'
+import { Close, Wave } from '../ui/icons'
 
 const MIN_DB = -12
 const MAX_DB = 12

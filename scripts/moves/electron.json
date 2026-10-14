@@ -1,0 +1,34 @@
+[
+  {
+    "from": "electron/app-paths.ts",
+    "to": "electron/pure/app-paths.ts"
+  },
+  {
+    "from": "electron/version.ts",
+    "to": "electron/pure/version.ts"
+  },
+  {
+    "from": "electron/scan-progress.ts",
+    "to": "electron/pure/scan-progress.ts"
+  },
+  {
+    "from": "electron/release-target.ts",
+    "to": "electron/pure/release-target.ts"
+  },
+  {
+    "from": "electron/library-discovery-rules.ts",
+    "to": "electron/pure/library-discovery-rules.ts"
+  },
+  {
+    "from": "electron/app-protocol.ts",
+    "to": "electron/protocols/app-protocol.ts"
+  },
+  {
+    "from": "electron/media-protocol.ts",
+    "to": "electron/protocols/media-protocol.ts"
+  },
+  {
+    "from": "electron/remote-protocol.ts",
+    "to": "electron/protocols/remote-protocol.ts"
+  }
+]

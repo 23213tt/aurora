@@ -132,12 +132,27 @@ if (!apply) {
 
 // --- apply -----------------------------------------------------------------
 
-// 1. Move the files with git so history follows them.
+/*
+ * Preflight the whole plan before touching anything.
+ *
+ * The first version moved files as it went and only discovered a bad source path
+ * partway through, leaving the tree in a mixed state that had to be cleaned up
+ * by hand. Checking every source first makes a bad plan a no-op.
+ */
+const missing = plan.filter((item) => !fs.existsSync(path.join(root, item.from)))
+if (missing.length > 0) {
+  console.error('计划里有源文件不存在，未做任何改动：')
+  for (const item of missing) console.error(`  ${item.from}`)
+  process.exit(1)
+}
+const clashes = plan.filter((item) => fs.existsSync(path.join(root, item.to)) && !moved.has(item.to))
+if (clashes.length > 0) {
+  console.error('计划的目标路径已存在，未做任何改动：')
+  for (const item of clashes) console.error(`  ${item.to}`)
+  process.exit(1)
+}
+
 for (const item of plan) {
-  if (!fs.existsSync(path.join(root, item.from))) {
-    console.error(`missing: ${item.from}`)
-    process.exit(1)
-  }
   fs.mkdirSync(path.dirname(path.join(root, item.to)), { recursive: true })
 }
 for (const item of plan) {
@@ -149,7 +164,6 @@ let changed = 0
 for (const result of results) {
   const target = path.join(root, result.destination)
   if (!fs.existsSync(target)) continue
-  if (result.text !== result.text) continue
   const current = fs.readFileSync(target, 'utf8')
   if (result.text === current) continue
   fs.writeFileSync(target, result.text)
